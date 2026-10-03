@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="">
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- endif -%}
+
+    <title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+      {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+
+    {% if page_description %}
+      <meta name="description" content="{{ page_description | escape }}">
+    {% endif %}
+
+    {{ content_for_header }}
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        color: #121212;
+        background: #ffffff;
+      }
+      img { max-width: 100%; height: auto; display: block; }
+      a { color: inherit; }
+      .page-width { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+      .site-header, .site-footer { padding: 16px 0; border-bottom: 1px solid #e5e5e5; }
+      .site-footer { border-top: 1px solid #e5e5e5; border-bottom: 0; margin-top: 48px; font-size: 14px; }
+      .site-header__inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      .site-header__logo { font-size: 20px; font-weight: 700; text-decoration: none; }
+      .site-header__nav { display: flex; gap: 16px; }
+      .site-header__nav a { text-decoration: none; }
+      main { min-height: 60vh; padding: 32px 0; }
+    </style>
+  </head>
+
+  <body class="template-{{ template.name | handle }}">
+    <a class="visually-hidden" href="#MainContent" style="position:absolute;left:-9999px;">Skip to content</a>
+
+    <header class="site-header">
+      <div class="page-width site-header__inner">
+        <a href="{{ routes.root_url }}" class="site-header__logo">{{ shop.name }}</a>
+
+        <nav class="site-header__nav" aria-label="Main">
+          {%- for link in linklists.main-menu.links -%}
+            <a href="{{ link.url }}">{{ link.title }}</a>
+          {%- endfor -%}
+        </nav>
+
+        <a href="{{ routes.cart_url }}">Cart ({{ cart.item_count }})</a>
+      </div>
+    </header>
+
+    <main id="MainContent" class="page-width" role="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    <footer class="site-footer">
+      <div class="page-width">
+        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ powered_by_link }}
+      </div>
+    </footer>
+  </body>
+</html>
