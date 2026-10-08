@@ -1,0 +1,108 @@
+{%- comment -%}
+  ============================================================================
+  Section: Article related ("More from the journal", under a blog post)
+  ----------------------------------------------------------------------------
+      MORE FROM THE JOURNAL                          View all →
+      ┌──────────┐ ┌──────────┐ ┌──────────┐
+      │  card    │ │  card    │ │  card    │   ← newest other posts of the blog
+      └──────────┘ └──────────┘ └──────────┘
+  Same cards as the blog page (snippets/blog-card.liquid). Posts sharing a
+  tag with the current one come first; then the newest others.
+  Animated (GSAP → initArticleRelated): heading words rise, cards rise in
+  one after another.
+
+  Used in:   templates/article.json
+  CSS:       assets/blog.css → "6. Related posts" (.blog-related*)
+  JS:        assets/global-scroll-animations.js → initArticleRelated()
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  if section.settings.heading != blank
+    assign heading = section.settings.heading
+  else
+    assign heading = 'blog.related' | t
+  endif
+
+  # Pick up to `limit` other posts: same-tag posts first, then the rest
+  assign picked = ''
+  assign picked_count = 0
+  for candidate in blog.articles limit: 50
+    if picked_count >= section.settings.limit
+      break
+    endif
+    if candidate.id == article.id
+      continue
+    endif
+    assign shares_tag = false
+    for tag in candidate.tags
+      if article.tags contains tag
+        assign shares_tag = true
+      endif
+    endfor
+    if shares_tag
+      assign picked = picked | append: candidate.handle | append: ','
+      assign picked_count = picked_count | plus: 1
+    endif
+  endfor
+  for candidate in blog.articles limit: 50
+    if picked_count >= section.settings.limit
+      break
+    endif
+    assign marker = candidate.handle | append: ','
+    if candidate.id == article.id or picked contains marker
+      continue
+    endif
+    assign picked = picked | append: candidate.handle | append: ','
+    assign picked_count = picked_count | plus: 1
+  endfor
+  assign picked_handles = picked | split: ','
+-%}
+
+{%- if picked_count > 0 -%}
+  <section
+    class="blog-related{% if section.settings.serif %} blog--serif{% endif %}"
+    data-scroll-fx="article-related"
+    style="--blog-text: {{ section.settings.text_color }}; --blog-accent: {{ section.settings.accent_color }}; --blog-bg: {{ section.settings.background_color }}; --blog-columns: 3;"
+  >
+    <div class="blog__inner">
+      <div class="blog-related__head">
+        <h2 class="blog-related__title" data-split>{{ heading | escape }}</h2>
+        <a href="{{ blog.url }}" class="blog-related__link" data-fade>
+          {{- 'products.product.view_all' | t }}
+          {% render 'global-icon', name: 'arrow-right', size: 16 %}
+        </a>
+      </div>
+      <ul class="blog-grid" role="list">
+        {%- for handle in picked_handles -%}
+          {%- for candidate in blog.articles limit: 50 -%}
+            {%- if candidate.handle == handle -%}
+              <li>
+                {% render 'blog-card', article: candidate, show_excerpt: false, show_date: true, show_reading_time: true %}
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+  </section>
+{%- endif -%}
+
+{%- comment -%} Schema — settings: heading (empty → translated default), limit (2–6), serif, colors {%- endcomment -%}
+{% schema %}
+{
+  "name": "Related posts",
+  "tag": "div",
+  "class": "section-article-related",
+  "enabled_on": { "templates": ["article"] },
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Leave empty for the translated default (\"More from the journal\")." },
+    { "type": "range", "id": "limit", "label": "Posts to show", "min": 2, "max": 6, "step": 1, "default": 3 },
+    { "type": "checkbox", "id": "serif", "label": "Serif heading", "default": true },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#F6F3EC" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "presets": [{ "name": "Related posts" }]
+}
+{% endschema %}

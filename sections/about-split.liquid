@@ -1,0 +1,88 @@
+{%- comment -%}
+  ============================================================================
+  Section: About split (image with text, About page)
+  ----------------------------------------------------------------------------
+      ┌──────────────────────┐ ┌──────────────────┐
+      │ WHY WE EXIST         │ │                  │
+      │ Less fuss in the     │ │   photo (curtain │
+      │ morning…             │ │   reveal, then   │
+      │ Text…                │ │   parallax)      │
+      └──────────────────────┘ └──────────────────┘
+  Animated (GSAP, assets/global-scroll-animations.js → initSplit):
+  - Heading words slide up; small heading + text fade up after
+  - The photo is unveiled by a curtain wipe (clip-path, bottom → top) with
+    a zoom-out, then drifts slowly in parallax while you scroll
+  - The badge pops in
+
+  Used in:   templates/page.about.json
+  CSS:       assets/about.css → "3. Image with text" (.about-split*)
+  JS:        assets/global-scroll-animations.js → initSplit()
+  ============================================================================
+{%- endcomment -%}
+
+<section
+  class="about about-split about-split--image-{{ section.settings.image_position }}{% if section.settings.serif %} about--serif{% endif %}"
+  data-about="split"
+  style="--about-bg: {{ section.settings.background_color }}; --about-text: {{ section.settings.text_color }}; --about-accent: {{ section.settings.accent_color }};"
+>
+  <div class="about__inner about-split__grid">
+    <div class="about-split__text">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="about__eyebrow" data-fade>{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      <h2 class="about__heading" data-split>{{ section.settings.heading | escape }}</h2>
+      {%- if section.settings.text != blank -%}
+        <div class="about__text" data-fade>{{ section.settings.text }}</div>
+      {%- endif -%}
+    </div>
+
+    <div class="about-split__media" data-split-media>
+      <div class="about-split__img" data-parallax>
+        {%- if section.settings.image != blank -%}
+          {{ section.settings.image | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '600, 900, 1200, 1400', sizes: '(min-width: 750px) 50vw, 100vw', alt: section.settings.image.alt }}
+        {%- else -%}
+          {{ 'lifestyle-2' | placeholder_svg_tag: 'about__placeholder' }}
+        {%- endif -%}
+      </div>
+      {%- if section.settings.badge != blank -%}
+        <span class="about-split__badge" data-badge>{{ section.settings.badge | escape }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema — settings: eyebrow, heading, text, image, image_position (left/right),
+  badge (small label on the photo), serif, colors
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "About: image with text",
+  "tag": "div",
+  "class": "section-about-split",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small heading", "default": "Why we exist" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Less fuss in the morning. More of you in what you wear." },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Getting dressed shouldn't feel like a puzzle. We started this label to make a wardrobe that simply works.</p>" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "options": [
+        { "value": "right", "label": "Right" },
+        { "value": "left", "label": "Left" }
+      ],
+      "default": "right"
+    },
+    { "type": "text", "id": "badge", "label": "Badge on the image", "default": "Unisex by design" },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "serif", "label": "Serif headings", "default": true },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#F6F3EC" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "presets": [{ "name": "About: image with text" }]
+}
+{% endschema %}

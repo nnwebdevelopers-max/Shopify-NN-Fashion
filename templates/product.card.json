@@ -1,0 +1,22 @@
+/*
+ * ============================================================================
+ * Template: Product card (product.card.json) — helper, not a visible page
+ * ----------------------------------------------------------------------------
+ * Requested by scripts as /products/<handle>?view=card. Renders only the
+ * product's card (sections/global-product-card-render.liquid), with no
+ * header, footer or layout ("layout": false).
+ *
+ * Used by: assets/wishlist.js, assets/compare.js
+ * Don't assign this template to products in Shopify admin.
+ * ============================================================================
+ */
+{
+  "layout": false,
+  "sections": {
+    "card": {
+      "type": "global-product-card-render",
+      "settings": {}
+    }
+  },
+  "order": ["card"]
+}

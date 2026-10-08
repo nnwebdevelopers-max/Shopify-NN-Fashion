@@ -1,0 +1,155 @@
+{%- comment -%}
+  ============================================================================
+  Section: Header search results (predictive search)
+  ----------------------------------------------------------------------------
+  NOT placed on any page. It is only rendered on request by
+  assets/header-search.js through Shopify's Predictive Search API:
+
+    /search/suggest?q=jeans&resources[type]=product,collection
+                   &resources[limit]=8&section_id=header-search-results
+
+  The returned HTML goes inside the search popup ([data-search-results] in
+  snippets/header-search.liquid). It contains:
+  - Tabs: Products (N) | Categories (N)   (Categories only if any matched)
+  - Products panel:   product cards (snippets/global-product-card.liquid)
+  - Categories panel: matching collections with image + title
+  - "Show all results" button → full search page
+  - Empty state when nothing matches
+
+  CSS:  assets/header-search.css (classes .predictive-search*)
+        assets/global-product-card.css (product cards)
+  JS:   assets/header-search.js (tab switching, inserting this HTML)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign products = predictive_search.resources.products
+  assign collections = predictive_search.resources.collections
+  assign total = products.size | plus: collections.size
+
+  # Full search page URL for "Show all results" (same options as the header form)
+  assign encoded_terms = predictive_search.terms | url_encode
+  assign search_url = routes.search_url | append: '?q=' | append: encoded_terms | append: '&type=product&options%5Bprefix%5D=last'
+-%}
+
+{%- if predictive_search.performed -%}
+  <div class="predictive-search" data-predictive-search-results data-results-count="{{ total }}">
+    {%- if total > 0 -%}
+      {%- comment -%}
+        ---------- Tabs ----------
+        role="tablist" pattern; header-search.js switches the panels.
+        Categories tab only when collections were found.
+      {%- endcomment -%}
+      <div class="predictive-search__tabs" role="tablist" aria-label="{{ 'search.results_label' | t }}">
+        <button
+          type="button"
+          class="predictive-search__tab"
+          role="tab"
+          id="PredictiveTab-products"
+          aria-controls="PredictivePanel-products"
+          aria-selected="true"
+          data-tab="products"
+        >
+          {{ 'search.products_tab' | t }} <span class="predictive-search__tab-count">({{ products.size }})</span>
+        </button>
+        {%- if collections.size > 0 -%}
+          <button
+            type="button"
+            class="predictive-search__tab"
+            role="tab"
+            id="PredictiveTab-collections"
+            aria-controls="PredictivePanel-collections"
+            aria-selected="false"
+            tabindex="-1"
+            data-tab="collections"
+          >
+            {{ 'search.categories_tab' | t }} <span class="predictive-search__tab-count">({{ collections.size }})</span>
+          </button>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} ---------- Products panel ---------- {%- endcomment -%}
+      <div
+        class="predictive-search__panel"
+        role="tabpanel"
+        id="PredictivePanel-products"
+        aria-labelledby="PredictiveTab-products"
+        data-panel="products"
+      >
+        {%- if products.size > 0 -%}
+          <ul class="predictive-search__grid" role="list">
+            {%- for product in products -%}
+              <li>
+                {% render 'global-product-card',
+                  product: product,
+                  image_sizes: '(min-width: 990px) 200px, (min-width: 750px) 25vw, 50vw',
+                  show_secondary_image: true,
+                  show_options: true,
+                  centered: true,
+                  show_actions: false
+                %}
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- else -%}
+          {%- comment -%} t escapes the interpolated terms itself {%- endcomment -%}
+          <p class="predictive-search__empty">{{ 'search.no_products' | t: terms: predictive_search.terms }}</p>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} ---------- Categories (collections) panel: hidden until its tab is clicked ---------- {%- endcomment -%}
+      {%- if collections.size > 0 -%}
+        <div
+          class="predictive-search__panel"
+          role="tabpanel"
+          id="PredictivePanel-collections"
+          aria-labelledby="PredictiveTab-collections"
+          data-panel="collections"
+          hidden
+        >
+          <ul class="predictive-search__collections" role="list">
+            {%- for collection in collections -%}
+              <li>
+                <a href="{{ collection.url }}" class="predictive-search__collection">
+                  <span class="predictive-search__collection-media">
+                    {%- if collection.featured_image != blank -%}
+                      {{ collection.featured_image | image_url: width: 300 | image_tag: loading: 'lazy', widths: '150, 300', sizes: '150px', alt: collection.title }}
+                    {%- else -%}
+                      {{ 'collection-1' | placeholder_svg_tag: 'predictive-search__placeholder' }}
+                    {%- endif -%}
+                  </span>
+                  <span class="predictive-search__collection-title">{{ collection.title | escape }}</span>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- comment -%} ---------- Show all results → full search page ---------- {%- endcomment -%}
+      <div class="predictive-search__footer">
+        <a href="{{ search_url }}" class="button button--primary predictive-search__view-all" data-search-view-all>
+          {{- 'search.view_all' | t -}}
+          {% render 'global-icon', name: 'arrow-right', size: 16 %}
+        </a>
+      </div>
+    {%- else -%}
+      {%- comment -%} ---------- Nothing found ---------- {%- endcomment -%}
+      <p class="predictive-search__empty">
+        {{ 'search.no_results' | t: terms: predictive_search.terms }}
+      </p>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{%- comment -%}
+  Schema: no settings and no presets → it cannot be added to pages in the
+  theme editor; it exists only for the Predictive Search API.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Header search results",
+  "tag": "div",
+  "class": "section-header-search-results"
+}
+{% endschema %}

@@ -1,0 +1,687 @@
+/* ============================================================================
+   cart.css — Cart page
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (cart template only)
+   Styles:    sections/cart-main.liquid (classes .cart*)
+              snippets/cart-tools.liquid → "Cart tools" (classes .cart-tool*:
+              discount code, shipping estimate, order note panels)
+
+   Layout: desktop = [items | summary]; phones = items, then summary.
+   Each item row = [image + details | quantity + remove | line total].
+   States from assets/cart.js: .is-js (hide "Update cart", show the JS-only
+   panels), .is-updating.
+   ============================================================================ */
+
+.cart {
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+.cart__title {
+  margin: 0 0 24px;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* [items | summary] */
+.cart__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: 40px;
+}
+
+/* While updating: fade + no double clicks */
+.cart.is-updating .cart__items,
+.cart.is-updating .cart__summary {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* ---------- Item rows ---------- */
+.cart__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cart__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px 110px;
+  align-items: center;
+  gap: 16px;
+}
+/* Column titles */
+.cart__row--head {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e8e8;
+  color: #6b6b6b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cart__head-total {
+  text-align: right;
+}
+.cart__item {
+  padding: 20px 0;
+  border-bottom: 1px solid #ededed;
+}
+
+/* [image] [title / options / price] */
+.cart__product {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.cart__image-link {
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #f3f3f3;
+}
+.cart__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cart__placeholder {
+  fill: #c4c4c4;
+}
+.cart__product-title {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+.cart__product-title:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cart__options {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  color: #6b6b6b;
+  font-size: 13px;
+}
+.cart__meta {
+  margin: 4px 0 0;
+  color: #6b6b6b;
+  font-size: 13px;
+}
+.cart__unit-price {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+.cart__unit-price s,
+.cart__line-total s {
+  color: #8a8a8a;
+}
+.cart__discount {
+  margin: 4px 0 0;
+  color: #c8102e;
+  font-size: 13px;
+}
+
+/* ---------- Quantity stepper + remove ---------- */
+.cart__quantity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cart__stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+}
+.cart__step {
+  width: 36px;
+  height: 40px;
+  border: 0;
+  background: none;
+  color: #121212;
+  font-size: 18px;
+  cursor: pointer;
+}
+.cart__step:hover {
+  background: #f3f3f3;
+}
+.cart__qty-input {
+  width: 44px;
+  height: 40px;
+  border: 0;
+  text-align: center;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.cart__qty-input::-webkit-outer-spin-button,
+.cart__qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cart__remove {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #6b6b6b;
+}
+.cart__remove:hover {
+  background: #fbe9eb;
+  color: #c8102e;
+}
+.cart__step:focus-visible,
+.cart__qty-input:focus-visible,
+.cart__remove:focus-visible {
+  outline: 2px solid #c8102e;
+  outline-offset: 2px;
+}
+
+/* Line total, right-aligned */
+.cart__line-total {
+  display: grid;
+  justify-items: end;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cart__line-total s {
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* "Update cart" (no-JS only) + continue link */
+/* ---------- Bulk delete: checkbox per item + bottom bar ----------
+   JS only (cart.js adds .is-js): without it the checkboxes and bar are
+   hidden. With it, each product gets a checkbox column before the image.
+
+     [☐ Select all]                         [🗑 DELETE SELECTED (2)]   */
+.cart__select,
+.cart__bulk {
+  display: none;
+}
+.cart.is-js .cart__product {
+  grid-template-columns: auto 96px minmax(0, 1fr);
+}
+.cart.is-js .cart__select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: center; /* level with the middle of the image */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+/* Real checkbox hidden (still focusable / clickable through the label) */
+.cart__select-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.cart__select-box {
+  position: relative; /* anchors the "some selected" dash */
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid #c9c9c9;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #ffffff;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.cart__select-box .icon {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.cart__select:hover .cart__select-box {
+  border-color: #121212;
+}
+.cart__select-input:checked + .cart__select-box {
+  border-color: #121212;
+  background: #121212;
+}
+.cart__select-input:checked + .cart__select-box .icon {
+  opacity: 1;
+  transform: none;
+}
+/* "Select all" with only some items checked: a dash instead of a tick */
+.cart__select-input:indeterminate + .cart__select-box {
+  border-color: #121212;
+  background: #121212;
+}
+.cart__select-input:indeterminate + .cart__select-box::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 1px);
+  left: calc(50% - 5px);
+  width: 10px;
+  height: 2px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+.cart__select-input:focus-visible + .cart__select-box {
+  outline: 2px solid #c8102e;
+  outline-offset: 2px;
+}
+/* Room so the checkbox doesn't touch the row's highlighted edge */
+.cart.is-js .cart__item {
+  padding-left: 8px;
+  border-radius: 10px 0 0 10px;
+}
+/* Checked rows get a soft highlight */
+.cart.is-js .cart__item:has(.cart__select-input:checked) {
+  background: linear-gradient(90deg, #fbf3f4, rgba(251, 243, 244, 0));
+}
+
+/* Bottom bar */
+.cart.is-js .cart__bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #ededed;
+}
+/* "Delete selected": shared .button.button--primary.button--sm
+   (disabled look while nothing is checked comes from global-buttons.css) */
+
+.cart__update {
+  margin-top: 18px;
+}
+.cart.is-js .cart__update {
+  display: none;
+}
+/* "← Continue shopping": shared .button.button--link */
+.cart__continue {
+  margin-top: 18px;
+}
+.cart.is-js .cart__continue {
+  margin-top: 22px;
+}
+
+/* ---------- Summary box ---------- */
+/* Not sticky: with the tool panels open the box can be taller than the
+   screen, and a sticky box would hide its Check out button */
+.cart__summary {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 6px;
+  background: #f6f6f6;
+}
+.cart__summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+.cart__summary-discounts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #c8102e;
+  text-align: right;
+}
+.cart__summary-row--total {
+  padding-top: 12px;
+  border-top: 1px solid #e2e2e2;
+  font-size: 18px;
+  font-weight: 800;
+}
+/* No discount row above → no divider line */
+.cart__summary-row--total:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+/* ---------- Cart tools (snippets/cart-tools.liquid) ----------
+   Collapsible white panels inside the grey summary box:
+   [icon] Title ........ (badge) ⌄  → body with field + button.
+   Discount and shipping need JS (.cart-tool--js is hidden without it). */
+.cart-tools {
+  display: grid;
+  gap: 8px;
+}
+.cart-tool {
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  background: #ffffff;
+}
+.cart:not(.is-js) .cart-tool--js {
+  display: none;
+}
+.cart-tool__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+.cart-tool__summary::-webkit-details-marker {
+  display: none;
+}
+.cart-tool__summary:focus-visible {
+  border-radius: 12px;
+  outline: 2px solid #c8102e;
+  outline-offset: -2px;
+}
+.cart-tool__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f3f3f3;
+  color: #121212;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.cart-tool[open] .cart-tool__icon {
+  background: #121212;
+  color: #ffffff;
+}
+.cart-tool__title {
+  flex: 1;
+}
+/* Number of codes / ✓ note added */
+.cart-tool__badge,
+.cart-tool__check {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #c8102e;
+  color: #ffffff;
+  font-size: 12px;
+}
+.cart-tool__check {
+  background: #2f9e5b;
+}
+/* Chevron: down when closed, up when open */
+.cart-tool__chevron {
+  width: 8px;
+  height: 8px;
+  margin: 0 4px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.2s ease;
+}
+.cart-tool[open] .cart-tool__chevron {
+  transform: rotate(-135deg) translateY(-2px);
+}
+.cart-tool__body {
+  display: grid;
+  gap: 10px;
+  padding: 0 14px 14px;
+  animation: cart-tool-in 0.3s ease both;
+}
+@keyframes cart-tool-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Fields: [input][button] rows, labelled fields, textarea */
+.cart-tool__inline {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.cart-tool__field {
+  display: grid;
+  gap: 4px;
+  color: #6b6b6b;
+  font-size: 12px;
+  font-weight: 600;
+}
+.cart-tool__field--grow {
+  flex: 1;
+}
+.cart-tool__input {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1.5px solid #dedede;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #121212;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.cart-tool__input:focus {
+  outline: none;
+  border-color: #c8102e;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
+}
+.cart-tool__inline > .cart-tool__input {
+  flex: 1;
+  text-transform: uppercase; /* discount codes */
+}
+.cart-tool__inline > .cart-tool__input::placeholder {
+  text-transform: none;
+}
+.cart-tool__textarea {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
+}
+/* Apply / Calculate: shared .button.button--sm, as tall as the field beside it */
+.cart-tool__button {
+  --btn-height: 44px;
+  flex: none;
+}
+/* Calculating (.is-loading): spinner from global-buttons.css */
+
+/* Applied discount codes: pills with ✕ */
+.cart-tool__codes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cart-tool__code {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 999px;
+  background: #e8f6ed;
+  color: #1d6b35;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.cart-tool__code.is-invalid {
+  background: #f1f1f1;
+  color: #777777;
+}
+.cart-tool__code.is-invalid > span:first-of-type {
+  text-decoration: line-through;
+}
+.cart-tool__code-note {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.cart-tool__code-remove {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+  cursor: pointer;
+}
+.cart-tool__code-remove:hover {
+  background: #c8102e;
+  color: #ffffff;
+}
+
+/* Messages and hints */
+.cart-tool__message {
+  margin: 0;
+  color: #1d6b35;
+  font-size: 13px;
+  font-weight: 600;
+}
+.cart-tool__message.is-error,
+.cart-tool__results.is-error {
+  color: #a10d25;
+}
+.cart-tool__message[hidden],
+.cart-tool__results[hidden] {
+  display: none;
+}
+.cart-tool__hint {
+  min-height: 0;
+  margin: 0;
+  color: #6b6b6b;
+  font-size: 12px;
+}
+.cart-tool__hint:empty {
+  display: none;
+}
+
+/* Shipping rates: name ........ price */
+.cart-tool__results {
+  padding: 12px;
+  border-radius: 10px;
+  background: #f6f6f6;
+  font-size: 13px;
+}
+.cart-tool__results p {
+  margin: 0;
+}
+.cart-tool__rates-title {
+  margin-bottom: 8px !important;
+  font-weight: 700;
+}
+.cart-tool__rates {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cart-tool__rates li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cart-tool__rate-price {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-tool__body,
+  .cart-tool__chevron,
+  .cart-tool__icon {
+    animation: none;
+    transition: none;
+  }
+}
+.cart__taxes {
+  margin: 0;
+  color: #6b6b6b;
+  font-size: 13px;
+}
+/* Check out: shared .button.button--primary.button--lg.button--full */
+.cart__express {
+  display: grid;
+  gap: 8px;
+}
+.cart__error {
+  margin: 0;
+  color: #c8102e;
+  font-size: 14px;
+}
+.cart__error[hidden] {
+  display: none;
+}
+
+/* ---------- Empty cart ---------- */
+.cart__empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 40px 16px 20px;
+  text-align: center;
+}
+.cart__empty-icon {
+  display: grid;
+  place-items: center;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: #f3f3f3;
+  color: #121212;
+}
+.cart__empty-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+.cart__empty p {
+  margin: 0;
+  color: #6b6b6b;
+}
+.cart__empty-button {
+  margin-top: 16px;
+}
+
+/* ---------- Tablets / phones ---------- */
+@media (max-width: 989px) {
+  .cart__layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+@media (max-width: 749px) {
+  .cart {
+    padding-top: 24px;
+  }
+  /* Phones: column titles hidden; row = [image+details] then [qty | total] */
+  .cart__row--head {
+    display: none;
+  }
+  .cart__row {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+  .cart__product {
+    grid-column: 1 / -1;
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+  .cart.is-js .cart__product {
+    grid-template-columns: auto 80px minmax(0, 1fr);
+    gap: 12px;
+  }
+}

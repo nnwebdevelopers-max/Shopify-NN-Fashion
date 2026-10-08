@@ -1,0 +1,184 @@
+{%- comment -%}
+  ============================================================================
+  Section: Compare main (compare page)
+  ----------------------------------------------------------------------------
+  Side-by-side table of the products the shopper added with the ⇄ button:
+
+                   │  [card] ✕      │  [card] ✕      │  [card] ✕
+      Price        │  $54.95        │  $79.00        │  $35.00
+      Availability │  In stock      │  In stock      │  Out of stock
+      Brand        │  NN Fashion    │  NN Fashion    │  Levi's
+      Type         │  Shirts        │  Jackets       │  Jeans
+      Size         │  S, M, L, XL   │  S, M, L       │  30, 32, 34
+      Color        │  Sand          │  Olive, Black  │  Blue
+      Description  │  Light linen…  │  Heavy twill…  │  Classic fit…
+
+  The list lives in the shopper's browser (localStorage "nn-compare"), so
+  this section only renders the frame; assets/compare.js builds the table:
+  - top row: each product's normal card (/products/<handle>?view=card), so
+    wishlist / add to cart work here too, plus a ✕ remove button
+  - other rows: data from /products/<handle>.js
+  Which rows show is set in the theme editor. Phones: the table scrolls
+  sideways with the row names fixed on the left.
+
+  Used in:   templates/page.compare.json
+             → create a page in Shopify admin (Online Store > Pages), choose
+               the template "page.compare", and pick that page in
+               Theme editor > Header > Compare page.
+  CSS:       assets/compare.css (classes .compare*)
+  JS:        assets/compare.js (+ window.NNCards from global-product-card.js)
+  Text:      locales → compare.*
+  Editable:  Theme editor > Pages > page.compare
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  if section.settings.heading != blank
+    assign heading = section.settings.heading
+  else
+    assign heading = 'compare.title' | t
+  endif
+
+  # Rows to show, in order (read by compare.js)
+  assign rows = ''
+  if section.settings.show_price
+    assign rows = rows | append: 'price,'
+  endif
+  if section.settings.show_availability
+    assign rows = rows | append: 'availability,'
+  endif
+  if section.settings.show_vendor
+    assign rows = rows | append: 'vendor,'
+  endif
+  if section.settings.show_type
+    assign rows = rows | append: 'type,'
+  endif
+  if section.settings.show_options
+    assign rows = rows | append: 'options,'
+  endif
+  if section.settings.show_description
+    assign rows = rows | append: 'description,'
+  endif
+-%}
+
+{%- comment -%}
+  data-rows: which rows to build. data-text-*: translated row names and
+  labels for compare.js (from locales → compare.*).
+{%- endcomment -%}
+<section
+  class="page-width compare"
+  style="--card-ratio: 3 / 4;"
+  data-compare
+  data-rows="{{ rows }}"
+  data-text-price="{{ 'compare.rows.price' | t }}"
+  data-text-availability="{{ 'compare.rows.availability' | t }}"
+  data-text-vendor="{{ 'compare.rows.vendor' | t }}"
+  data-text-type="{{ 'compare.rows.type' | t }}"
+  data-text-description="{{ 'compare.rows.description' | t }}"
+  data-text-in-stock="{{ 'compare.in_stock' | t }}"
+  data-text-out-of-stock="{{ 'compare.out_of_stock' | t }}"
+  data-text-remove="{{ 'compare.remove' | t: product: '[product]' }}"
+>
+  {%- comment -%} ---------- Header: title + clear all ---------- {%- endcomment -%}
+  <div class="compare__header">
+    <h1 class="compare__title">{{ heading | escape }}</h1>
+    <button type="button" class="compare__clear" data-compare-clear hidden>{{ 'compare.clear' | t }}</button>
+  </div>
+
+  <p class="compare__loading" data-compare-loading>{{ 'compare.loading' | t }}</p>
+
+  {%- comment -%} Filled by compare.js; scrolls sideways when wider than the screen {%- endcomment -%}
+  <div class="compare__scroll" data-compare-scroll hidden>
+    <table class="compare__table" data-compare-table></table>
+  </div>
+
+  {%- comment -%} ---------- Empty state ---------- {%- endcomment -%}
+  <div class="compare__empty" data-compare-empty hidden>
+    <span class="compare__empty-icon" aria-hidden="true">{% render 'global-icon', name: 'compare', size: 40 %}</span>
+    <h2 class="compare__empty-title">{{ 'compare.empty_title' | t }}</h2>
+    <p>{{ 'compare.empty_text' | t: limit: settings.card_compare_limit }}</p>
+    <a href="{{ section.settings.continue_link | default: routes.all_products_collection_url }}" class="button compare__continue">
+      {{- 'cart.continue_shopping' | t -}}
+    </a>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["page"] → only on page templates (page.compare).
+  Settings: heading (empty → translated "Compare products"), show_price,
+            show_availability, show_vendor, show_type, show_options
+            (one row per product option, e.g. Size, Color), show_description,
+            continue_link (empty state button)
+  How many products can be compared: Theme settings > Product cards.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Compare",
+  "tag": "div",
+  "class": "section-compare-main",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Leave empty to use the translated default (\"Compare products\")."
+    },
+    {
+      "type": "header",
+      "content": "Rows"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_availability",
+      "label": "Availability",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Brand (vendor)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_type",
+      "label": "Product type",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_options",
+      "label": "Options (size, color…)",
+      "info": "One row per option name.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Description",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "continue_link",
+      "label": "\"Continue shopping\" link",
+      "info": "Shown when nothing is being compared. Leave empty for All products."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Compare"
+    }
+  ]
+}
+{% endschema %}

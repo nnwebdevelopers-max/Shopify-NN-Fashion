@@ -1,0 +1,40 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Global account popup (sign in / create account)
+  ----------------------------------------------------------------------------
+  Modal popup with the sign-in card (snippets/global-account-forms.liquid).
+  Rendered once per page by layout/theme.liquid, only for signed-out
+  shoppers (and never on the account pages themselves).
+
+  Opens when the shopper:
+  - taps ♡ on a product card while the wishlist needs an account
+    (assets/global-product-card.js → window.NNAccount.open)
+  - clicks the header wishlist / account link, or the "Sign in" buttons on
+    the wishlist page (any element with data-account-open="login|register")
+  - lands on the wishlist page while signed out (data-account-autoopen)
+
+  Desktop: centered card that scales in over a blurred backdrop.
+  Phones:  sheet that slides up from the bottom.
+  Closes with ✕, Escape or a click on the backdrop.
+
+  Used in:  layout/theme.liquid
+  CSS:      assets/global-account.css → "Popup" (classes .account-popup*)
+  JS:       assets/global-account.js (window.NNAccount)
+  ============================================================================
+{%- endcomment -%}
+
+<div class="account-popup" data-account-popup hidden>
+  {%- comment -%} Backdrop: click closes {%- endcomment -%}
+  <div class="account-popup__scrim" data-account-close></div>
+
+  <div
+    class="account-popup__dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ 'customer.popup.label' | t }}"
+    tabindex="-1"
+    data-account-dialog
+  >
+    {% render 'global-account-forms', context: 'popup', view: 'login' %}
+  </div>
+</div>

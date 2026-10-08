@@ -1,0 +1,199 @@
+{%- comment -%}
+  ============================================================================
+  Section: Customer addresses (/account/addresses)
+  ----------------------------------------------------------------------------
+      ← Back to account
+      YOUR ADDRESSES
+      Save addresses for a faster checkout.
+      ┌────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+      │ Dashboard  │ │ [Default]    │ │ Jane Doe     │ │      ＋      │
+      │ Addresses  │ │ Jane Doe     │ │ 5 Side St    │ │ Add new      │
+      │ Wishlist   │ │ 12 Main St   │ │ …            │ │ address      │
+      │ Log out    │ │ [Edit] [🗑]  │ │ [Edit] [🗑]  │ └──────────────┘
+      └────────────┘ └──────────────┘ └──────────────┘
+
+  - "Add new address" and each "Edit" open a popup (<dialog>) with the
+    address form (snippets/customer-address-form.liquid). If Shopify finds
+    a problem, the page reloads with that popup already open on its errors.
+  - "Delete" posts _method=delete to the address URL (Shopify's way),
+    after a confirmation question (assets/customer.js).
+  - shopify_common.js (Shopify's own script) provides the country → state
+    lists used by the forms.
+
+  Used in:   templates/customers/addresses.json
+  Snippets:  snippets/customer-nav.liquid, snippets/customer-address-form.liquid
+  CSS:       assets/customer.css (classes .customer*, .customer-addresses*, .customer-dialog*)
+             assets/global-account.css (form fields)
+  JS:        assets/customer.js (dialogs, delete confirm, country/state)
+  Text:      locales → customer.addresses.*, customer.fields.*
+  ============================================================================
+{%- endcomment -%}
+
+{%- comment -%} Shopify's helper for the country → state select (Shopify.CountryProvinceSelector) {%- endcomment -%}
+<script src="{{ 'shopify_common.js' | shopify_asset_url }}" defer></script>
+
+<section class="page-width customer customer-addresses">
+  <a href="{{ routes.account_url }}" class="customer-back">
+    {% render 'global-icon', name: 'arrow-left', size: 16 %}
+    {{ 'customer.order.back' | t }}
+  </a>
+
+  <header class="customer-page-head">
+    <h1 class="customer-page-head__title">{{ 'customer.addresses.title' | t }}</h1>
+    <p class="customer-muted">{{ 'customer.addresses.intro' | t }}</p>
+  </header>
+
+  <div class="customer__layout">
+    {% render 'customer-nav', current: 'addresses' %}
+
+    <div class="customer__content">
+      {%- paginate customer.addresses by 12 -%}
+        <ul class="customer-addresses__grid" role="list">
+          {%- comment -%} ---------- Saved addresses ---------- {%- endcomment -%}
+          {%- for address in customer.addresses -%}
+            {%- liquid
+              assign is_default = false
+              if address.id == customer.default_address.id
+                assign is_default = true
+              endif
+              assign dialog_id = 'AddressDialog_' | append: address.id
+            -%}
+            <li class="customer-address-card{% if is_default %} is-default{% endif %}">
+              {%- if is_default -%}
+                <span class="customer-badge customer-badge--paid">{{ 'customer.addresses.default' | t }}</span>
+              {%- endif -%}
+              <address class="customer-address">{{ address | format_address }}</address>
+
+              <div class="customer-address-card__actions">
+                <button
+                  type="button"
+                  class="button button--outline button--sm customer-chip"
+                  data-dialog-open="{{ dialog_id }}"
+                  aria-label="{{ 'customer.addresses.edit_label' | t: number: forloop.index }}"
+                >
+                  {% render 'global-icon', name: 'edit', size: 16 %}
+                  {{ 'customer.addresses.edit' | t }}
+                </button>
+                {%- comment -%} Delete: a small form posting _method=delete (confirmed by customer.js) {%- endcomment -%}
+                <form
+                  method="post"
+                  action="{{ address.url }}"
+                  data-address-delete
+                  data-confirm="{{ 'customer.addresses.delete_confirm' | t }}"
+                >
+                  <input type="hidden" name="_method" value="delete">
+                  <button
+                    type="submit"
+                    class="button button--outline button--sm customer-chip customer-chip--danger"
+                    aria-label="{{ 'customer.addresses.delete_label' | t: number: forloop.index }}"
+                  >
+                    {% render 'global-icon', name: 'trash', size: 16 %}
+                    {{ 'customer.addresses.delete' | t }}
+                  </button>
+                </form>
+              </div>
+
+              {%- comment -%} Edit popup (opens on load if this form came back with errors) {%- endcomment -%}
+              {%- capture edit_form -%}
+                {%- form 'customer_address', address, class: 'account-form' -%}
+                  {%- if form.errors -%}{%- assign edit_failed = true -%}{%- endif -%}
+                  {% render 'customer-address-form', form: form %}
+                {%- endform -%}
+              {%- endcapture -%}
+              <dialog
+                class="customer-dialog"
+                id="{{ dialog_id }}"
+                aria-labelledby="{{ dialog_id }}_Title"
+                {% if edit_failed %}data-open-on-load{% endif %}
+              >
+                <div class="customer-dialog__head">
+                  <h2 class="customer-dialog__title" id="{{ dialog_id }}_Title">{{ 'customer.addresses.edit_title' | t }}</h2>
+                  <button type="button" class="customer-dialog__close" data-dialog-close aria-label="{{ 'customer.popup.close' | t }}">
+                    {% render 'global-icon', name: 'close', size: 20 %}
+                  </button>
+                </div>
+                {{ edit_form }}
+              </dialog>
+              {%- assign edit_failed = false -%}
+            </li>
+          {%- endfor -%}
+
+          {%- comment -%} ---------- "Add new address" tile ---------- {%- endcomment -%}
+          <li>
+            <button type="button" class="customer-address-add" data-dialog-open="AddressDialog_new">
+              <span class="customer-address-add__icon" aria-hidden="true">{% render 'global-icon', name: 'plus', size: 24 %}</span>
+              {{ 'customer.addresses.add' | t }}
+            </button>
+          </li>
+        </ul>
+
+        {%- if customer.addresses.size == 0 -%}
+          <p class="customer-muted customer-addresses__empty">{{ 'customer.addresses.empty' | t }}</p>
+        {%- endif -%}
+
+        {%- comment -%} Pagination (more than 12 addresses) {%- endcomment -%}
+        {%- if paginate.pages > 1 -%}
+          <nav class="customer-pagination" aria-label="{{ 'collections.pagination_label' | t }}">
+            {%- if paginate.previous -%}
+              <a href="{{ paginate.previous.url }}" class="customer-pagination__arrow" aria-label="{{ 'collections.previous_page' | t }}">
+                {% render 'global-icon', name: 'chevron-left', size: 16 %}
+              </a>
+            {%- endif -%}
+            {%- for part in paginate.parts -%}
+              {%- if part.is_link -%}
+                <a href="{{ part.url }}" class="customer-pagination__page">{{ part.title }}</a>
+              {%- elsif part.title == paginate.current_page -%}
+                <span class="customer-pagination__page is-current" aria-current="page">{{ part.title }}</span>
+              {%- else -%}
+                <span class="customer-pagination__page">{{ part.title }}</span>
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if paginate.next -%}
+              <a href="{{ paginate.next.url }}" class="customer-pagination__arrow" aria-label="{{ 'collections.next_page' | t }}">
+                {% render 'global-icon', name: 'chevron-right', size: 16 %}
+              </a>
+            {%- endif -%}
+          </nav>
+        {%- endif -%}
+      {%- endpaginate -%}
+
+      {%- comment -%} ---------- "Add new address" popup ---------- {%- endcomment -%}
+      {%- capture new_form -%}
+        {%- form 'customer_address', customer.new_address, class: 'account-form' -%}
+          {%- if form.errors -%}{%- assign new_failed = true -%}{%- endif -%}
+          {% render 'customer-address-form', form: form %}
+        {%- endform -%}
+      {%- endcapture -%}
+      <dialog
+        class="customer-dialog"
+        id="AddressDialog_new"
+        aria-labelledby="AddressDialog_new_Title"
+        {% if new_failed %}data-open-on-load{% endif %}
+      >
+        <div class="customer-dialog__head">
+          <h2 class="customer-dialog__title" id="AddressDialog_new_Title">{{ 'customer.addresses.add_title' | t }}</h2>
+          <button type="button" class="customer-dialog__close" data-dialog-close aria-label="{{ 'customer.popup.close' | t }}">
+            {% render 'global-icon', name: 'close', size: 20 %}
+          </button>
+        </div>
+        {{ new_form }}
+      </dialog>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  No settings: the content is the customer's addresses.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Customer addresses",
+  "tag": "div",
+  "class": "section-customer-addresses",
+  "enabled_on": {
+    "templates": ["customers/addresses"]
+  },
+  "settings": []
+}
+{% endschema %}

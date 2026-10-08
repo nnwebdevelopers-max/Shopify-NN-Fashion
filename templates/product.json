@@ -1,0 +1,93 @@
+/*
+ * ============================================================================
+ * Template: Product page (product.json)
+ * ----------------------------------------------------------------------------
+ * Default template for every product (/products/<handle>).
+ *
+ * Sections (top → bottom):
+ *   main            → sections/product-main.liquid (gallery + info + add to cart)
+ *   details         → sections/product-details.liquid (tabs + close-up image)
+ *   recommendations → sections/product-recommendations.liquid ("You may also like")
+ *
+ * Trust badge texts and tab titles below are starting content: edit them in
+ * Theme editor > Products > Default product.
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "product-main",
+      "blocks": {
+        "trust-shipping": {
+          "type": "trust",
+          "settings": { "icon": "truck", "title": "Free shipping", "text": "On orders over $99" }
+        },
+        "trust-returns": {
+          "type": "trust",
+          "settings": { "icon": "return", "title": "Easy returns", "text": "30-day return policy" }
+        },
+        "trust-payment": {
+          "type": "trust",
+          "settings": { "icon": "lock", "title": "Secure payment", "text": "100% secure checkout" }
+        }
+      },
+      "block_order": ["trust-shipping", "trust-returns", "trust-payment"],
+      "settings": {
+        "image_ratio": "portrait",
+        "enable_zoom": true,
+        "sticky_info": true,
+        "show_badge": true,
+        "show_rating": true,
+        "show_short_description": true,
+        "short_description_words": 30,
+        "show_dynamic_checkout": false
+      }
+    },
+    "details": {
+      "type": "product-details",
+      "blocks": {
+        "tab-details": {
+          "type": "description",
+          "settings": {
+            "title": "Details",
+            "highlights": "Premium quality fabric\nComfortable everyday fit\nEasy care: machine washable"
+          }
+        },
+        "tab-materials": {
+          "type": "text",
+          "settings": {
+            "title": "Materials",
+            "content": "<p>Tell shoppers what the product is made of and how to care for it.</p>"
+          }
+        },
+        "tab-fit": {
+          "type": "text",
+          "settings": {
+            "title": "Size & Fit",
+            "content": "<p>Model is 6'1\" and wears size M. Fits true to size; choose one size up for a looser fit.</p>"
+          }
+        },
+        "tab-shipping": {
+          "type": "page",
+          "settings": { "title": "Shipping & Returns" }
+        }
+      },
+      "block_order": ["tab-details", "tab-materials", "tab-fit", "tab-shipping"],
+      "settings": {
+        "use_product_image": true
+      }
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "limit": 4,
+        "columns_desktop": 4,
+        "image_ratio": "portrait"
+      }
+    }
+  },
+  "order": ["main", "details", "recommendations"]
+}

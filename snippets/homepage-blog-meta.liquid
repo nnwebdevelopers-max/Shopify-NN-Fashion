@@ -1,0 +1,34 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Homepage blog meta (date · author line)
+  ----------------------------------------------------------------------------
+  The small "14 Aug 2024 · Team Dinosaur" line above an article title.
+  time_tag prints the date in the shop's language and date format.
+  Renders nothing when both parts are switched off.
+
+  Parameters:
+  - article      {Article}  required
+  - show_date    {Boolean}  show the publish date
+  - show_author  {Boolean}  show the author
+
+  Usage:
+  {% render 'homepage-blog-meta', article: article, show_date: true, show_author: true %}
+
+  Used in:  sections/homepage-blog-posts.liquid (featured article + list)
+  CSS:      assets/homepage.css → "9. Blog posts" (class .blog-posts__meta)
+  ============================================================================
+{%- endcomment -%}
+
+{%- if show_date or show_author -%}
+  <p class="blog-posts__meta">
+    {%- if show_date -%}
+      {{ article.published_at | time_tag: format: 'date' }}
+    {%- endif -%}
+    {%- if show_date and show_author -%}
+      <span aria-hidden="true"> · </span>
+    {%- endif -%}
+    {%- if show_author -%}
+      <span>{{ article.author | escape }}</span>
+    {%- endif -%}
+  </p>
+{%- endif -%}

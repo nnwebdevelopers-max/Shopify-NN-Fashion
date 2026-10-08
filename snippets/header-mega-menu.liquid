@@ -1,0 +1,124 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Header mega menu (one dropdown panel)
+  ----------------------------------------------------------------------------
+  Full-width dropdown under a main menu item (desktop only):
+
+    ┌──────────────────────────────────────────────────────────────────────┐
+    │ FEATURED CATEGORIES   TRENDING STYLES    SHOP BY FIT   ┌ promo card ┐│
+    │ ─────────────────     ───────────────    ───────────   │ BADGE      ││
+    │ Link                  Link               Link          │ TITLE      ││
+    │ Link                  Link               Link          │ Text       ││
+    │ Link                  Link               Link          │ [ BUTTON ] ││
+    │                                                        └────────────┘│
+    └──────────────────────────────────────────────────────────────────────┘
+
+  How the menu (Shopify admin > Content > Menus) becomes columns:
+  - Child links WITH their own links (3rd level) → one column each:
+      heading = child link, list = its links
+  - Child links WITHOUT their own links → grouped into one column,
+      headed by the top-level item's title (placed first)
+  The promo card comes from a "Mega menu promo" block in the Header section
+  whose "Menu item" matches this item's title.
+
+  Parameters:
+  - link   {Link}   required, the top-level menu link
+  - promo  {Block}  optional, "mega_promo" block from sections/header.liquid
+
+  Used in:  sections/header.liquid
+  CSS:      assets/header.css → "4. Main menu" (classes .mega-menu*)
+  JS:       none (opens with CSS :hover / :focus-within)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Are there child links without their own sub-links? They share one column.
+  assign has_simple_children = false
+  for child in link.links
+    if child.links.size == 0
+      assign has_simple_children = true
+    endif
+  endfor
+-%}
+
+<div class="mega-menu">
+  <div class="mega-menu__inner{% if promo %} mega-menu__inner--has-promo{% endif %}">
+    {%- comment -%} ---------- Link columns ---------- {%- endcomment -%}
+    {%- if link.links.size > 0 -%}
+      <div class="mega-menu__columns">
+        {%- comment -%} Column of plain child links, headed by the top-level title {%- endcomment -%}
+        {%- if has_simple_children -%}
+          <div class="mega-menu__column">
+            <a href="{{ link.url }}" class="mega-menu__heading">{{ link.title | escape }}</a>
+            <ul class="mega-menu__list" role="list">
+              {%- for child in link.links -%}
+                {%- if child.links.size == 0 -%}
+                  <li>
+                    <a href="{{ child.url }}" class="mega-menu__link"{% if child.active %} aria-current="page"{% endif %}>
+                      {{- child.title | escape -}}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} One column per child link that has its own links {%- endcomment -%}
+        {%- for child in link.links -%}
+          {%- if child.links.size > 0 -%}
+            <div class="mega-menu__column">
+              <a href="{{ child.url }}" class="mega-menu__heading"{% if child.active %} aria-current="page"{% endif %}>
+                {{- child.title | escape -}}
+              </a>
+              <ul class="mega-menu__list" role="list">
+                {%- for grandchild in child.links -%}
+                  <li>
+                    <a href="{{ grandchild.url }}" class="mega-menu__link"{% if grandchild.active %} aria-current="page"{% endif %}>
+                      {{- grandchild.title | escape -}}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      ---------- Promo card (optional) ----------
+      Colors come from the block settings; optional background image sits
+      under a dark layer so the text stays readable.
+    {%- endcomment -%}
+    {%- if promo -%}
+      <div
+        class="mega-menu__promo{% if promo.settings.image != blank %} mega-menu__promo--has-image{% endif %}"
+        style="--promo-card-bg: {{ promo.settings.background_color }}; --promo-card-text: {{ promo.settings.text_color }}; --promo-card-badge: {{ promo.settings.badge_color }};"
+        {{ promo.shopify_attributes }}
+      >
+        {%- if promo.settings.image != blank -%}
+          {{ promo.settings.image | image_url: width: 800 | image_tag: loading: 'lazy', widths: '400, 600, 800', sizes: '380px', alt: '', class: 'mega-menu__promo-image' }}
+        {%- endif -%}
+
+        <div class="mega-menu__promo-content">
+          {%- if promo.settings.badge != blank -%}
+            <span class="mega-menu__promo-badge">{{ promo.settings.badge | escape }}</span>
+          {%- endif -%}
+          {%- if promo.settings.title != blank -%}
+            <p class="mega-menu__promo-title">{{ promo.settings.title | escape }}</p>
+          {%- endif -%}
+          {%- if promo.settings.text != blank -%}
+            <p class="mega-menu__promo-text">{{ promo.settings.text | escape }}</p>
+          {%- endif -%}
+          {%- if promo.settings.button_label != blank and promo.settings.button_link != blank -%}
+            <a href="{{ promo.settings.button_link }}" class="button button--light button--full mega-menu__promo-button">
+              {{- promo.settings.button_label | escape -}}
+              {% render 'global-icon', name: 'arrow-right', size: 16 %}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>

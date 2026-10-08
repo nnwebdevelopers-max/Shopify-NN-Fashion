@@ -1,0 +1,78 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Global compare float (floating "Compare (3)" button)
+  ----------------------------------------------------------------------------
+  A tab fixed to the side of the screen, at the vertical middle:
+
+                                              ┌────┐
+                                              │ ⇄  │
+                                              │ (3)│  ← number of products in compare
+                                              │ C  │
+                                              │ o  │  ← "Compare", written vertically
+                                              │ m… │
+                                              └────┘
+  - Hidden until the shopper adds a product to compare; slides in then,
+    "pops" when the number changes, slides out when compare is emptied.
+  - Click → opens the compare page in a NEW TAB (target="_blank").
+    Page: the page with the handle "compare" (/pages/compare).
+  - 🗑 button under the tab: clears the whole compare list (no page change).
+  - Not shown on the compare page itself.
+  Phones: a smaller tab with the icon and number only.
+
+  Settings: Theme settings > Product cards > "Floating compare button" (on/off)
+            and "Floating compare button position" (right / left edge)
+
+  Used in:  layout/theme.liquid
+  CSS:      assets/global-product-card.css → "Floating compare button" (.compare-float*)
+  JS:       assets/global-product-card.js → updateCompareFloat()
+            (shows/hides it and sets the number from the saved compare list)
+  Text:     locales → compare.float_text, compare.float_label,
+            compare.float_clear, compare.float_cleared
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # The compare page: /pages/compare (or wherever the "compare" page lives)
+  assign compare_url = pages.compare.url | default: '/pages/compare'
+-%}
+
+{%- if settings.compare_float_enable and settings.card_show_compare and template.suffix != 'compare' -%}
+  {%- comment -%}
+    Wrapper (fixed to the screen edge) holding two controls side by side in
+    the tab — a link can't contain a button, so they are siblings:
+    1. the link to the compare page (new tab)
+    2. the 🗑 "Clear compare list" button (global-product-card.js empties
+       the list, the tab slides out and a toast confirms)
+  {%- endcomment -%}
+  <div
+    class="compare-float compare-float--{{ settings.compare_float_position | default: 'right' }}"
+    data-compare-float
+    hidden
+  >
+    <a
+      href="{{ compare_url }}"
+      target="_blank"
+      rel="noopener"
+      class="compare-float__link"
+      aria-label="{{ 'compare.float_label' | t: number: 0 }}"
+      data-compare-float-link
+      data-text-label="{{ 'compare.float_label' | t: number: '[number]' }}"
+    >
+      <span class="compare-float__icon" aria-hidden="true">
+        {% render 'global-icon', name: 'compare', size: 20 %}
+        <span class="compare-float__count" data-compare-total>0</span>
+      </span>
+      <span class="compare-float__text" aria-hidden="true">{{ 'compare.float_text' | t }}</span>
+    </a>
+    <button
+      type="button"
+      class="compare-float__clear"
+      aria-label="{{ 'compare.float_clear' | t }}"
+      title="{{ 'compare.float_clear' | t }}"
+      data-compare-float-clear
+      data-text-cleared="{{ 'compare.float_cleared' | t }}"
+    >
+      {% render 'global-icon', name: 'trash', size: 16 %}
+    </button>
+  </div>
+{%- endif -%}

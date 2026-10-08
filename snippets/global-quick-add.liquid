@@ -1,0 +1,120 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Global quick add (popup + toast + texts for product-card actions)
+  ----------------------------------------------------------------------------
+  Rendered ONCE per page by layout/theme.liquid, at the end of <body>.
+  Contains:
+  1. The quick-add popup shell. assets/global-product-card.js fills it when
+     a product with options is added from a product card:
+
+        ┌───────────────────────────────────┐
+        │ [img] Twill Overshirt     $79.00 ✕│
+        │ COLOR: Olive   (●)(●)             │
+        │ SIZE: Choose   [S][M][L̶][XL]      │
+        │ QUANTITY       [−] 1 [+]          │
+        │ [        ADD TO CART         ]    │
+        └───────────────────────────────────┘
+     Desktop: centered popup. Phones: sheet from the bottom.
+
+  2. The toast ("Added to cart: …") shown after wishlist / compare / cart actions.
+
+  3. A JSON block with everything the script needs from Liquid:
+     translated texts (locales → products.card_actions.*), shop money format,
+     cart URLs, the color option names (Theme settings > Product cards), the
+     swatch color list (snippets/global-swatch-color.liquid, "cream" →
+     #f3ead8 …, incl. Theme settings > Product cards > Custom swatch colors), the
+     compare limit and the wishlist sign-in rules (Theme settings > Customer
+     accounts). Placeholders like [product] are filled in by the script.
+
+     Wishlist sign-in:
+     - customerId:          signed-in customer's id, null when signed out
+     - wishlistPerCustomer: "Wishlist for signed-in customers only" is on →
+                            each customer gets their own saved list
+     - wishlistLocked:      that setting is on, accounts are enabled and
+                            nobody is signed in → ♡ opens the sign-in popup
+
+  Used in:  layout/theme.liquid
+  CSS:      assets/global-product-card.css → "Quick-add popup", "Toast"
+  JS:       assets/global-product-card.js
+  ============================================================================
+{%- endcomment -%}
+
+{%- comment -%} ---------- 1. Quick-add popup (hidden until opened) ---------- {%- endcomment -%}
+<div class="quick-add" data-quick-add hidden>
+  <div class="quick-add__scrim" data-quick-add-close></div>
+  <div
+    class="quick-add__dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="QuickAddTitle"
+    tabindex="-1"
+    data-quick-add-dialog
+  >
+    {%- comment -%} Filled by global-product-card.js; the loading text shows while the product loads {%- endcomment -%}
+    <div class="quick-add__body" data-quick-add-body>
+      <p class="quick-add__loading">{{ 'products.card_actions.loading' | t }}</p>
+    </div>
+  </div>
+</div>
+
+{%- comment -%} ---------- 2. Toast (live region: screen readers announce its text) ---------- {%- endcomment -%}
+<div class="card-toast" data-card-toast role="status" aria-live="polite" hidden>
+  <span class="card-toast__icon" aria-hidden="true">{% render 'global-icon', name: 'check', size: 16 %}</span>
+  <span data-card-toast-text></span>
+</div>
+
+{%- comment -%}
+  ---------- 3. Data for global-product-card.js ----------
+  JSON (not executed). Texts use [placeholders] the script replaces.
+{%- endcomment -%}
+{%- liquid
+  assign wishlist_per_customer = false
+  if settings.wishlist_require_login and shop.customer_accounts_enabled
+    assign wishlist_per_customer = true
+  endif
+  assign wishlist_locked = false
+  if wishlist_per_customer and customer == nil
+    assign wishlist_locked = true
+  endif
+-%}
+<script type="application/json" id="ProductCardData">
+  {
+    "customerId": {{ customer.id | json }},
+    "wishlistPerCustomer": {{ wishlist_per_customer | json }},
+    "wishlistLocked": {{ wishlist_locked | json }},
+    "accountLoginUrl": {{ routes.account_login_url | json }},
+    "moneyFormat": {{ shop.money_format | json }},
+    "cartAddUrl": {{ routes.cart_add_url | append: '.js' | json }},
+    "cartUrl": {{ routes.cart_url | append: '.js' | json }},
+    "cartChangeUrl": {{ routes.cart_change_url | append: '.js' | json }},
+    "cartUpdateUrl": {{ routes.cart_update_url | append: '.js' | json }},
+    "cartPageUrl": {{ routes.cart_url | json }},
+    "colorOptionNames": {{ settings.card_color_option_names | downcase | json }},
+    "swatchColors": {%- render 'global-swatch-color', json: true -%},
+    "compareLimit": {{ settings.card_compare_limit | default: 4 }},
+    "text": {
+      "wishlist": {{ 'products.card_actions.wishlist' | t | json }},
+      "wishlistRemove": {{ 'products.card_actions.wishlist_remove' | t | json }},
+      "compare": {{ 'products.card_actions.compare' | t | json }},
+      "compareRemove": {{ 'products.card_actions.compare_remove' | t | json }},
+      "addToCart": {{ 'products.card_actions.add_to_cart' | t | json }},
+      "chooseOption": {{ 'products.card_actions.choose_option' | t: option: '[option]' | json }},
+      "soldOut": {{ 'products.sold_out' | t | json }},
+      "unavailable": {{ 'products.card_actions.unavailable' | t | json }},
+      "quantity": {{ 'products.card_actions.quantity' | t | json }},
+      "decrease": {{ 'products.card_actions.decrease' | t | json }},
+      "increase": {{ 'products.card_actions.increase' | t | json }},
+      "close": {{ 'products.card_actions.close' | t | json }},
+      "loading": {{ 'products.card_actions.loading' | t | json }},
+      "regularPrice": {{ 'products.regular_price' | t | json }},
+      "addedToCart": {{ 'products.card_actions.added_to_cart' | t: product: '[product]' | json }},
+      "addedToWishlist": {{ 'products.card_actions.added_to_wishlist' | t: product: '[product]' | json }},
+      "removedFromWishlist": {{ 'products.card_actions.removed_from_wishlist' | t: product: '[product]' | json }},
+      "addedToCompare": {{ 'products.card_actions.added_to_compare' | t: product: '[product]' | json }},
+      "removedFromCompare": {{ 'products.card_actions.removed_from_compare' | t: product: '[product]' | json }},
+      "compareFull": {{ 'products.card_actions.compare_full' | t: limit: '[limit]' | json }},
+      "loginForWishlist": {{ 'products.card_actions.login_for_wishlist' | t | json }},
+      "error": {{ 'products.card_actions.error' | t | json }}
+    }
+  }
+</script>

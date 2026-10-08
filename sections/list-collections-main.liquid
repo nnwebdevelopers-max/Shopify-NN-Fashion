@@ -1,0 +1,213 @@
+{%- comment -%}
+  ============================================================================
+  Section: All collections page (/collections)
+  ----------------------------------------------------------------------------
+      ┌──────────────────────────────────────────────────────────────────┐
+      │       ── SHOP BY CATEGORY ──     C O L L E C T I O N S  (huge,   │
+      │          ALL COLLECTIONS          outlined, slides sideways)     │
+      │      45 collections to explore                                   │
+      └──────────────────────────────────────────────────────────────────┘
+      [ 🔍 Find a collection…            ]                 Sort [A–Z ▾]
+      ┌──────────────┐┌──────┐┌──────┐
+      │              ││ card ││ card │   photo cards: product count,
+      │  big card    │└──────┘└──────┘   title, "Shop now →";
+      │              │┌──────┐┌──────┐   first card large (mosaic)
+      └──────────────┘└──────┘└──────┘
+                         ← 1 2 3 →
+
+  - Collections: the ones picked in "Collections" (in that order), else
+    every collection in the store (paginated, Shopify's A–Z order).
+    Empty collections can be hidden.
+  - "Find a collection" filters the cards on this page as you type; "Sort"
+    reorders them (assets/list-collections.js). Without JavaScript both
+    tools stay hidden and the grid works as is.
+  - Card photo: the collection image (admin), else its first product's
+    image, else a placeholder drawing.
+
+  Animated (GSAP, assets/global-scroll-animations.js → initListCollections):
+  title words rise, eyebrow / count / tools pop in, the outlined word slides
+  with the scroll, cards rise in groups while their photos unveil.
+
+  Used in:   templates/list-collections.json ("main")
+  CSS:       assets/list-collections.css
+  JS:        assets/list-collections.js (find + sort),
+             assets/global-scroll-animations.js (motion)
+  Text:      locales → list_collections.*, collections.product_count,
+             collections.* (pagination labels)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  if section.settings.heading != blank
+    assign heading = section.settings.heading
+  else
+    assign heading = 'list_collections.title' | t
+  endif
+
+  case section.settings.image_ratio
+    when 'square'
+      assign card_ratio = '1 / 1'
+    when 'landscape'
+      assign card_ratio = '4 / 3'
+    else
+      assign card_ratio = '4 / 5'
+  endcase
+
+  assign cols = section.settings.columns_desktop
+  assign image_sizes = '(min-width: 990px) calc(min(100vw, 1200px) / ' | append: cols | append: '), (min-width: 750px) 33vw, 50vw'
+  assign use_picked = false
+  if section.settings.collection_list.size > 0
+    assign use_picked = true
+  endif
+-%}
+
+<section
+  class="lc{% if section.settings.mosaic %} lc--mosaic{% endif %}"
+  data-scroll-fx="list-collections-main"
+  data-list-collections
+  style="--lc-bg: {{ section.settings.hero_background }}; --lc-text: {{ section.settings.hero_text }}; --lc-accent: {{ section.settings.accent_color }}; --lc-cols: {{ cols }}; --lc-ratio: {{ card_ratio }};"
+>
+  {%- comment -%} ---------- Top band ---------- {%- endcomment -%}
+  <div class="lc-hero">
+    <div class="lc-hero__ghost" aria-hidden="true">
+      <span data-lc-ghost>{{ 'list_collections.title' | t }} &middot; {{ 'list_collections.title' | t }} &middot; {{ 'list_collections.title' | t }}</span>
+    </div>
+    <div class="page-width lc-hero__inner">
+      <p class="lc-hero__eyebrow" data-lc-pop>{{ 'list_collections.eyebrow' | t }}</p>
+      <h1 class="lc-hero__title" data-split>{{ heading | escape }}</h1>
+      {%- if section.settings.text != blank -%}
+        <div class="lc-hero__text" data-lc-pop>{{ section.settings.text }}</div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- comment -%} One list for both sources: picked collections or the paginated store list {%- endcomment -%}
+  {%- capture cards -%}
+    {%- if use_picked -%}
+      {%- for collection in section.settings.collection_list -%}
+        {%- render 'list-collections-card', collection: collection, index: forloop.index0, image_sizes: image_sizes, hide_empty: section.settings.hide_empty -%}
+      {%- endfor -%}
+    {%- else -%}
+      {%- paginate collections by section.settings.per_page -%}
+        {%- for collection in collections -%}
+          {%- render 'list-collections-card', collection: collection, index: forloop.index0, image_sizes: image_sizes, hide_empty: section.settings.hide_empty -%}
+        {%- endfor -%}
+        {%- if paginate.pages > 1 -%}
+          {%- capture pagination -%}
+            <nav class="pagination lc-pagination" aria-label="{{ 'collections.pagination_label' | t }}">
+              <ul class="pagination__list" role="list">
+                {%- if paginate.previous -%}
+                  <li><a href="{{ paginate.previous.url }}" class="pagination__link" aria-label="{{ 'collections.previous_page' | t }}">&larr;</a></li>
+                {%- endif -%}
+                {%- for part in paginate.parts -%}
+                  <li>
+                    {%- if part.is_link -%}
+                      <a href="{{ part.url }}" class="pagination__link">{{ part.title }}</a>
+                    {%- elsif part.title == paginate.current_page -%}
+                      <span class="pagination__link pagination__link--current" aria-current="page">{{ part.title }}</span>
+                    {%- else -%}
+                      <span class="pagination__link">{{ part.title }}</span>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+                {%- if paginate.next -%}
+                  <li><a href="{{ paginate.next.url }}" class="pagination__link" aria-label="{{ 'collections.next_page' | t }}">&rarr;</a></li>
+                {%- endif -%}
+              </ul>
+            </nav>
+          {%- endcapture -%}
+        {%- endif -%}
+        {%- assign total_count = paginate.items -%}
+      {%- endpaginate -%}
+    {%- endif -%}
+  {%- endcapture -%}
+  {%- liquid
+    if use_picked
+      assign total_count = section.settings.collection_list.size
+    endif
+    assign cards = cards | strip
+    # Hidden empty collections don't count: one page → count the cards shown
+    assign shown_count = cards | split: 'data-lc-card' | size | minus: 1
+    if shown_count < 0
+      assign shown_count = 0
+    endif
+    if use_picked or pagination == blank
+      assign total_count = shown_count
+    endif
+  -%}
+
+  <div class="page-width lc-body">
+    {%- comment -%} Tools: count, find box, sort (hidden until list-collections.js runs) {%- endcomment -%}
+    <div class="lc-tools">
+      <p class="lc-tools__count" data-lc-pop>{{ 'list_collections.count' | t: count: total_count }}</p>
+      <div class="lc-find" data-lc-find data-lc-pop hidden>
+        <label for="LcFind-{{ section.id }}" class="visually-hidden">{{ 'list_collections.find_label' | t }}</label>
+        {% render 'global-icon', name: 'search', size: 18 %}
+        <input id="LcFind-{{ section.id }}" class="lc-find__input" type="search" placeholder="{{ 'list_collections.find_placeholder' | t }}" autocomplete="off" data-lc-find-input>
+        <button type="button" class="lc-find__clear" data-lc-find-clear hidden aria-label="{{ 'list_collections.clear' | t }}">
+          {% render 'global-icon', name: 'close', size: 14 %}
+        </button>
+      </div>
+      <div class="lc-sort" data-lc-sort data-lc-pop hidden>
+        <label for="LcSort-{{ section.id }}">{{ 'list_collections.sort_label' | t }}</label>
+        <select id="LcSort-{{ section.id }}" data-lc-sort-select>
+          <option value="featured">{{ 'list_collections.sort_featured' | t }}</option>
+          <option value="az">{{ 'list_collections.sort_az' | t }}</option>
+          <option value="za">{{ 'list_collections.sort_za' | t }}</option>
+          <option value="count">{{ 'list_collections.sort_count' | t }}</option>
+        </select>
+      </div>
+    </div>
+
+    {%- if cards != blank -%}
+      <ul class="lc-grid" role="list" data-lc-grid>
+        {{ cards }}
+      </ul>
+      <p class="lc-empty" data-lc-none data-text="{{ 'list_collections.no_match' | t }}" hidden></p>
+      {{ pagination }}
+    {%- else -%}
+      <p class="lc-empty">{{ 'list_collections.empty' | t }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{%- comment -%}
+  Schema — settings: heading (empty → translated "All collections"), text,
+  collection_list (pick + order; empty → all), hide_empty, per_page,
+  columns_desktop, mosaic (first card large), image_ratio, colors.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "All collections",
+  "tag": "div",
+  "class": "section-list-collections-main",
+  "enabled_on": { "templates": ["list-collections"] },
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Leave empty for the translated default (\"All collections\")." },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>From everyday basics to statement pieces — pick a category and start exploring.</p>" },
+    { "type": "header", "content": "Collections" },
+    { "type": "collection_list", "id": "collection_list", "label": "Collections", "info": "Pick and order the collections to show. Leave empty to show every collection." },
+    { "type": "checkbox", "id": "hide_empty", "label": "Hide empty collections", "default": true },
+    { "type": "range", "id": "per_page", "label": "Collections per page", "min": 12, "max": 48, "step": 4, "default": 48 },
+    { "type": "header", "content": "Layout" },
+    { "type": "range", "id": "columns_desktop", "label": "Columns on desktop", "min": 3, "max": 5, "step": 1, "default": 4 },
+    { "type": "checkbox", "id": "mosaic", "label": "Large first card", "default": true },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Card shape",
+      "options": [
+        { "value": "portrait", "label": "Portrait (4:5)" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "landscape", "label": "Landscape (4:3)" }
+      ],
+      "default": "portrait"
+    },
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "hero_background", "label": "Top band background", "default": "#121212" },
+    { "type": "color", "id": "hero_text", "label": "Top band text", "default": "#FFFFFF" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#C8102E" }
+  ],
+  "presets": [{ "name": "All collections" }]
+}
+{% endschema %}

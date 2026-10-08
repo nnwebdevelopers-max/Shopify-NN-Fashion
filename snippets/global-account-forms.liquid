@@ -1,0 +1,358 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Global account forms (the sign-in / sign-up card)
+  ----------------------------------------------------------------------------
+  The whole sign-in card, shared by the popup and the login / register pages:
+
+      ┌──────────────┬─────────────────────────────────┐
+      │ dark panel   │ [ Sign in | Create account ]  ✕ │ ← tabs (sliding pill)
+      │ (heading,    │ Welcome back                    │
+      │  perks)      │ ┌ Email ───────────────────┐    │
+      │              │ ┌ Password ────────────👁──┐    │
+      │              │              Forgot password?   │
+      │              │ [ SIGN IN               → ]     │
+      │              │ New to NN Fashion? Create …     │
+      └──────────────┴─────────────────────────────────┘
+
+  Three views, one shown at a time (data-view on the card):
+    login    → Shopify form "customer_login"            (posts to /account/login)
+    register → Shopify form "create_customer"           (posts to /account)
+    recover  → Shopify form "recover_customer_password" (emails a reset link)
+  The tabs / links switch views without reloading (assets/global-account.js).
+  Without JavaScript the starting view still works.
+
+  Errors: a failed sign-in / sign-up reloads on Shopify's login / register
+  page, where this card shows the messages ({{ form.errors | default_errors }}).
+
+  New customer accounts (Shopify-hosted, passwordless): themes can't show
+  these forms, so the card shows one "Continue to sign in" button instead.
+  Chosen with Theme settings > Customer accounts > "Sign-in method"
+  (settings.account_forms: 'shopify' = hosted button, 'theme' = forms).
+
+  Parameters:
+  - context  {String}  'popup' (adds a close button, ids prefixed "Popup")
+                       or 'page' (default)
+  - view     {String}  starting view: 'login' (default), 'register', 'recover'
+
+  Used in:  snippets/global-account-popup.liquid, sections/customer-login.liquid,
+            sections/customer-register.liquid
+  CSS:      assets/global-account.css (classes .account-card*, .account-form*)
+  JS:       assets/global-account.js (views, tabs, password toggle, popup)
+  Text:     locales → customer.*
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign card_context = context | default: 'page'
+  assign current_view = view | default: 'login'
+
+  # Unique ids: the popup and the page card never appear on the same page,
+  # but separate prefixes keep labels pointing at the right inputs anyway
+  if card_context == 'popup'
+    assign id_prefix = 'Popup'
+  else
+    assign id_prefix = 'Page'
+  endif
+
+  # New customer accounts → Shopify's hosted sign-in (no theme forms).
+  # Liquid can't reliably tell which account system the store uses
+  # (/account/login looks the same for both), so the merchant picks it in
+  # Theme settings > Customer accounts > "Sign-in method". The URL check
+  # catches stores whose login link already points to Shopify's sign-in.
+  assign new_accounts = false
+  if settings.account_forms != 'theme' or routes.account_login_url contains 'customer_authentication'
+    assign new_accounts = true
+  endif
+
+  # Labels (render arguments can't use filters, so they're prepared here)
+  assign label_email = 'customer.fields.email' | t
+  assign label_password = 'customer.fields.password' | t
+  assign label_first_name = 'customer.fields.first_name' | t
+  assign label_last_name = 'customer.fields.last_name' | t
+
+  # Input ids, e.g. "PopupLoginEmail"
+  assign id_recover_email = id_prefix | append: 'RecoverEmail'
+  assign id_login_email = id_prefix | append: 'LoginEmail'
+  assign id_login_password = id_prefix | append: 'LoginPassword'
+  assign id_register_first = id_prefix | append: 'RegisterFirstName'
+  assign id_register_last = id_prefix | append: 'RegisterLastName'
+  assign id_register_email = id_prefix | append: 'RegisterEmail'
+  assign id_register_password = id_prefix | append: 'RegisterPassword'
+-%}
+
+{%- comment -%}
+  ---------- Recover view (built first) ----------
+  Built before the card so its result can choose the starting view: after
+  "Send reset link" Shopify reloads the login page, and the card should open
+  on the success message (or the error) instead of the sign-in form.
+{%- endcomment -%}
+{%- capture recover_view -%}
+  {%- form 'recover_customer_password', class: 'account-form', novalidate: 'novalidate' -%}
+    {%- liquid
+      if form.posted_successfully?
+        assign recover_done = true
+      endif
+      if form.errors
+        assign recover_failed = true
+      endif
+    -%}
+    <h2 class="account-form__title">{{ 'customer.recover.title' | t }}</h2>
+    <p class="account-form__subtitle">{{ 'customer.recover.subtitle' | t }}</p>
+
+    {%- if form.posted_successfully? -%}
+      <p class="account-form__success" role="status">
+        {% render 'global-icon', name: 'mail', size: 18 %}
+        {{ 'customer.recover.success' | t }}
+      </p>
+    {%- endif -%}
+    {%- if form.errors -%}
+      <div class="account-form__errors" role="alert">
+        <p>{{ 'customer.errors_title' | t }}</p>
+        {{ form.errors | default_errors }}
+      </div>
+    {%- endif -%}
+
+    {% render 'global-account-field',
+      id: id_recover_email,
+      name: 'email',
+      type: 'email',
+      label: label_email,
+      autocomplete: 'email',
+      required: true
+    %}
+
+    <button type="submit" class="button button--lg button--full account-form__submit">
+      <span>{{ 'customer.recover.submit' | t }}</span>
+      {% render 'global-icon', name: 'arrow-right', size: 18 %}
+    </button>
+
+    <p class="account-form__switch">
+      <a href="#login" class="account-form__link" data-account-switch="login">
+        {% render 'global-icon', name: 'arrow-left', size: 16 %}
+        {{ 'customer.recover.back' | t }}
+      </a>
+    </p>
+  {%- endform -%}
+{%- endcapture -%}
+
+{%- liquid
+  if recover_done or recover_failed
+    assign current_view = 'recover'
+  endif
+-%}
+
+<div
+  class="account-card account-card--{{ card_context }}"
+  data-account-card
+  data-view="{{ current_view }}"
+>
+  {% render 'global-account-panel' %}
+
+  <div class="account-card__main">
+    {%- comment -%} Popup only: close button (assets/global-account.js closes on [data-account-close]) {%- endcomment -%}
+    {%- if card_context == 'popup' -%}
+      <button type="button" class="account-card__close" aria-label="{{ 'customer.popup.close' | t }}" data-account-close>
+        {% render 'global-icon', name: 'close', size: 20 %}
+      </button>
+    {%- endif -%}
+
+    {%- comment -%} Why the popup opened, e.g. "Sign in to save products to your wishlist." (set by JS) {%- endcomment -%}
+    <p class="account-card__notice" data-account-notice hidden>
+      {% render 'global-icon', name: 'heart', size: 16 %}
+      <span data-account-notice-text></span>
+    </p>
+
+    {%- if new_accounts -%}
+      {%- comment -%} ---------- New customer accounts: hosted sign-in ---------- {%- endcomment -%}
+      <div class="account-form account-form--hosted">
+        <span class="account-form__badge" aria-hidden="true">{% render 'global-icon', name: 'lock', size: 26 %}</span>
+        <h2 class="account-form__title">{{ 'customer.popup.new_accounts_title' | t }}</h2>
+        <p class="account-form__subtitle">{{ 'customer.popup.new_accounts_text' | t }}</p>
+        <a href="{{ routes.account_login_url }}" class="button button--lg button--full account-form__submit">
+          <span>{{ 'customer.popup.new_accounts_button' | t }}</span>
+          {% render 'global-icon', name: 'arrow-right', size: 18 %}
+        </a>
+      </div>
+    {%- else -%}
+      {%- comment -%}
+        ---------- Tabs: Sign in | Create account ----------
+        Buttons with role="tab"; the pill behind them slides (CSS reads
+        data-view on the card). Hidden on the recover view.
+      {%- endcomment -%}
+      <div class="account-tabs" role="tablist" aria-label="{{ 'customer.tabs_label' | t }}">
+        <span class="account-tabs__pill" aria-hidden="true"></span>
+        <button
+          type="button"
+          class="account-tabs__tab"
+          role="tab"
+          id="{{ id_prefix }}TabLogin"
+          aria-controls="{{ id_prefix }}ViewLogin"
+          aria-selected="{% if current_view == 'login' %}true{% else %}false{% endif %}"
+          data-account-tab="login"
+        >
+          {{- 'customer.login.tab' | t -}}
+        </button>
+        <button
+          type="button"
+          class="account-tabs__tab"
+          role="tab"
+          id="{{ id_prefix }}TabRegister"
+          aria-controls="{{ id_prefix }}ViewRegister"
+          aria-selected="{% if current_view == 'register' %}true{% else %}false{% endif %}"
+          data-account-tab="register"
+        >
+          {{- 'customer.register.tab' | t -}}
+        </button>
+      </div>
+
+      {%- comment -%} ---------- Login view ---------- {%- endcomment -%}
+      <div
+        class="account-card__view"
+        id="{{ id_prefix }}ViewLogin"
+        role="tabpanel"
+        aria-labelledby="{{ id_prefix }}TabLogin"
+        data-account-view="login"
+        {% unless current_view == 'login' %}hidden{% endunless %}
+      >
+        {%- form 'customer_login', class: 'account-form', novalidate: 'novalidate' -%}
+          <h2 class="account-form__title">{{ 'customer.login.title' | t }}</h2>
+          <p class="account-form__subtitle">{{ 'customer.login.subtitle' | t }}</p>
+
+          {%- if form.errors -%}
+            <div class="account-form__errors" role="alert">
+              <p>{{ 'customer.errors_title' | t }}</p>
+              {{ form.errors | default_errors }}
+            </div>
+          {%- endif -%}
+
+          {% render 'global-account-field',
+            id: id_login_email,
+            name: 'customer[email]',
+            type: 'email',
+            label: label_email,
+            autocomplete: 'email',
+            required: true
+          %}
+          {% render 'global-account-field',
+            id: id_login_password,
+            name: 'customer[password]',
+            type: 'password',
+            label: label_password,
+            autocomplete: 'current-password',
+            required: true
+          %}
+
+          <a href="#recover" class="account-form__forgot" data-account-switch="recover">
+            {{- 'customer.login.forgot' | t -}}
+          </a>
+
+          {%- comment -%}
+            Popup: return to the page the shopper was on (JS updates the value,
+            e.g. to the wishlist page). Pages: Shopify's default (account page,
+            or checkout when they came from there).
+          {%- endcomment -%}
+          {%- if card_context == 'popup' -%}
+            <input type="hidden" name="return_to" value="{{ request.path }}" data-account-return>
+          {%- endif -%}
+
+          <button type="submit" class="button button--lg button--full account-form__submit">
+            <span>{{ 'customer.login.submit' | t }}</span>
+            {% render 'global-icon', name: 'arrow-right', size: 18 %}
+          </button>
+
+          <p class="account-form__switch">
+            {{ 'customer.login.switch_text' | t }}
+            <a href="{{ routes.account_register_url }}" class="account-form__link" data-account-switch="register">
+              {{- 'customer.login.switch_link' | t -}}
+            </a>
+          </p>
+        {%- endform -%}
+      </div>
+
+      {%- comment -%} ---------- Register view ---------- {%- endcomment -%}
+      <div
+        class="account-card__view"
+        id="{{ id_prefix }}ViewRegister"
+        role="tabpanel"
+        aria-labelledby="{{ id_prefix }}TabRegister"
+        data-account-view="register"
+        {% unless current_view == 'register' %}hidden{% endunless %}
+      >
+        {%- form 'create_customer', class: 'account-form', novalidate: 'novalidate' -%}
+          <h2 class="account-form__title">{{ 'customer.register.title' | t }}</h2>
+          <p class="account-form__subtitle">{{ 'customer.register.subtitle' | t }}</p>
+
+          {%- if form.errors -%}
+            <div class="account-form__errors" role="alert">
+              <p>{{ 'customer.errors_title' | t }}</p>
+              {{ form.errors | default_errors }}
+            </div>
+          {%- endif -%}
+
+          {%- comment -%} First + last name side by side {%- endcomment -%}
+          <div class="account-form__row">
+            {% render 'global-account-field',
+              id: id_register_first,
+              name: 'customer[first_name]',
+              label: label_first_name,
+              value: form.first_name,
+              autocomplete: 'given-name'
+            %}
+            {% render 'global-account-field',
+              id: id_register_last,
+              name: 'customer[last_name]',
+              label: label_last_name,
+              value: form.last_name,
+              autocomplete: 'family-name'
+            %}
+          </div>
+          {% render 'global-account-field',
+            id: id_register_email,
+            name: 'customer[email]',
+            type: 'email',
+            label: label_email,
+            value: form.email,
+            autocomplete: 'email',
+            required: true
+          %}
+          {% render 'global-account-field',
+            id: id_register_password,
+            name: 'customer[password]',
+            type: 'password',
+            label: label_password,
+            autocomplete: 'new-password',
+            required: true
+          %}
+
+          {%- comment -%} Newsletter opt-in (customer accepts marketing) {%- endcomment -%}
+          <label class="account-form__check">
+            <input type="checkbox" name="customer[accepts_marketing]" value="true">
+            <span class="account-form__checkmark" aria-hidden="true">{% render 'global-icon', name: 'check', size: 14 %}</span>
+            <span>{{ 'customer.register.newsletter' | t }}</span>
+          </label>
+
+          {%- if card_context == 'popup' -%}
+            <input type="hidden" name="return_to" value="{{ request.path }}" data-account-return>
+          {%- endif -%}
+
+          <button type="submit" class="button button--lg button--full account-form__submit">
+            <span>{{ 'customer.register.submit' | t }}</span>
+            {% render 'global-icon', name: 'arrow-right', size: 18 %}
+          </button>
+
+          <p class="account-form__switch">
+            {{ 'customer.register.switch_text' | t }}
+            <a href="{{ routes.account_login_url }}" class="account-form__link" data-account-switch="login">
+              {{- 'customer.register.switch_link' | t -}}
+            </a>
+          </p>
+        {%- endform -%}
+      </div>
+
+      {%- comment -%} ---------- Recover view (built at the top) ---------- {%- endcomment -%}
+      <div class="account-card__view" data-account-view="recover" {% unless current_view == 'recover' %}hidden{% endunless %}>
+        {{ recover_view }}
+      </div>
+    {%- endif -%}
+  </div>
+</div>

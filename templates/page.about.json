@@ -1,0 +1,148 @@
+/*
+ * ============================================================================
+ * Template: About page (page.about.json) — animated About us page
+ * ----------------------------------------------------------------------------
+ * Assign it in Shopify admin: Online Store > Pages > About us > Theme
+ * template: "about". (Preview without assigning: /pages/about-us?view=about)
+ *
+ * Sections (top → bottom), each with a GSAP scroll effect (assets/global-scroll-animations.js):
+ *   hero        → sections/about-hero.liquid        (card → full-screen photo)
+ *   why         → sections/about-split.liquid       (curtain wipe + parallax)
+ *   marquee     → sections/about-marquee.liquid     (scroll-driven text band)
+ *   values      → sections/about-stack.liquid       (stacking cards)
+ *   collection  → sections/about-horizontal.liquid  (horizontal scroll gallery)
+ *   quote       → sections/about-quote.liquid       (scroll-filled quote)
+ *   cta         → sections/about-cta.liquid         (zooming background, magnetic buttons)
+ * The page's own content from admin is not shown here: all text and images
+ * are edited in the theme editor. Images point to files in Content > Files.
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "about-hero",
+      "blocks": {
+        "float-1": { "type": "float", "settings": { "image": "shopify:\/\/shop_images\/photo-1529139574466-a303027c1d8b_07fb9522-30e0-4861-a641-de148de545dc.jpg" } },
+        "float-2": { "type": "float", "settings": { "image": "shopify:\/\/shop_images\/photo-1517841905240-472988babdf9_6a381994-0630-4ecf-941b-9d6fb3ba522f.jpg" } },
+        "float-3": { "type": "float", "settings": { "image": "shopify:\/\/shop_images\/photo-1490481651871-ab68de25d43d_e0a6c406-4da5-4a87-9a71-91f0f3f9e93f.jpg" } },
+        "float-4": { "type": "float", "settings": { "image": "shopify:\/\/shop_images\/photo-1525507119028-ed4c629a60a3_562f9089-89e4-459a-acf0-718b9984cb98.jpg" } }
+      },
+      "block_order": ["float-1", "float-2", "float-3", "float-4"],
+      "settings": {
+        "eyebrow": "Our story",
+        "heading": "Clothes made for real days, not just the photo.",
+        "text": "<p>We design easy, everyday pieces that look good, feel good and fit into the life you already live.</p>",
+        "image": "shopify:\/\/shop_images\/photo-1516762689617-e1cffcef479d_388c7393-ee09-40fb-8858-f840023d5676.jpg",
+        "overlay_heading": "Made for real life.",
+        "overlay_text": "Pieces that pair with each other, move with you and still look right at the end of a long day.",
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "why": {
+      "type": "about-split",
+      "settings": {
+        "eyebrow": "Why we exist",
+        "heading": "Less fuss in the morning. More of you in what you wear.",
+        "text": "<p>Getting dressed shouldn't feel like a puzzle. We started this label to make a wardrobe that simply works: pieces that pair with each other, move with you and still look right at the end of a long day.</p><p>Most of what we make is unisex. Good clothing doesn't need a label telling you who it's for, so we cut for comfort and let you decide how to wear it.</p>",
+        "image": "shopify:\/\/shop_images\/photo-1529139574466-a303027c1d8b_07fb9522-30e0-4861-a641-de148de545dc.jpg",
+        "image_position": "right",
+        "badge": "Unisex by design",
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "marquee": {
+      "type": "about-marquee",
+      "blocks": {
+        "item-1": { "type": "item", "settings": { "text": "Made for everyone" } },
+        "item-2": { "type": "item", "settings": { "text": "Built to last" } },
+        "item-3": { "type": "item", "settings": { "text": "Easy to style" } },
+        "item-4": { "type": "item", "settings": { "text": "Honest pricing" } }
+      },
+      "block_order": ["item-1", "item-2", "item-3", "item-4"],
+      "settings": {
+        "speed": 26,
+        "tilt": -2,
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "values": {
+      "type": "about-stack",
+      "blocks": {
+        "card-1": { "type": "card", "settings": { "icon": "🤝", "title": "Made for everyone", "text": "Unisex cuts and a wide size range, so the whole household can share the closet.", "card_color": "#2F3A2F", "card_text_color": "#F6F3EC" } },
+        "card-2": { "type": "card", "settings": { "icon": "🧵", "title": "Built to last", "text": "Sturdy fabrics and careful finishing for pieces you'll reach for season after season.", "card_color": "#B8734F", "card_text_color": "#FFFFFF" } },
+        "card-3": { "type": "card", "settings": { "icon": "🎨", "title": "Easy to style", "text": "A calm palette of blacks, creams, olives and stones that mixes without a second thought.", "card_color": "#E9E2D3", "card_text_color": "#2F3A2F" } },
+        "card-4": { "type": "card", "settings": { "icon": "🏷️", "title": "Honest pricing", "text": "Fair prices for good quality, with no inflated tags or endless fake sales.", "card_color": "#121212", "card_text_color": "#F6F3EC" } }
+      },
+      "block_order": ["card-1", "card-2", "card-3", "card-4"],
+      "settings": {
+        "eyebrow": "What we stand for",
+        "heading": "Four things we never compromise on",
+        "text": "<p>The promises behind every piece we make.</p>",
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "collection": {
+      "type": "about-horizontal",
+      "blocks": {
+        "card-1": { "type": "card", "settings": { "image": "shopify:\/\/shop_images\/photo-1517841905240-472988babdf9_6a381994-0630-4ecf-941b-9d6fb3ba522f.jpg", "title": "Everyday essentials", "text": "Tees, hoodies and sweats you'll live in." } },
+        "card-2": { "type": "card", "settings": { "image": "shopify:\/\/shop_images\/photo-1490481651871-ab68de25d43d_e0a6c406-4da5-4a87-9a71-91f0f3f9e93f.jpg", "title": "Layers & outerwear", "text": "Denim, vests and jackets for any forecast." } },
+        "card-3": { "type": "card", "settings": { "image": "shopify:\/\/shop_images\/photo-1525507119028-ed4c629a60a3_562f9089-89e4-459a-acf0-718b9984cb98.jpg", "title": "Finishing touches", "text": "Bags, belts, watches and more." } },
+        "card-4": { "type": "card", "settings": { "image": "shopify:\/\/shop_images\/photo-1516762689617-e1cffcef479d_388c7393-ee09-40fb-8858-f840023d5676.jpg", "title": "Weekend comfort", "text": "Soft knits and easy layers for slow days." } }
+      },
+      "block_order": ["card-1", "card-2", "card-3", "card-4"],
+      "settings": {
+        "eyebrow": "The collection",
+        "heading": "Everything you need, nothing you don't",
+        "text": "<p>Tees, hoodies and sweatshirts. Jackets for changing weather. Sneakers, bags and the small accessories that finish a look.</p>",
+        "button_label": "Shop the collection",
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "quote": {
+      "type": "about-quote",
+      "settings": {
+        "quote": "We'd rather you buy one piece you love for years than five you forget by next month.",
+        "caption": "Our promise to you",
+        "serif": true,
+        "background_color": "#E9E2D3",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "cta": {
+      "type": "about-cta",
+      "settings": {
+        "heading": "Find your new favourite",
+        "text": "<p>Browse the full collection, or get in touch. We read every message and are always happy to help with sizing and styling.</p>",
+        "image": "shopify:\/\/shop_images\/photo-1490481651871-ab68de25d43d_e0a6c406-4da5-4a87-9a71-91f0f3f9e93f.jpg",
+        "image_dim": 50,
+        "button_label": "Shop the collection",
+        "button_2_label": "Contact us",
+        "button_2_link": "\/pages\/contact",
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    }
+  },
+  "order": ["hero", "why", "marquee", "values", "collection", "quote", "cta"]
+}

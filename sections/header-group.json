@@ -1,0 +1,120 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+/*
+ * ============================================================================
+ * Section group: Header (header-group.json)
+ * ----------------------------------------------------------------------------
+ * Sections shown at the top of every page, in this order:
+ *   1. top-bar   → sections/header-top-bar.liquid   (menu, announcement, phone, currency)
+ *   2. header    → sections/header.liquid           (search, logo, icons, main menu;
+ *                                                    blocks: mega menu promo cards)
+ *   3. promo-bar → sections/header-promo-bar.liquid (red deal bar)
+ *
+ * Rendered by layout/theme.liquid. Merchants can reorder, hide or add
+ * header-enabled sections in Theme editor > Header.
+ *
+ * Note: Shopify replaces this comment with its own when the group is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "type": "header",
+  "name": "Header group",
+  "sections": {
+    "top-bar": {
+      "type": "header-top-bar",
+      "blocks": {
+        "announcement-1": {
+          "type": "announcement",
+          "settings": {
+            "text": "Stay ahead of the style curve with our latest arrivals.",
+            "link_label": "Discover Now",
+            "link": "shopify://collections/all"
+          }
+        }
+      },
+      "block_order": ["announcement-1"],
+      "settings": {
+        "autoplay": true,
+        "autoplay_speed": 5,
+        "show_close_button": true,
+        "show_phone": true,
+        "show_country_selector": true,
+        "show_language_selector": false,
+        "background_color": "#1c1c1e",
+        "text_color": "#ffffff",
+        "muted_color": "#a3a3a3"
+      }
+    },
+    "header": {
+      "type": "header",
+      "blocks": {
+        "mega-promo-1": {
+          "type": "mega_promo",
+          "settings": {
+            "menu_item": "All product",
+            "badge": "Limited drop",
+            "title": "Streetwear essentials 2024",
+            "text": "Get up to 30% discount on first bundle orders.",
+            "button_label": "Shop collection",
+            "button_link": "shopify://collections/all",
+            "background_color": "#1c1c1e",
+            "text_color": "#ffffff",
+            "badge_color": "#c8102e"
+          }
+        }
+      },
+      "block_order": ["mega-promo-1"],
+      "settings": {
+        "logo_text": "",
+        "tagline": "",
+        "logo_width": 200,
+        "logo_width_mobile": 130,
+        "show_search": true,
+        "search_min_chars": 3,
+        "search_product_limit": 8,
+        "search_show_collections": true,
+        "search_show_popular": true,
+        "search_popular_terms": "t-shirt, jeans, shoes, dress, jacket, watch, bag, hat, glasses",
+        "search_show_history": true,
+        "menu": "main-menu",
+        "highlight_links": "On sale",
+        "highlight_color": "#c8102e",
+        "icon_labels": "beside",
+        "show_account": true,
+        "show_gift_link": true,
+        "show_cart_total": true,
+        "cart_background": "#c8102e",
+        "cart_text_color": "#ffffff",
+        "drawer_show_phone": true,
+        "drawer_show_localization": true,
+        "sticky": false,
+        "background_color": "#ffffff",
+        "text_color": "#121212",
+        "border_color": "#ececec"
+      }
+    },
+    "promo-bar": {
+      "type": "header-promo-bar",
+      "settings": {
+        "highlight_text": "UP TO + 30% OFF OUTLET!",
+        "text": "It's Mystery - Deal Time",
+        "button_label": "Shop now",
+        "button_link": "shopify://collections/all",
+        "background": "linear-gradient(90deg, #a51a1a 0%, #7a0b0b 50%, #2b0a0a 100%)",
+        "text_color": "#ffffff",
+        "highlight_color": "#ffc43d",
+        "button_background": "#c8102e",
+        "button_text_color": "#ffffff"
+      }
+    }
+  },
+  "order": ["top-bar", "header", "promo-bar"]
+}

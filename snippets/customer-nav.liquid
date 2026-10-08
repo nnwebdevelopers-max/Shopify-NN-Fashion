@@ -1,0 +1,65 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Customer nav (account side menu)
+  ----------------------------------------------------------------------------
+  Menu beside the account pages; a scrollable row of pills on phones.
+
+      ┌─────────────────────┐
+      │ ▍(👤) Dashboard     │  ← current page: red bar + dark text
+      │  (📍) Addresses     │
+      │  (♡) Wishlist       │  ← only when a page with the handle "wishlist" exists
+      │ ─────────────────── │
+      │  (⇥) Log out        │
+      └─────────────────────┘
+
+  Parameters:
+  - current  {String}  'dashboard' | 'addresses' (marks that link as the current page;
+                       the order page passes 'dashboard', where orders are listed)
+
+  Used in:  sections/customer-account.liquid, sections/customer-addresses.liquid,
+            sections/customer-order.liquid
+  CSS:      assets/customer.css → "Side menu" (classes .customer-nav*)
+  Text:     locales → customer.account.nav_*
+  ============================================================================
+{%- endcomment -%}
+
+{%- assign wishlist_url = pages.wishlist.url -%}
+
+<nav class="customer-nav" aria-label="{{ 'customer.account.nav_label' | t }}">
+  <ul class="customer-nav__list" role="list">
+    <li>
+      <a
+        href="{{ routes.account_url }}"
+        class="customer-nav__link"
+        {% if current == 'dashboard' %}aria-current="page"{% endif %}
+      >
+        {% render 'global-icon', name: 'account', size: 18 %}
+        {{ 'customer.account.nav_dashboard' | t }}
+      </a>
+    </li>
+    <li>
+      <a
+        href="{{ routes.account_addresses_url }}"
+        class="customer-nav__link"
+        {% if current == 'addresses' %}aria-current="page"{% endif %}
+      >
+        {% render 'global-icon', name: 'map-pin', size: 18 %}
+        {{ 'customer.account.nav_addresses' | t }}
+      </a>
+    </li>
+    {%- if wishlist_url != blank -%}
+      <li>
+        <a href="{{ wishlist_url }}" class="customer-nav__link">
+          {% render 'global-icon', name: 'heart', size: 18 %}
+          {{ 'customer.account.nav_wishlist' | t }}
+        </a>
+      </li>
+    {%- endif -%}
+    <li class="customer-nav__logout">
+      <a href="{{ routes.account_logout_url }}" class="customer-nav__link">
+        {% render 'global-icon', name: 'logout', size: 18 %}
+        {{ 'customer.account.nav_logout' | t }}
+      </a>
+    </li>
+  </ul>
+</nav>

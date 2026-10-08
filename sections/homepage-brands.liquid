@@ -1,0 +1,299 @@
+{%- comment -%}
+  ============================================================================
+  Section: Homepage brands (logo strip)
+  ----------------------------------------------------------------------------
+  A row of brand logos, optionally as a slider with dots:
+
+      WRANGLER   BLACK MAN   Calvin Klein   MOORES   REEBOK   TOMMY
+                              ● ○ ○
+
+  Each logo is a block: logo image (or the brand name as text when no image
+  is set) + optional link. Logos can be shown grey until hovered.
+  Layout "Slider": a swipeable row with dots (and optional autoplay) when
+  there are more logos than fit; "Grid": logos wrap onto more rows.
+
+  Used in:   templates/index.json ("brands")
+  CSS:       assets/homepage.css → "10. Brands" (classes .brands*)
+  JS:        assets/homepage.js → ScrollSlider (slider layout only)
+  Text:      locales → homepage.brands.label, general.slider.go_to_page
+  Editable:  Theme editor > Home page > Brands
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign is_slider = false
+  if section.settings.layout == 'slider'
+    assign is_slider = true
+  endif
+
+  # Screen-reader name: the heading, or the translated default
+  if section.settings.heading != blank
+    assign section_label = section.settings.heading
+  else
+    assign section_label = 'homepage.brands.label' | t
+  endif
+-%}
+
+{%- if section.blocks.size > 0 -%}
+  {%- comment -%}
+    Wrapper. Logos per row, logo height and colors come from settings as CSS
+    custom properties. Modifiers: brands--grayscale, brands--border (top line).
+  {%- endcomment -%}
+  <section
+    class="brands{% if section.settings.grayscale %} brands--grayscale{% endif %}{% if section.settings.show_border %} brands--border{% endif %}"
+    style="
+      --brands-bg: {{ section.settings.background_color }};
+      --brands-text: {{ section.settings.text_color }};
+      --brands-accent: {{ section.settings.accent_color }};
+      --brands-cols: {{ section.settings.per_row_desktop }};
+      --brands-cols-mobile: {{ section.settings.per_row_mobile }};
+      --brands-logo-height: {{ section.settings.logo_height }}px;
+      --brands-padding-top: {{ section.settings.padding_top }}px;
+      --brands-padding-bottom: {{ section.settings.padding_bottom }}px;
+    "
+    aria-label="{{ section_label | escape }}"
+  >
+    <div class="page-width">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="brands__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      {%- comment -%}
+        Slider: same ScrollSlider as the collection tabs (data-scroll-slider);
+        it builds the dots and hides them when all logos fit.
+      {%- endcomment -%}
+      <div
+        class="brands__wrapper{% if is_slider %} brands__wrapper--slider{% endif %}"
+        {% if is_slider %}
+          data-scroll-slider
+          data-dot-class="brands__dot"
+          data-autoplay="{{ section.settings.autoplay }}"
+          data-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+          data-text-go-to="{{ 'general.slider.go_to_page' | t: number: '[number]' }}"
+        {% endif %}
+      >
+        <ul class="brands__list" role="list" {% if is_slider %}data-slider-track{% endif %}>
+          {%- for block in section.blocks -%}
+            {%- liquid
+              assign brand_name = block.settings.name | default: ''
+              # Link wrapper only when a link is set
+              if block.settings.link != blank
+                assign tag = 'a'
+              else
+                assign tag = 'div'
+              endif
+            -%}
+            <li class="brands__item" {{ block.shopify_attributes }}>
+              <{{ tag }} class="brands__logo"{% if block.settings.link != blank %} href="{{ block.settings.link }}"{% endif %}>
+                {%- if block.settings.logo != blank -%}
+                  {%- comment -%} Logo image; the brand name is its alt text {%- endcomment -%}
+                  {{ block.settings.logo | image_url: height: 160 | image_tag: loading: 'lazy', alt: brand_name, class: 'brands__image' }}
+                {%- else -%}
+                  {%- comment -%} No image → the brand name as text {%- endcomment -%}
+                  <span class="brands__name">{{ brand_name | escape }}</span>
+                {%- endif -%}
+              </{{ tag }}>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        {%- if is_slider -%}
+          {%- comment -%} Dots are built by homepage.js (one per page of logos) {%- endcomment -%}
+          <div class="brands__dots" data-slider-dots></div>
+        {%- endif -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["index"] → home page only.
+  Settings:
+  - Content:  heading (optional)
+  - Layout:   layout (slider / grid), per_row_desktop (3–8), per_row_mobile (2–4),
+              autoplay + autoplay_speed (slider only), logo_height
+  - Style:    grayscale (grey until hover), show_border (thin line on top)
+  - Colors:   background_color, text_color (text logos), accent_color (active dot)
+  - Spacing:  padding_top, padding_bottom
+  Blocks (max 20):
+  - brand → logo (image), name (alt text / shown when no image), link
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Brands",
+  "tag": "div",
+  "class": "section-homepage-brands",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "max_blocks": 20,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Optional. Leave empty to hide."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "slider", "label": "Slider with dots" },
+        { "value": "grid", "label": "Grid (all logos, multiple rows)" }
+      ],
+      "default": "slider"
+    },
+    {
+      "type": "range",
+      "id": "per_row_desktop",
+      "label": "Logos per row on desktop",
+      "min": 3,
+      "max": 8,
+      "step": 1,
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "per_row_mobile",
+      "label": "Logos per row on mobile",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Slide automatically",
+      "default": true,
+      "visible_if": "{{ section.settings.layout == 'slider' }}"
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Change every",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 4,
+      "visible_if": "{{ section.settings.layout == 'slider' and section.settings.autoplay }}"
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Logo height",
+      "min": 20,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "checkbox",
+      "id": "grayscale",
+      "label": "Grey logos (color on hover)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show line above",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text logos",
+      "info": "Used for brands without a logo image.",
+      "default": "#555555"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Active dot",
+      "default": "#c8102e"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    }
+  ],
+  "blocks": [
+    {
+      "type": "brand",
+      "name": "Brand",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Logo",
+          "info": "Transparent PNG or SVG works best."
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Brand name",
+          "info": "Used as the logo's alt text, or shown as text when there is no logo image.",
+          "default": "Brand"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Optional, e.g. a collection with this brand's products."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brands",
+      "blocks": [
+        { "type": "brand" },
+        { "type": "brand" },
+        { "type": "brand" },
+        { "type": "brand" },
+        { "type": "brand" },
+        { "type": "brand" }
+      ]
+    }
+  ]
+}
+{% endschema %}

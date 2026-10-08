@@ -1,0 +1,391 @@
+{%- comment -%}
+  ============================================================================
+  Section: Footer
+  ----------------------------------------------------------------------------
+  Site footer shown at the bottom of every page.
+
+    CONTACT US        NAVIGATE      SHOP          TOP BRANDS    SUBSCRIBE…
+    198 Galley St…    Link          Link          Link          Sign up to be…
+    +1(800)…          Link          Link          Link          [email    ][→]
+    (f)(ig)(p)(yt)    Link          Link          View all
+    ───────────────────────────────────────────────────────────────────────
+    © 2024 Store name. Powered by Shopify          [VISA][MASTERCARD][PAYPAL]
+
+  Top area: one column per block (add / remove / reorder in the editor):
+  - contact    → heading, address, phone, email, social icons
+  - menu       → heading, menu links, optional accent link ("View all")
+  - text       → heading, rich text
+  - newsletter → heading, text, email signup (Shopify customer form: the
+                 email is saved in Shopify admin > Customers, subscribed to
+                 email marketing)
+  Bottom bar: copyright, optional "Powered by Shopify", payment icons
+  (the payment methods enabled in Shopify admin > Settings > Payments).
+
+  Social links: Theme settings > Social media (an icon only shows when its
+  link is filled in). Phone: falls back to Theme settings > Contact.
+
+  Used in:   sections/footer-group.json (rendered by layout/theme.liquid)
+  CSS:       assets/footer.css (classes .site-footer*)
+  JS:        none
+  Text:      locales → footer.*
+  Editable:  Theme editor > Footer > Footer
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Social networks, in display order. Each one's link is the Theme setting
+  # "social_<name>" (Theme settings > Social media); empty links are skipped.
+  assign social_networks = 'facebook,instagram,pinterest,youtube,tiktok,x' | split: ','
+-%}
+
+{%- comment -%}
+  Footer wrapper. Colors and column count come from section settings via
+  CSS custom properties (--footer-columns = number of blocks, max 5 per row).
+{%- endcomment -%}
+<footer
+  class="site-footer"
+  style="
+    --footer-bg: {{ section.settings.background_color }};
+    --footer-text: {{ section.settings.text_color }};
+    --footer-heading: {{ section.settings.heading_color }};
+    --footer-accent: {{ section.settings.accent_color }};
+    --footer-columns: {{ section.blocks.size | at_most: 5 | at_least: 1 }};
+    --footer-padding-top: {{ section.settings.padding_top }}px;
+  "
+>
+  <div class="page-width">
+    {%- comment -%} ---------- Columns (only rendered when at least one block exists) ---------- {%- endcomment -%}
+    {%- if section.blocks.size > 0 -%}
+      <div class="site-footer__blocks">
+        {%- for block in section.blocks -%}
+          {%- comment -%} One column per block; shopify_attributes enables click-to-select in the editor {%- endcomment -%}
+          <div class="site-footer__block site-footer__block--{{ block.type }}" {{ block.shopify_attributes }}>
+            {%- comment -%} Column heading (shared by all block types) {%- endcomment -%}
+            {%- if block.settings.heading != blank -%}
+              <h2 class="site-footer__heading">{{ block.settings.heading | escape }}</h2>
+            {%- endif -%}
+
+            {%- case block.type -%}
+              {%- when 'contact' -%}
+                {%- comment -%} ---------- Contact: address, phone, email, social icons ---------- {%- endcomment -%}
+                {%- if block.settings.address != blank -%}
+                  <p class="site-footer__address">{{ block.settings.address | escape | newline_to_br }}</p>
+                {%- endif -%}
+
+                {%- comment -%} Phone: this block's number, else the store phone (Theme settings > Contact) {%- endcomment -%}
+                {%- assign phone = block.settings.phone | default: settings.contact_phone -%}
+                {%- if phone != blank -%}
+                  {%- assign phone_digits = phone | remove: ' ' | remove: '(' | remove: ')' | remove: '-' -%}
+                  <p class="site-footer__contact-line">
+                    <a href="tel:{{ phone_digits }}" class="site-footer__phone">{{ phone | escape }}</a>
+                  </p>
+                {%- endif -%}
+
+                {%- if block.settings.email != blank -%}
+                  <p class="site-footer__contact-line">
+                    <a href="mailto:{{ block.settings.email | escape }}">{{ block.settings.email | escape }}</a>
+                  </p>
+                {%- endif -%}
+
+                {%- comment -%} Social icons: one per filled-in link in Theme settings > Social media {%- endcomment -%}
+                {%- if block.settings.show_social -%}
+                  {%- capture social_items -%}
+                    {%- for network in social_networks -%}
+                      {%- assign setting_id = 'social_' | append: network -%}
+                      {%- assign social_url = settings[setting_id] -%}
+                      {%- if social_url != blank -%}
+                        {%- assign social_name_key = 'footer.social.' | append: network -%}
+                        <li>
+                          <a href="{{ social_url | escape }}" class="site-footer__social-link" target="_blank" rel="noopener">
+                            {% render 'global-icon', name: network, size: 16 %}
+                            <span class="visually-hidden">{{ social_name_key | t }}</span>
+                          </a>
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  {%- endcapture -%}
+                  {%- if social_items != blank -%}
+                    <ul class="site-footer__social" role="list" aria-label="{{ 'footer.social_label' | t }}">{{ social_items }}</ul>
+                  {%- endif -%}
+                {%- endif -%}
+
+              {%- when 'menu' -%}
+                {%- comment -%} ---------- Menu: links + optional accent link (e.g. "View all") ---------- {%- endcomment -%}
+                {%- assign menu = block.settings.menu -%}
+                {%- if menu != blank and menu.links.size > 0 or block.settings.link_label != blank -%}
+                  <ul class="site-footer__menu" role="list">
+                    {%- for link in menu.links -%}
+                      <li><a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title | escape }}</a></li>
+                    {%- endfor -%}
+                    {%- if block.settings.link_label != blank and block.settings.link != blank -%}
+                      <li><a href="{{ block.settings.link }}" class="site-footer__accent-link">{{ block.settings.link_label | escape }}</a></li>
+                    {%- endif -%}
+                  </ul>
+                {%- endif -%}
+
+              {%- when 'text' -%}
+                {%- comment -%} ---------- Text: rich text (already wrapped in <p> tags by Shopify) ---------- {%- endcomment -%}
+                <div class="site-footer__text">{{ block.settings.text }}</div>
+
+              {%- when 'newsletter' -%}
+                {%- comment -%}
+                  ---------- Newsletter signup ----------
+                  Shopify's customer form: creates/updates a customer with this email,
+                  subscribed to email marketing, tagged "newsletter". After submitting,
+                  the page reloads at #<form id> with a success or error message.
+                {%- endcomment -%}
+                {%- if block.settings.text != blank -%}
+                  <p class="site-footer__newsletter-text">{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+
+                {%- assign form_id = 'FooterNewsletter-' | append: block.id -%}
+                {%- form 'customer', id: form_id, class: 'site-footer__newsletter' -%}
+                  <input type="hidden" name="contact[tags]" value="newsletter">
+                  <div class="site-footer__newsletter-field">
+                    <label class="visually-hidden" for="{{ form_id }}-email">{{ 'footer.newsletter.email_label' | t }}</label>
+                    <input
+                      id="{{ form_id }}-email"
+                      class="site-footer__newsletter-input"
+                      type="email"
+                      name="contact[email]"
+                      value="{{ form.email }}"
+                      placeholder="{{ 'footer.newsletter.placeholder' | t }}"
+                      autocomplete="email"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      required
+                      {% if form.errors %}aria-invalid="true" aria-describedby="{{ form_id }}-message"{% endif %}
+                    >
+                    <button type="submit" class="button button--sm button--icon site-footer__newsletter-button" aria-label="{{ 'footer.newsletter.submit' | t }}">
+                      {% render 'global-icon', name: 'arrow-right', size: 18 %}
+                    </button>
+                  </div>
+
+                  {%- comment -%} Result after submitting (Shopify's own error texts are already translated) {%- endcomment -%}
+                  {%- if form.posted_successfully? -%}
+                    <p id="{{ form_id }}-message" class="site-footer__newsletter-message site-footer__newsletter-message--success" role="status">
+                      {{ 'footer.newsletter.success' | t }}
+                    </p>
+                  {%- elsif form.errors -%}
+                    <p id="{{ form_id }}-message" class="site-footer__newsletter-message site-footer__newsletter-message--error" role="alert">
+                      {{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}
+                    </p>
+                  {%- endif -%}
+                {%- endform -%}
+            {%- endcase -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} ---------- Bottom bar: © year + copyright text, payment icons ---------- {%- endcomment -%}
+    <div class="site-footer__bottom">
+      <p class="site-footer__copyright">
+        &copy; {{ 'now' | date: '%Y' }}
+        {{ section.settings.copyright_text | default: shop.name | escape }}.
+        {%- if section.settings.show_powered_by %} {{ powered_by_link }}{% endif -%}
+      </p>
+
+      {%- comment -%} Payment icons: Shopify's icons for the store's enabled payment methods {%- endcomment -%}
+      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <ul class="site-footer__payments" role="list" aria-label="{{ 'footer.payment_label' | t }}">
+          {%- for type in shop.enabled_payment_types -%}
+            <li>{{ type | payment_type_svg_tag: class: 'site-footer__payment-icon' }}</li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.groups: ["footer"] → this section can only be added to the footer group.
+  Settings: copyright_text (empty → store name), show_powered_by, show_payment_icons,
+            background_color, text_color, heading_color, accent_color, padding_top
+  Blocks (max 6):
+  - contact    → heading, address, phone (empty → Theme settings > Contact), email, show_social
+  - menu       → heading, menu (link list), link_label + link (accent link, e.g. "View all")
+  - text       → heading, text (rich text)
+  - newsletter → heading, text
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Footer",
+  "tag": "section",
+  "class": "section-footer",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright text",
+      "info": "Leave empty to use the store name."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_powered_by",
+      "label": "Show \"Powered by Shopify\"",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Show payment icons",
+      "info": "Icons of the payment methods enabled in Settings > Payments.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#bdbdbd"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "info": "Accent links (\"View all\") and the newsletter button.",
+      "default": "#c8102e"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 16,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "contact",
+      "name": "Contact",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Contact us"
+        },
+        {
+          "type": "textarea",
+          "id": "address",
+          "label": "Address",
+          "default": "198 Galley Street, 1740-street, 12040 NY"
+        },
+        {
+          "type": "text",
+          "id": "phone",
+          "label": "Phone",
+          "info": "Leave empty to use the store phone from Theme settings > Contact."
+        },
+        {
+          "type": "text",
+          "id": "email",
+          "label": "Email"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_social",
+          "label": "Show social media icons",
+          "info": "Add your links in Theme settings > Social media.",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "name": "Menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Quick links"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "info": "Create menus in Shopify admin > Content > Menus, e.g. a \"Top brands\" menu."
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Extra link label",
+          "info": "Optional accent-colored link after the menu, e.g. \"View all\"."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Extra link"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "About us"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Share a few words about your brand.</p>"
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Subscribe our newsletters"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Sign up to be the first to hear about new products, restocks, and more!"
+        },
+        {
+          "type": "paragraph",
+          "content": "Subscribers are added to Shopify admin > Customers, subscribed to email marketing and tagged \"newsletter\"."
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

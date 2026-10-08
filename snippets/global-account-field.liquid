@@ -1,0 +1,68 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Global account field (one input with a floating label)
+  ----------------------------------------------------------------------------
+  One form field used by every sign-in / account form:
+
+      ┌───────────────────────────┐        ┌───────────────────────────┐
+      │ Email                     │  →     │ EMAIL                     │
+      │                           │ typing │ jane@example.com          │
+      └───────────────────────────┘        └───────────────────────────┘
+  The label sits inside the box and floats up on focus or once there is a
+  value (CSS: the input has placeholder=" " so :placeholder-shown works).
+  Password fields get a show/hide button (assets/global-account.js).
+
+  Parameters:
+  - id            {String}  required, unique input id
+  - name          {String}  required, e.g. "customer[email]"
+  - label         {String}  required, translated label text
+  - type          {String}  optional: text (default), email, password, tel
+  - value         {String}  optional, starting value (e.g. after a form error)
+  - autocomplete  {String}  optional, e.g. "email", "current-password"
+  - required      {Boolean} optional
+  - autofocus     {Boolean} optional
+
+  Usage:
+  {% render 'global-account-field', id: 'LoginEmail', name: 'customer[email]', type: 'email', label: email_label, autocomplete: 'email', required: true %}
+
+  Used in:  snippets/global-account-forms.liquid, sections/customer-activate.liquid,
+            sections/customer-reset-password.liquid, sections/customer-addresses.liquid
+  CSS:      assets/global-account.css → "Fields" (classes .account-field*)
+  JS:       assets/global-account.js → password show/hide ([data-password-toggle])
+  ============================================================================
+{%- endcomment -%}
+
+{%- assign field_type = type | default: 'text' -%}
+
+<div class="account-field{% if field_type == 'password' %} account-field--password{% endif %}">
+  <input
+    class="account-field__input"
+    type="{{ field_type }}"
+    id="{{ id }}"
+    name="{{ name }}"
+    value="{{ value | escape }}"
+    placeholder=" "
+    {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+    {% if field_type == 'email' %}autocapitalize="off" spellcheck="false"{% endif %}
+    {% if required %}required aria-required="true"{% endif %}
+    {% if autofocus %}autofocus{% endif %}
+  >
+  <label class="account-field__label" for="{{ id }}">{{ label }}</label>
+
+  {%- comment -%} Password: show/hide toggle (texts swapped by global-account.js) {%- endcomment -%}
+  {%- if field_type == 'password' -%}
+    <button
+      type="button"
+      class="account-field__toggle"
+      aria-controls="{{ id }}"
+      aria-pressed="false"
+      aria-label="{{ 'customer.fields.show_password' | t }}"
+      data-password-toggle
+      data-text-show="{{ 'customer.fields.show_password' | t }}"
+      data-text-hide="{{ 'customer.fields.hide_password' | t }}"
+    >
+      <span class="account-field__eye">{% render 'global-icon', name: 'eye', size: 18 %}</span>
+      <span class="account-field__eye-off">{% render 'global-icon', name: 'eye-off', size: 18 %}</span>
+    </button>
+  {%- endif -%}
+</div>

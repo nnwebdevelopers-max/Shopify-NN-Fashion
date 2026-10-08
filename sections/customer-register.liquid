@@ -1,0 +1,45 @@
+{%- comment -%}
+  ============================================================================
+  Section: Customer register (create-account page, /account/register)
+  ----------------------------------------------------------------------------
+  Shopify's sign-up page, in the same design as the sign-in popup:
+  the card from snippets/global-account-forms.liquid, starting on
+  "Create account" (first / last name, email, password, newsletter opt-in).
+
+  - If the account can't be created (e.g. email already used), Shopify
+    reloads this page and the card shows its messages, keeping the names
+    and email typed in.
+  - After signing up the customer is signed in and sent to their account.
+
+  Used in:   templates/customers/register.json
+  Snippets:  snippets/global-account-forms.liquid (+ panel, field)
+  CSS:       assets/global-account.css (classes .account-page, .account-card*)
+  JS:        assets/global-account.js (views, password toggle)
+  Text:      locales → customer.*
+  ============================================================================
+{%- endcomment -%}
+
+<div class="page-width account-page">
+  {% render 'global-account-forms', context: 'page', view: 'register' %}
+</div>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  No section settings: the side panel is set in Theme settings > Customer accounts.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Customer register",
+  "tag": "section",
+  "class": "section-customer-register",
+  "enabled_on": {
+    "templates": ["customers/register"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Side panel image, heading, text and perks: Theme settings > Customer accounts."
+    }
+  ]
+}
+{% endschema %}

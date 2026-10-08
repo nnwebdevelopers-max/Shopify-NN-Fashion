@@ -1,0 +1,324 @@
+/* ============================================================================
+   header-search.css — Header search bar + results popup
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (every page)
+
+   Styles for:
+   1. Search bar        → snippets/header-search.liquid       (.header-search*)
+   2. Popup & groups    → snippets/header-search.liquid       (.search-popup*)
+   3. Results           → sections/header-search-results.liquid   (.predictive-search*)
+
+   The popup is positioned against .site-header__main (header.css), so it
+   spans the full header width. header-search.js sets its "top" to the
+   search bar's bottom edge, so it touches the bar with no gap.
+   Its height is limited to the space left on screen (--search-popup-max-height,
+   also set by header-search.js); longer results scroll inside it.
+
+   States (classes added by header-search.js on .header-search):
+   - .is-open     → popup visible, close (×) button shown
+   - .is-loading  → results being fetched (results fade)
+   ============================================================================ */
+
+
+/* ==========================================================================
+   1. Search bar
+   ========================================================================== */
+
+/* Rounded "pill" field: [×] [input] [🔍] */
+.header-search__form {
+  position: relative;
+  z-index: 46; /* above the overlay, so it stays usable while the popup is open */
+  display: flex;
+  align-items: center;
+  max-width: 380px;
+  border: 1px solid #e3e3e3;
+  border-radius: 999px;
+  background: #f5f5f5;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.header-search__form:focus-within {
+  border-color: #121212;
+  background: #ffffff;
+}
+
+.header-search__input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 0 11px 20px;
+  border: 0;
+  background: transparent;
+  color: #121212;
+  font: inherit;
+  font-size: 16px; /* 16px stops iOS zooming in on focus */
+  outline: none;
+}
+/* Hide the browser's own clear (×) in search inputs; we have our own */
+.header-search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.header-search__submit,
+.header-search__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 0;
+  background: none;
+  color: #555555;
+  cursor: pointer;
+}
+.header-search__submit:hover,
+.header-search__close:hover {
+  color: #121212;
+}
+
+/* Close (×) on the left: only while the popup is open */
+.header-search__close {
+  display: none;
+  padding-right: 0;
+}
+.header-search.is-open .header-search__close {
+  display: inline-flex;
+}
+.header-search.is-open .header-search__input {
+  padding-left: 10px;
+}
+
+/* Mobile: search bar uses the full row */
+@media (max-width: 989px) {
+  .header-search__form {
+    max-width: none;
+  }
+}
+
+
+/* ==========================================================================
+   2. Popup
+   ========================================================================== */
+
+/* Full header width, scrolls when tall.
+   top: 100% is only the fallback; JS replaces it with the search bar's bottom edge. */
+.search-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  max-height: var(--search-popup-max-height, 75vh);
+  overflow-y: auto;
+  overscroll-behavior: contain; /* scrolling inside doesn't scroll the page */
+  background: #ffffff;
+  color: #121212;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  text-align: left;
+}
+.search-popup[hidden] {
+  display: none;
+}
+
+/* Mobile: edge to edge (cancels the 16px page gutter) */
+@media (max-width: 989px) {
+  .search-popup {
+    left: -16px;
+    right: -16px;
+  }
+}
+
+/* Dim layer over the page while the popup is open */
+.search-popup__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  background: rgba(0, 0, 0, 0.35);
+}
+.search-popup__overlay[hidden] {
+  display: none;
+}
+
+/* ---------- Groups: Popular Search / Your Search History ---------- */
+.search-popup__group {
+  padding: 16px 20px;
+  border-bottom: 1px solid #ececec;
+}
+.search-popup__group[hidden] {
+  display: none;
+}
+.search-popup__group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.search-popup__group-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Eye / trash button on the right */
+.search-popup__group-action {
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: #121212;
+  cursor: pointer;
+}
+
+/* Eye button: shows "eye" while chips are visible, "eye-off" when hidden */
+.search-popup__icon-hide { display: none; }
+.search-popup__group.is-collapsed .search-popup__icon-show { display: none; }
+.search-popup__group.is-collapsed .search-popup__icon-hide { display: inline-flex; }
+.search-popup__group.is-collapsed .search-popup__chips { display: none; }
+.search-popup__group.is-collapsed .search-popup__group-header { margin-bottom: 0; }
+
+/* Chips (grey tags) */
+.search-popup__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.search-popup__chip {
+  display: inline-block;
+  padding: 5px 10px;
+  border: 0;
+  background: #f0f0f0;
+  color: #666666;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.search-popup__chip:hover {
+  background: #121212;
+  color: #ffffff;
+}
+
+/* "Type at least 3 characters…" — hidden once results are shown */
+.search-popup__hint {
+  margin: 0;
+  padding: 20px;
+  color: #777777;
+  font-size: 14px;
+}
+.search-popup__hint[hidden] {
+  display: none;
+}
+
+/* Results fade while loading */
+.search-popup__results {
+  transition: opacity 0.2s ease;
+}
+.header-search.is-loading .search-popup__results {
+  opacity: 0.5;
+}
+
+
+/* ==========================================================================
+   3. Results (sections/header-search-results.liquid)
+   ========================================================================== */
+
+/* ---------- Tabs: Products | Categories ---------- */
+.predictive-search__tabs {
+  display: flex;
+  background: #f5f5f5;
+}
+.predictive-search__tab {
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  color: #777777;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.predictive-search__tab[aria-selected="true"] {
+  background: #ffffff;
+  color: #121212;
+  font-weight: 700;
+}
+.predictive-search__tab-count {
+  font-weight: 400;
+}
+
+/* ---------- Products grid ---------- */
+.predictive-search__panel {
+  padding: 20px;
+}
+.predictive-search__panel[hidden] {
+  display: none;
+}
+.predictive-search__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 28px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (max-width: 749px) {
+  .predictive-search__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 12px;
+  }
+}
+
+/* ---------- Categories (collections) ---------- */
+.predictive-search__collections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.predictive-search__collection {
+  display: grid;
+  gap: 8px;
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+}
+.predictive-search__collection-media {
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #f3f3f3;
+}
+.predictive-search__collection-media img,
+.predictive-search__placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.predictive-search__placeholder {
+  fill: #c4c4c4;
+}
+.predictive-search__collection:hover .predictive-search__collection-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Empty state ---------- */
+.predictive-search__empty {
+  margin: 0;
+  padding: 24px 20px;
+  color: #555555;
+}
+
+/* ---------- "Show all results" button ---------- */
+.predictive-search__footer {
+  padding: 12px 20px 28px;
+  text-align: center;
+}
+/* Uses the header's cart button color (--cart-bg), so both accents match */
+/* "Show all results": shared .button.button--primary, in the header cart colours */
+.predictive-search__view-all {
+  --btn-bg: var(--cart-bg, #c8102e);
+  --btn-text: var(--cart-text, #ffffff);
+}

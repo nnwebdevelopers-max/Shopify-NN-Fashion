@@ -1,0 +1,121 @@
+{%- comment -%}
+  ============================================================================
+  Section: Contact map (map + store card, Contact page)
+  ----------------------------------------------------------------------------
+      ┌──────────────────────────────────────────────────────────┐
+      │                      Google map                ┌────────┐│
+      │                                                │ VISIT  ││
+      │                                                │ Store  ││
+      │                                                │ hours… ││
+      │                                                │[Get →] ││
+      │                                                └────────┘│
+      └──────────────────────────────────────────────────────────┘
+  Map: Google Maps embed of the address (no API key needed), or the image
+  when no address is set. The card shows the store name, address, opening
+  hours and a "Get directions" link.
+  Animated (GSAP, assets/global-scroll-animations.js → initContactMap): the
+  map is unveiled by a left-to-right wipe; the card slides up after and
+  then floats slightly against the scroll (parallax).
+
+  Content from the page editor (Online Store > Pages > Contact): page
+  fields contact.address (shared with the form section's Address row),
+  contact.map_eyebrow, contact.map_heading, contact.store_hours win when
+  filled; empty ones fall back to the settings below.
+
+  Used in:   templates/page.contact.json
+  CSS:       assets/contact.css → "4. Map" (.contact-map*)
+  JS:        assets/global-scroll-animations.js → initContactMap()
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Page fields (Online Store > Pages > Contact) first, then the section settings
+  assign mf = page.metafields.contact
+  assign map_address = mf.address.value | default: section.settings.address
+  assign map_eyebrow = mf.map_eyebrow.value | default: section.settings.eyebrow
+  assign map_heading = mf.map_heading.value | default: section.settings.heading
+  if mf.store_hours.value != blank
+    assign map_hours = mf.store_hours.value | escape | newline_to_br | prepend: '<p>' | append: '</p>'
+  else
+    assign map_hours = section.settings.hours
+  endif
+
+  assign address_query = map_address | strip_newlines | url_encode
+  assign map_title = 'contact.map_title' | t: address: map_address
+-%}
+
+<section
+  class="contact contact-map{% if section.settings.serif %} contact--serif{% endif %}"
+  data-scroll-fx="contact-map"
+  style="--contact-bg: {{ section.settings.background_color }}; --contact-text: {{ section.settings.text_color }}; --contact-accent: {{ section.settings.accent_color }};"
+>
+  <div class="contact__inner contact-map__wrap">
+    <div class="contact-map__frame" data-map-frame>
+      {%- if map_address != blank -%}
+        <iframe
+          class="contact-map__iframe"
+          src="https://maps.google.com/maps?q={{ address_query }}&z={{ section.settings.zoom }}&output=embed"
+          title="{{ map_title }}"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      {%- elsif section.settings.image != blank -%}
+        {{ section.settings.image | image_url: width: 2000 | image_tag: loading: 'lazy', widths: '750, 1200, 2000', sizes: '100vw', alt: section.settings.image.alt, class: 'contact-map__image' }}
+      {%- else -%}
+        {{ 'lifestyle-2' | placeholder_svg_tag: 'contact-map__image contact__placeholder' }}
+      {%- endif -%}
+    </div>
+
+    <div class="contact-map__card" data-map-card>
+      {%- if map_eyebrow != blank -%}
+        <p class="contact__eyebrow">{{ map_eyebrow | escape }}</p>
+      {%- endif -%}
+      <h2 class="contact-map__title">{{ map_heading | escape }}</h2>
+      {%- if map_address != blank -%}
+        <p class="contact-map__address">{{ map_address | escape | newline_to_br }}</p>
+      {%- endif -%}
+      {%- if map_hours != blank -%}
+        <div class="contact-map__hours">{{ map_hours }}</div>
+      {%- endif -%}
+      {%- if map_address != blank -%}
+        <a
+          href="https://www.google.com/maps/dir/?api=1&destination={{ address_query }}"
+          class="contact-map__link"
+          target="_blank"
+          rel="noopener"
+        >
+          {{- 'contact.directions' | t }}
+          {% render 'global-icon', name: 'arrow-right', size: 16 %}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema — settings: address (map + directions), zoom, image (used when there
+  is no address), eyebrow, heading, hours, serif, colors
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Contact: map",
+  "tag": "div",
+  "class": "section-contact-map",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "paragraph", "content": "Address, small heading, heading and opening hours can also be edited in Online Store > Pages > Contact (page fields contact.*). Filled page fields replace the values here." },
+    { "type": "textarea", "id": "address", "label": "Address", "info": "Shown on the map and used for \"Get directions\". Leave empty to show the image instead.", "default": "198 Galley Street, New York, NY" },
+    { "type": "range", "id": "zoom", "label": "Map zoom", "min": 10, "max": 18, "step": 1, "default": 14 },
+    { "type": "image_picker", "id": "image", "label": "Image (when there is no address)" },
+    { "type": "text", "id": "eyebrow", "label": "Small heading", "default": "Visit us" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Our flagship store" },
+    { "type": "richtext", "id": "hours", "label": "Opening hours", "default": "<p><strong>Mon – Fri:</strong> 10am – 8pm<br><strong>Sat – Sun:</strong> 11am – 6pm</p>" },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "serif", "label": "Serif heading", "default": true },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#F6F3EC" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "presets": [{ "name": "Contact: map" }]
+}
+{% endschema %}

@@ -1,0 +1,303 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Product card
+  ----------------------------------------------------------------------------
+  One product in a grid: image (with optional second image on hover),
+  Sale / Sold out badge, vendor, title, color swatches, sizes and price,
+  plus a floating action dock on the image (hover on desktop, always shown
+  on touch screens):
+
+      ┌──────────────┐
+      │ -20%         │
+      │    image     │
+      │  (♡)(⇄)(🛍)  │   ← wishlist · compare · add to cart
+      └──────────────┘
+        Title
+        $54.95
+
+  Add to cart:
+  - product with no options ("Default Title") → added straight away
+  - product with options (size, color…)       → opens the quick-add popup
+    (snippets/global-quick-add.liquid) to choose them first
+  - sold out                                  → disabled button
+
+  The image aspect ratio comes from the --card-ratio CSS variable set by the
+  parent section. Structure: two links to the product (image, text) with the
+  dock beside the image link — buttons can't sit inside a link.
+
+  Global options (Theme settings > Product cards):
+  - card_sale_badge          → "-30%", "Sale" or hidden
+  - card_show_swatches       → color swatches (option names in card_color_option_names)
+  - card_show_sizes          → size chips (option names in card_size_option_names)
+  - card_max_values          → how many swatches/sizes before "+N"
+  - card_quick_actions       → show the action dock at all
+  - card_show_wishlist / card_show_compare / card_show_add_to_cart → each button
+
+  Parameters:
+  - product              {Product}  required
+  - image_sizes          {String}   optional, "sizes" attribute for the images
+  - show_secondary_image {Boolean}  optional, swap to 2nd image on hover
+  - show_vendor          {Boolean}  optional, show the vendor above the title
+  - show_options         {Boolean}  optional, show swatches/sizes (if enabled globally)
+  - centered             {Boolean}  optional, center the text (used in search popup)
+  - show_actions         {Boolean}  optional, false hides the action dock
+                                    (e.g. inside the header search popup)
+
+  Usage:
+  {% render 'global-product-card', product: product, show_vendor: true %}
+
+  Used in:  sections/collection-main.liquid, sections/header-search-results.liquid,
+            sections/homepage-collection-tabs.liquid
+  CSS:      assets/global-product-card.css (classes .product-card*)
+  JS:       assets/global-product-card.js (wishlist, compare, add to cart, quick add)
+  Text:     locales → products.card_actions.*
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Default image sizes when the parent doesn't pass any
+  assign sizes = image_sizes | default: '(min-width: 750px) 33vw, 50vw'
+
+  # Sale = compare-at price higher than the price
+  assign on_sale = false
+  if product.compare_at_price > product.price
+    assign on_sale = true
+  endif
+
+  # Discount percent, e.g. 55 for "-55%"
+  if on_sale
+    assign discount = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round
+  endif
+
+  # Second image only when enabled AND the product has more than one image
+  assign secondary_media = blank
+  if show_secondary_image and product.media.size > 1
+    assign secondary_media = product.media[1]
+  endif
+
+  # Option names (lowercased, |-wrapped) that count as "color" and "size"
+  assign color_list = settings.card_color_option_names | split: ','
+  assign color_names = '|'
+  for name in color_list
+    assign clean_name = name | strip | downcase
+    assign color_names = color_names | append: clean_name | append: '|'
+  endfor
+
+  assign size_list = settings.card_size_option_names | split: ','
+  assign size_names = '|'
+  for name in size_list
+    assign clean_name = name | strip | downcase
+    assign size_names = size_names | append: clean_name | append: '|'
+  endfor
+  assign max_values = settings.card_max_values | default: 4
+
+  # Action dock: on unless switched off globally or by the parent (show_actions: false)
+  assign actions_enabled = settings.card_quick_actions
+  if show_actions == false
+    assign actions_enabled = false
+  endif
+-%}
+
+{%- comment -%}
+  data-product-card / data-product-handle / data-product-url are read by
+  global-product-card.js (wishlist/compare state, quick-add popup).
+{%- endcomment -%}
+<div
+  class="product-card{% if centered %} product-card--centered{% endif %}"
+  data-product-card
+  data-product-handle="{{ product.handle }}"
+  data-product-url="{{ product.url }}"
+>
+  <div class="product-card__media-wrap">
+  {%- comment -%}
+    ---------- Media (link #1) ----------
+    Hidden from screen readers and Tab: the text link below goes to the same page.
+  {%- endcomment -%}
+  <a href="{{ product.url }}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
+    <div class="product-card__media{% if secondary_media != blank %} product-card__media--has-secondary{% endif %}">
+      {%- if product.featured_media != blank -%}
+        {{ product.featured_media | image_url: width: 800 | image_tag: loading: 'lazy', widths: '200, 300, 400, 600, 800', sizes: sizes, class: 'product-card__image product-card__image--primary' }}
+
+        {%- comment -%} Hidden until hover (see CSS); alt is empty because it's decorative {%- endcomment -%}
+        {%- if secondary_media != blank -%}
+          {{ secondary_media | image_url: width: 800 | image_tag: loading: 'lazy', widths: '200, 300, 400, 600, 800', sizes: sizes, alt: '', class: 'product-card__image product-card__image--secondary' }}
+        {%- endif -%}
+      {%- else -%}
+        {%- comment -%} No image uploaded → Shopify placeholder illustration {%- endcomment -%}
+        {{ 'product-1' | placeholder_svg_tag: 'product-card__image product-card__placeholder' }}
+      {%- endif -%}
+
+      {%- comment -%} Badges: Sold out takes priority over Sale; Sale style from Theme settings {%- endcomment -%}
+      {%- if product.available == false -%}
+        <span class="product-card__badge product-card__badge--sold-out">{{ 'products.sold_out' | t }}</span>
+      {%- elsif on_sale and settings.card_sale_badge == 'percent' -%}
+        <span class="product-card__badge product-card__badge--sale">{{ 'products.discount_percent' | t: percent: discount }}</span>
+      {%- elsif on_sale and settings.card_sale_badge == 'text' -%}
+        <span class="product-card__badge product-card__badge--sale">{{ 'products.sale' | t }}</span>
+      {%- endif -%}
+    </div>
+  </a>
+
+  {%- comment -%}
+    ---------- Action dock: wishlist · compare · add to cart ----------
+    Floats over the bottom of the image (CSS: shown on hover / keyboard focus,
+    always on touch screens). Labels show as tooltips (data-tip) and are read
+    by screen readers (aria-label). global-product-card.js handles the clicks.
+  {%- endcomment -%}
+  {%- if actions_enabled -%}
+    <div class="product-card__actions">
+      {%- if settings.card_show_wishlist -%}
+        <button
+          type="button"
+          class="product-card__action"
+          data-card-action="wishlist"
+          data-tip="{{ 'products.card_actions.wishlist' | t }}"
+          aria-label="{{ 'products.card_actions.wishlist' | t }}"
+          aria-pressed="false"
+        >
+          {% render 'global-icon', name: 'heart', size: 18 %}
+        </button>
+      {%- endif -%}
+
+      {%- if settings.card_show_compare -%}
+        <button
+          type="button"
+          class="product-card__action"
+          data-card-action="compare"
+          data-tip="{{ 'products.card_actions.compare' | t }}"
+          aria-label="{{ 'products.card_actions.compare' | t }}"
+          aria-pressed="false"
+        >
+          {% render 'global-icon', name: 'compare', size: 18 %}
+        </button>
+      {%- endif -%}
+
+      {%- if settings.card_show_add_to_cart -%}
+        {%- if product.available == false -%}
+          {%- comment -%} Sold out: shown but disabled {%- endcomment -%}
+          <button
+            type="button"
+            class="product-card__action product-card__action--cart"
+            data-tip="{{ 'products.sold_out' | t }}"
+            aria-label="{{ 'products.sold_out' | t }}"
+            disabled
+          >
+            {% render 'global-icon', name: 'cart', size: 18 %}
+          </button>
+        {%- elsif product.has_only_default_variant -%}
+          {%- comment -%} No options: add the one variant straight away {%- endcomment -%}
+          <button
+            type="button"
+            class="product-card__action product-card__action--cart"
+            data-card-action="add"
+            data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+            data-tip="{{ 'products.card_actions.add_to_cart' | t }}"
+            aria-label="{{ 'products.card_actions.add_to_cart' | t }}"
+          >
+            {% render 'global-icon', name: 'cart', size: 18 %}
+          </button>
+        {%- else -%}
+          {%- comment -%} Has options: open the quick-add popup to choose them first {%- endcomment -%}
+          <button
+            type="button"
+            class="product-card__action product-card__action--cart"
+            data-card-action="quick-add"
+            data-tip="{{ 'products.card_actions.choose_options' | t }}"
+            aria-label="{{ 'products.card_actions.choose_options' | t }}"
+            aria-haspopup="dialog"
+          >
+            {% render 'global-icon', name: 'cart', size: 18 %}
+          </button>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+  </div>
+
+  {%- comment -%} ---------- Info (link #2: the accessible link to the product) ---------- {%- endcomment -%}
+  <a href="{{ product.url }}" class="product-card__link">
+    <div class="product-card__info">
+      {%- if show_vendor -%}
+        <span class="product-card__vendor">{{ product.vendor | escape }}</span>
+      {%- endif -%}
+
+      <h3 class="product-card__title">{{ product.title | escape }}</h3>
+
+      {%- comment -%}
+        ---------- Options: color swatches + size chips ----------
+        Shown for product options whose name matches Theme settings
+        (e.g. "Color", "Size"). Extra values collapse into "+N".
+      {%- endcomment -%}
+      {%- if show_options -%}
+        {%- for option in product.options_with_values -%}
+          {%- assign option_key = '|' | append: option.name | downcase | append: '|' -%}
+
+          {%- if settings.card_show_swatches and color_names contains option_key -%}
+            <ul class="product-card__swatches" role="list" aria-label="{{ option.name | escape }}">
+              {%- for value in option.values limit: max_values -%}
+                {%- comment -%}
+                  Swatch color: Shopify's swatch (set in admin), else the color
+                  list in snippets/global-swatch-color.liquid (Cream, Charcoal,
+                  "Black Floral" → black, …). A grey default comes first, in
+                  case the browser doesn't understand the color.
+                {%- endcomment -%}
+                {%- liquid
+                  if value.swatch.image
+                    assign swatch_image = value.swatch.image | image_url: width: 60
+                    assign swatch_style = 'background-image: url(' | append: swatch_image | append: ')'
+                  elsif value.swatch.color
+                    assign swatch_style = 'background-color: ' | append: value.swatch.color
+                  else
+                    capture css_color
+                      render 'global-swatch-color', value: value.name
+                    endcapture
+                    assign swatch_style = 'background: #cccccc; background: ' | append: css_color
+                  endif
+                -%}
+                <li class="product-card__swatch" style="{{ swatch_style }}" title="{{ value.name | escape }}">
+                  <span class="visually-hidden">{{ value.name | escape }}</span>
+                </li>
+              {%- endfor -%}
+              {%- if option.values.size > max_values -%}
+                <li class="product-card__more">+{{ option.values.size | minus: max_values }}</li>
+              {%- endif -%}
+            </ul>
+
+          {%- elsif settings.card_show_sizes and size_names contains option_key -%}
+            <ul class="product-card__sizes" role="list" aria-label="{{ option.name | escape }}">
+              {%- for value in option.values limit: max_values -%}
+                <li class="product-card__size">{{ value.name | escape }}</li>
+              {%- endfor -%}
+              {%- if option.values.size > max_values -%}
+                <li class="product-card__more">+{{ option.values.size | minus: max_values }}</li>
+              {%- endif -%}
+            </ul>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- comment -%}
+        Price:
+        - "From …" when variants have different prices
+        - Sale price + crossed-out compare-at price when on sale
+      {%- endcomment -%}
+      <div class="product-card__price{% if on_sale %} product-card__price--sale{% endif %}">
+        <span>
+          {%- comment -%} "From …" wording comes from locales, since word order differs per language {%- endcomment -%}
+          {%- assign card_price = product.price | money -%}
+          {%- if product.price_varies -%}
+            {{ 'products.price_from' | t: price: card_price }}
+          {%- else -%}
+            {{ card_price }}
+          {%- endif -%}
+        </span>
+        {%- if on_sale -%}
+          <s class="product-card__compare-price">
+            <span class="visually-hidden">{{ 'products.regular_price' | t }}</span>
+            {{ product.compare_at_price | money }}
+          </s>
+        {%- endif -%}
+      </div>
+    </div>
+  </a>
+</div>

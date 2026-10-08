@@ -1,0 +1,115 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Collection categories (first group in the filter sidebar)
+  ----------------------------------------------------------------------------
+  A "Categories" list of links to other collections, shown above the filters:
+
+      CATEGORIES                          ⌃
+      ▍Men's Clothing              (24)   ← current collection: bold + red bar
+         Shirts                    (10)   ← child links of a menu item
+         Jackets                    (6)
+       Women's Clothing            (31)
+       Accessories                  (8)
+
+  Source (section setting "Category menu"):
+  - a menu (Online Store > Navigation): its links, with one level of
+    child links, in that order. Collection links show their product count.
+  - empty: every collection that has products (A–Z), except the current
+    "all products" collection.
+
+  These are plain links (a normal page load to the other collection), not
+  form inputs: Shopify's storefront filtering works inside ONE collection.
+
+  Parameters:
+  - menu        {Linklist}  optional, the chosen menu
+  - show_count  {Boolean}   show "(24)" after each collection
+  - open        {Boolean}   start opened
+
+  Used in:  sections/collection-main.liquid (inside the filter sidebar / drawer)
+  CSS:      assets/collection.css → "4b. Categories" (classes .filter-categories*)
+  JS:       assets/collection.js keeps its open/closed state (data-filter-id)
+  Text:     locales → collections.categories
+  ============================================================================
+{%- endcomment -%}
+
+<details class="filter filter--categories" data-filter-id="categories" {% if open %}open{% endif %}>
+  <summary class="filter__summary">
+    <span class="filter__label-text">{{ 'collections.categories' | t }}</span>
+    <span class="filter__icon" aria-hidden="true"></span>
+  </summary>
+
+  <div class="filter__body">
+    <ul class="filter-categories" role="list">
+      {%- if menu != blank and menu.links.size > 0 -%}
+        {%- comment -%} ---------- From the chosen menu ---------- {%- endcomment -%}
+        {%- for link in menu.links -%}
+          {%- liquid
+            assign is_current = false
+            if link.type == 'collection_link' and link.object.handle == collection.handle
+              assign is_current = true
+            endif
+          -%}
+          <li class="filter-categories__item">
+            <a
+              href="{{ link.url }}"
+              class="filter-categories__link{% if is_current %} is-current{% endif %}"
+              {% if is_current %}aria-current="page"{% endif %}
+            >
+              <span>{{ link.title | escape }}</span>
+              {%- if show_count and link.type == 'collection_link' -%}
+                <span class="filter-categories__count">{{ link.object.products_count }}</span>
+              {%- endif -%}
+            </a>
+
+            {%- comment -%} One level of child links, indented {%- endcomment -%}
+            {%- if link.links.size > 0 -%}
+              <ul class="filter-categories filter-categories--children" role="list">
+                {%- for child in link.links -%}
+                  {%- liquid
+                    assign child_current = false
+                    if child.type == 'collection_link' and child.object.handle == collection.handle
+                      assign child_current = true
+                    endif
+                  -%}
+                  <li class="filter-categories__item">
+                    <a
+                      href="{{ child.url }}"
+                      class="filter-categories__link{% if child_current %} is-current{% endif %}"
+                      {% if child_current %}aria-current="page"{% endif %}
+                    >
+                      <span>{{ child.title | escape }}</span>
+                      {%- if show_count and child.type == 'collection_link' -%}
+                        <span class="filter-categories__count">{{ child.object.products_count }}</span>
+                      {%- endif -%}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        {%- comment -%} ---------- No menu: every collection with products, A–Z ---------- {%- endcomment -%}
+        {%- assign sorted_collections = collections | sort: 'title' -%}
+        {%- for item in sorted_collections -%}
+          {%- if item.products_count > 0 and item.handle != 'all' and item.handle != 'frontpage' -%}
+            {%- assign is_current = false -%}
+            {%- if item.handle == collection.handle -%}{%- assign is_current = true -%}{%- endif -%}
+            <li class="filter-categories__item">
+              <a
+                href="{{ item.url }}"
+                class="filter-categories__link{% if is_current %} is-current{% endif %}"
+                {% if is_current %}aria-current="page"{% endif %}
+              >
+                <span>{{ item.title | escape }}</span>
+                {%- if show_count -%}
+                  <span class="filter-categories__count">{{ item.products_count }}</span>
+                {%- endif -%}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </div>
+</details>

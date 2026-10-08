@@ -1,0 +1,285 @@
+{%- comment -%}
+  ============================================================================
+  Section: Homepage promo banners
+  ----------------------------------------------------------------------------
+  Promo cards side by side. Each card = a dark text panel + an image:
+
+    ┌──────────────────────┬─────────────┐
+    │ [SALE ON]            │             │
+    │ SPECIAL BAGS         │    image    │
+    │ DECORATE YOUR LIFE   │             │
+    │ 15% OFF              │             │
+    │ Text…                │             │
+    │ [ SHOP NOW ]         │             │
+    └──────────────────────┴─────────────┘
+
+  Each card is a block (badge, heading, subheading, highlight, text, button,
+  image left/right, colors). Every text field is optional and hidden when empty.
+  Phones: cards stack; inside a card the image sits on top of the text.
+
+  Used in:   templates/index.json ("promo-banners")
+  CSS:       assets/homepage.css → "5. Promo banners" (classes .promo-banners*)
+  JS:        none
+  Editable:  Theme editor > Home page > Promo banners
+  ============================================================================
+{%- endcomment -%}
+
+{%- if section.blocks.size > 0 -%}
+  {%- comment -%} Wrapper: columns, card height and spacing come from settings {%- endcomment -%}
+  <div
+    class="promo-banners promo-banners--{{ section.settings.card_height }}"
+    style="
+      --promo-columns: {{ section.settings.columns }};
+      --promo-section-bg: {{ section.settings.background_color }};
+      --promo-padding-top: {{ section.settings.padding_top }}px;
+      --promo-padding-bottom: {{ section.settings.padding_bottom }}px;
+    "
+  >
+    <div class="page-width">
+      <ul class="promo-banners__list" role="list">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign image = block.settings.image
+            # Keep the image's focal point (set in Shopify admin) in view when cropped
+            assign focal_point = image.presentation.focal_point | default: 'center'
+            assign image_style = 'object-position: ' | append: focal_point
+          -%}
+          {%- comment -%}
+            One card. Colors are per card (block settings) → CSS custom properties.
+            Modifier: promo-banners__card--image-left puts the image first.
+          {%- endcomment -%}
+          <li
+            class="promo-banners__card promo-banners__card--image-{{ block.settings.image_position }}"
+            style="
+              --card-bg: {{ block.settings.background_color }};
+              --card-text: {{ block.settings.text_color }};
+              --card-accent: {{ block.settings.accent_color }};
+            "
+            {{ block.shopify_attributes }}
+          >
+            {%- comment -%} ---------- Text panel ---------- {%- endcomment -%}
+            <div class="promo-banners__content">
+              {%- if block.settings.badge != blank -%}
+                <span class="promo-banners__badge">{{ block.settings.badge | escape }}</span>
+              {%- endif -%}
+              {%- if block.settings.heading != blank -%}
+                <h3 class="promo-banners__heading">{{ block.settings.heading | escape }}</h3>
+              {%- endif -%}
+              {%- if block.settings.subheading != blank -%}
+                <p class="promo-banners__subheading">{{ block.settings.subheading | escape }}</p>
+              {%- endif -%}
+              {%- if block.settings.highlight != blank -%}
+                <p class="promo-banners__highlight">{{ block.settings.highlight | escape }}</p>
+              {%- endif -%}
+              {%- if block.settings.text != blank -%}
+                <p class="promo-banners__text">{{ block.settings.text | escape }}</p>
+              {%- endif -%}
+              {%- comment -%} Button: only with both a label and a link; style = accent (solid) or light (white) {%- endcomment -%}
+              {%- if block.settings.button_label != blank and block.settings.button_link != blank -%}
+                <a href="{{ block.settings.button_link }}" class="button button--sm{% if block.settings.button_style == 'light' %} button--light{% endif %} promo-banners__button promo-banners__button--{{ block.settings.button_style }}">
+                  {{- block.settings.button_label | escape -}}
+                  {% render 'global-icon', name: 'arrow-right', size: 14 %}
+                </a>
+              {%- endif -%}
+            </div>
+
+            {%- comment -%} ---------- Image (placeholder until one is chosen) ---------- {%- endcomment -%}
+            <div class="promo-banners__media">
+              {%- if image != blank -%}
+                {{ image | image_url: width: 1000 | image_tag: loading: 'lazy', widths: '400, 600, 800, 1000', sizes: '(min-width: 990px) 300px, (min-width: 600px) 50vw, 100vw', alt: '', class: 'promo-banners__image', style: image_style }}
+              {%- else -%}
+                {{ 'lifestyle-1' | placeholder_svg_tag: 'promo-banners__image promo-banners__placeholder' }}
+              {%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["index"] → home page only.
+  Settings: columns (1–3), card_height (small / medium / large),
+            background_color (section), padding_top, padding_bottom
+  Blocks (max 6):
+  - banner → image, image_position (right / left), badge, heading, subheading,
+             highlight (big accent text, e.g. "15% OFF"), text, button_label,
+             button_link, button_style (accent / light), background_color,
+             text_color, accent_color
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Promo banners",
+  "tag": "section",
+  "class": "section-homepage-promo-banners",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Cards per row on desktop",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "card_height",
+      "label": "Card height",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "banner",
+      "name": "Promo card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "select",
+          "id": "image_position",
+          "label": "Image position",
+          "options": [
+            { "value": "right", "label": "Right" },
+            { "value": "left", "label": "Left" }
+          ],
+          "default": "right"
+        },
+        {
+          "type": "header",
+          "content": "Text"
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge",
+          "info": "Small label above the heading, e.g. \"Sale on\". Leave empty to hide."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Special bags"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "Decorate your life"
+        },
+        {
+          "type": "text",
+          "id": "highlight",
+          "label": "Highlight",
+          "info": "Big accent-colored text, e.g. \"15% off\".",
+          "default": "15% off"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "header",
+          "content": "Button"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "Shop now"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link",
+          "info": "The button is hidden until a link is set."
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button style",
+          "options": [
+            { "value": "accent", "label": "Accent color" },
+            { "value": "light", "label": "White" }
+          ],
+          "default": "accent"
+        },
+        {
+          "type": "header",
+          "content": "Colors"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Panel background",
+          "default": "#1c1c1e"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color",
+          "id": "accent_color",
+          "label": "Accent",
+          "info": "Badge, highlight and accent button.",
+          "default": "#c8102e"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Promo banners",
+      "blocks": [
+        { "type": "banner" },
+        { "type": "banner" }
+      ]
+    }
+  ]
+}
+{% endschema %}

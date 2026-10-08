@@ -1,0 +1,22 @@
+/*
+ * ============================================================================
+ * Template: Customer register (customers/register.json) — /account/register
+ * ----------------------------------------------------------------------------
+ * Create-account page (legacy customer accounts), same design as the popup.
+ *
+ * Sections:
+ *   main → sections/customer-register.liquid (card opened on "Create account")
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "customer-register",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

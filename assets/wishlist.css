@@ -1,0 +1,193 @@
+/* ============================================================================
+   wishlist.css — Wishlist page
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (template "page.wishlist" only)
+   Styles:    sections/wishlist-main.liquid (classes .wishlist*)
+   The cards themselves use assets/global-product-card.css.
+   ============================================================================ */
+
+.wishlist {
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+
+/* ---------- Header: [title + count] ............ [Clear wishlist] ---------- */
+.wishlist__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e8e8e8;
+}
+.wishlist__title {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.wishlist__count {
+  margin: 4px 0 0;
+  color: #6b6b6b;
+}
+.wishlist__count:empty {
+  display: none;
+}
+.wishlist__clear {
+  padding: 8px 16px;
+  border: 1px solid #121212;
+  border-radius: 2px;
+  background: transparent;
+  color: #121212;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.wishlist__clear:hover {
+  background: #121212;
+  color: #ffffff;
+}
+
+.wishlist__loading {
+  margin: 0;
+  padding: 40px 0;
+  color: #6b6b6b;
+  text-align: center;
+}
+
+/* ---------- Grid of product cards (columns from settings) ---------- */
+.wishlist__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--wishlist-columns, 4), minmax(0, 1fr));
+  gap: 28px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wishlist__grid[hidden] {
+  display: none;
+}
+
+/* ---------- Empty state ---------- */
+.wishlist__empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 50px 16px;
+  text-align: center;
+}
+.wishlist__empty[hidden] {
+  display: none;
+}
+.wishlist__empty-icon {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: #f3f3f3;
+  color: #c8102e;
+}
+.wishlist__empty-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+.wishlist__empty p {
+  max-width: 44ch;
+  margin: 0;
+  color: #6b6b6b;
+}
+.wishlist__continue {
+  margin-top: 16px;
+}
+
+/* ---------- Signed out: "Sign in to see your wishlist" ----------
+   A soft card with a lock (+ small red heart), the text and two buttons. */
+.wishlist__locked {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  max-width: 560px;
+  margin: 10px auto 0;
+  padding: 48px 28px;
+  border: 1px solid #eeeeee;
+  border-radius: 22px;
+  background: radial-gradient(circle at 50% 0%, rgba(200, 16, 46, 0.08), rgba(200, 16, 46, 0) 60%), #ffffff;
+  text-align: center;
+}
+.wishlist__locked p {
+  max-width: 44ch;
+  margin: 0;
+  color: #6b6b6b;
+}
+.wishlist__locked-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: #121212;
+  color: #ffffff;
+  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.5);
+}
+.wishlist__locked-heart {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: #c8102e;
+}
+.wishlist__locked-heart .icon {
+  fill: currentColor;
+}
+.wishlist__locked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 20px;
+  margin-top: 18px;
+}
+/* "Sign in": shared .button (global-buttons.css) */
+.wishlist__locked-button {
+  min-width: 160px;
+}
+.wishlist__locked-link {
+  color: #121212;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+.wishlist__locked-link:hover {
+  color: #c8102e;
+}
+
+/* Tablets: at most 3 per row; phones: "Products per row on mobile" */
+@media (max-width: 989px) {
+  .wishlist__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 749px) {
+  .wishlist {
+    padding-top: 24px;
+  }
+  .wishlist__grid {
+    grid-template-columns: repeat(var(--wishlist-columns-mobile, 2), minmax(0, 1fr));
+    gap: 20px 12px;
+  }
+}

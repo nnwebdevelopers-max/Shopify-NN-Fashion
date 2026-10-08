@@ -1,31 +1,65 @@
+{%- comment -%}
+  ============================================================================
+  Layout: theme.liquid
+  ----------------------------------------------------------------------------
+  Base HTML wrapper for every page of the store.
+  Page order:  header group → page template content → footer group
+
+  - sections 'header-group' → sections/header-group.json (top bar + header + promo bar)
+  - content_for_layout      → the current page's template,
+                              e.g. templates/index.json on the home page
+  - sections 'footer-group' → sections/footer-group.json (footer)
+
+  CSS/JS files (assets/) are loaded in <head>: header/search/product card
+  files on every page ("Global assets"), page files only on the template
+  that needs them ("Page-specific assets").
+  ============================================================================
+{%- endcomment -%}
 <!doctype html>
 <html lang="{{ request.locale.iso_code }}">
   <head>
+    {%- comment -%} ---------- Meta ---------- {%- endcomment -%}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="">
     <link rel="canonical" href="{{ canonical_url }}">
 
+    {%- comment -%} Favicon: only output when one is set in theme settings {%- endcomment -%}
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
     {%- endif -%}
 
+    {%- comment -%}
+      Page title, e.g. "Shirts – tagged "blue" – Page 2 – NN Fashion".
+      Store name is appended unless the title already contains it.
+      "tagged …" and "Page …" come from locales (general.page_title_*).
+    {%- endcomment -%}
+    {%- assign title_tags = current_tags | join: ', ' -%}
     <title>
       {{ page_title }}
-      {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
-      {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+      {%- if current_tags %} &ndash; {{ 'general.page_title_tagged' | t: tags: title_tags }}{% endif -%}
+      {%- if current_page != 1 %} &ndash; {{ 'general.page_title_page' | t: page: current_page }}{% endif -%}
       {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
     </title>
 
+    {%- comment -%} SEO description (set per page in Shopify admin) {%- endcomment -%}
     {% if page_description %}
       <meta name="description" content="{{ page_description | escape }}">
     {% endif %}
 
+    {%- comment -%}
+      Required by Shopify: injects analytics, app scripts, the theme editor
+      scripts and the CSS collected from every section's stylesheet tag.
+    {%- endcomment -%}
     {{ content_for_header }}
 
+    {%- comment -%} Global base styles shared by all sections {%- endcomment -%}
     <style>
+      /* Predictable sizing: padding and borders are included in width */
       *, *::before, *::after { box-sizing: border-box; }
+
+      /* Base typography and colors */
       body {
         margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -33,44 +67,252 @@
         color: #121212;
         background: #ffffff;
       }
+
+      /* Images never overflow their container */
       img { max-width: 100%; height: auto; display: block; }
       a { color: inherit; }
+
+      /* Shared content container: max 1200px wide, 16px side gutter. Used inside sections. */
       .page-width { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
-      .site-header, .site-footer { padding: 16px 0; border-bottom: 1px solid #e5e5e5; }
-      .site-footer { border-top: 1px solid #e5e5e5; border-bottom: 0; margin-top: 48px; font-size: 14px; }
-      .site-header__inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-      .site-header__logo { font-size: 20px; font-weight: 700; text-decoration: none; }
-      .site-header__nav { display: flex; gap: 16px; }
-      .site-header__nav a { text-decoration: none; }
-      main { min-height: 60vh; padding: 32px 0; }
+
+      /* Keeps the footer near the bottom on short pages */
+      main { display: block; min-height: 60vh; }
+
+      /* Hidden visually but still read by screen readers */
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* Skip link: hidden until focused with the keyboard (Tab) */
+      .skip-link:focus {
+        top: 8px;
+        left: 8px;
+        z-index: 1000;
+        width: auto;
+        height: auto;
+        margin: 0;
+        padding: 8px 16px;
+        clip: auto;
+        background: #ffffff;
+      }
+
+      /* Buttons: see assets/global-buttons.css (the shared button system) */
+
+      /* Stops the page scrolling behind open drawers/popups
+         (header menu drawer, search popup, collection filter drawer) */
+      body.overflow-hidden { overflow: hidden; }
     </style>
+
+    {%- comment -%}
+      ---------- Global assets (every page) ----------
+      - global-buttons.css       → the one button system (.button + variants);
+                                   loaded first so section / page CSS can
+                                   recolour buttons through --btn-* variables
+      - global-gsap.min.js       → GSAP 3.13 core (button micro-interactions
+                                   everywhere; scroll effects on some pages)
+      - global-buttons.js        → hover lift, arrow nudge, press, magnetic CTAs
+      - header.css               → top bar, header, main menu, mobile drawer, promo bar
+      - header-search.css        → search bar + results popup in the header
+      - footer.css               → footer columns, newsletter, bottom bar
+      - global-product-card.css  → product cards + action dock, quick-add popup, toast
+      - header.js                → drawer, top bar rotation/close, currency selector
+      - header-search.js         → live search popup
+      - global-product-card.js   → card actions: wishlist, compare, add to cart, quick add
+      Scripts use "defer": they run after the HTML is parsed, without blocking it.
+    {%- endcomment -%}
+    {{ 'global-buttons.css' | asset_url | stylesheet_tag }}
+    {{ 'header.css' | asset_url | stylesheet_tag }}
+    {{ 'header-search.css' | asset_url | stylesheet_tag }}
+    {{ 'footer.css' | asset_url | stylesheet_tag }}
+    {{ 'global-product-card.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'header.js' | asset_url }}" defer></script>
+    <script src="{{ 'header-search.js' | asset_url }}" defer></script>
+    <script src="{{ 'global-product-card.js' | asset_url }}" defer></script>
+    <script src="{{ 'global-gsap.min.js' | asset_url }}" defer></script>
+    <script src="{{ 'global-buttons.js' | asset_url }}" defer></script>
+
+    {%- comment -%}
+      ---------- Page-specific assets ----------
+      Loaded only on the template that uses them, so other pages stay light.
+      - Home page:       slideshow / features / categories styles and slider script
+      - Collection page: collection styles and filtering script
+      - Cart / wishlist / compare pages: their own CSS + JS
+    {%- endcomment -%}
+    {%- if template.name == 'index' -%}
+      {{ 'homepage.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'homepage.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- comment -%} Collection page + search results (same filters, sort, grid and pagination) {%- endcomment -%}
+    {%- if template.name == 'collection' or template.name == 'search' -%}
+      {{ 'collection.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'collection.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- if template.name == 'search' -%}
+      {{ 'search.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- comment -%} All collections page (/collections): cards, find + sort {%- endcomment -%}
+    {%- if template.name == 'list-collections' -%}
+      {{ 'list-collections.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'list-collections.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- comment -%} Product page: gallery, variants, add to cart, tabs, recommendations {%- endcomment -%}
+    {%- if template.name == 'product' -%}
+      {{ 'product.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'product.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- comment -%} Cart page: items, quantities, subtotal {%- endcomment -%}
+    {%- if template.name == 'cart' -%}
+      {{ 'cart.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'cart.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- comment -%}
+      Policy pages: the "policy" page template (Privacy policy page…) and
+      Shopify's own /policies/… pages (request.page_type 'policy')
+    {%- endcomment -%}
+    {%- liquid
+      assign policy_page = false
+      if template.name == 'page' and template.suffix == 'policy'
+        assign policy_page = true
+      endif
+      if request.page_type == 'policy'
+        assign policy_page = true
+      endif
+    -%}
+    {%- if policy_page -%}
+      {{ 'policy.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'policy.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- comment -%} Default page (About us…) and the 404 page {%- endcomment -%}
+    {%- if template.name == 'page' and template.suffix == blank -%}
+      {{ 'page.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'page.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- comment -%}
+      Animated pages: About (template "page.about"), Contact ("page.contact"),
+      FAQ ("page.faq"), blog + articles, search results, all collections,
+      product page.
+      Page CSS (about.css / contact.css / faq.css / blog.css) + ScrollTrigger
+      (global-gsap-scrolltrigger.min.js; GSAP core loads on every page) +
+      the shared scroll effects (global-scroll-animations.js), loaded in
+      order with defer.
+    {%- endcomment -%}
+    {%- liquid
+      assign scroll_page = false
+      if template.name == 'page'
+        if template.suffix == 'about' or template.suffix == 'contact' or template.suffix == 'faq'
+          assign scroll_page = true
+        endif
+      endif
+      # Blog page, blog posts and search results use the same GSAP effects
+      if template.name == 'blog' or template.name == 'article' or template.name == 'search'
+        assign scroll_page = true
+      endif
+      if template.name == 'list-collections' or template.name == 'product'
+        assign scroll_page = true
+      endif
+    -%}
+    {%- if template.name == 'blog' or template.name == 'article' -%}
+      {{ 'blog.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- if template.name == 'page' and template.suffix == 'about' -%}
+      {{ 'about.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- if template.name == 'page' and template.suffix == 'contact' -%}
+      {{ 'contact.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- comment -%} FAQ ("page.faq"): faq.js builds the questions, so it loads before the GSAP effects {%- endcomment -%}
+    {%- if template.name == 'page' and template.suffix == 'faq' -%}
+      {{ 'faq.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'faq.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- if scroll_page -%}
+      {%- comment -%} GSAP core is already loaded for every page (see "Global assets") {%- endcomment -%}
+      <script src="{{ 'global-gsap-scrolltrigger.min.js' | asset_url }}" defer></script>
+      <script src="{{ 'global-scroll-animations.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- if template.name == '404' -%}
+      {{ '404.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- comment -%} Wishlist / compare pages: page templates "page.wishlist" / "page.compare" {%- endcomment -%}
+    {%- if template.name == 'page' and template.suffix == 'wishlist' -%}
+      {{ 'wishlist.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'wishlist.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- if template.name == 'page' and template.suffix == 'compare' -%}
+      {{ 'compare.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'compare.js' | asset_url }}" defer></script>
+    {%- endif -%}
+
+    {%- comment -%}
+      ---------- Customer accounts ----------
+      - global-account.css/js → sign-in card: the popup (signed-out shoppers)
+        and the login / register / activate / reset password pages
+      - customer.css/js       → account dashboard, order and addresses pages
+      template.directory is "customers" on templates/customers/*.json.
+    {%- endcomment -%}
+    {%- liquid
+      assign is_account_template = false
+      if template.directory == 'customers'
+        assign is_account_template = true
+      endif
+      # Sign-in popup: signed out, accounts on, and not already on an account page
+      assign show_account_popup = false
+      if customer == nil and shop.customer_accounts_enabled and is_account_template == false
+        assign show_account_popup = true
+      endif
+    -%}
+    {%- if show_account_popup or is_account_template -%}
+      {{ 'global-account.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'global-account.js' | asset_url }}" defer></script>
+    {%- endif -%}
+    {%- if is_account_template -%}
+      {{ 'customer.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'customer.js' | asset_url }}" defer></script>
+    {%- endif -%}
   </head>
 
   <body class="template-{{ template.name | handle }}">
-    <a class="visually-hidden" href="#MainContent" style="position:absolute;left:-9999px;">Skip to content</a>
+    {%- comment -%} Accessibility: lets keyboard users jump past the header to the content {%- endcomment -%}
+    <a class="skip-link visually-hidden" href="#MainContent">{{ 'general.skip_to_content' | t }}</a>
 
-    <header class="site-header">
-      <div class="page-width site-header__inner">
-        <a href="{{ routes.root_url }}" class="site-header__logo">{{ shop.name }}</a>
+    {%- comment -%} Header group: top bar + header + promo bar {%- endcomment -%}
+    {% sections 'header-group' %}
 
-        <nav class="site-header__nav" aria-label="Main">
-          {%- for link in linklists.main-menu.links -%}
-            <a href="{{ link.url }}">{{ link.title }}</a>
-          {%- endfor -%}
-        </nav>
-
-        <a href="{{ routes.cart_url }}">Cart ({{ cart.item_count }})</a>
-      </div>
-    </header>
-
-    <main id="MainContent" class="page-width" role="main" tabindex="-1">
+    {%- comment -%} Page content: output of the current JSON template {%- endcomment -%}
+    <main id="MainContent" role="main" tabindex="-1">
       {{ content_for_layout }}
     </main>
 
-    <footer class="site-footer">
-      <div class="page-width">
-        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ powered_by_link }}
-      </div>
-    </footer>
+    {%- comment -%} Footer group: footer {%- endcomment -%}
+    {% sections 'footer-group' %}
+
+    {%- comment -%}
+      Product card actions: quick-add popup, toast and the texts/settings
+      global-product-card.js needs (rendered once per page). Always rendered:
+      the wishlist, compare and cart pages use the same helpers even when
+      the card buttons are switched off.
+    {%- endcomment -%}
+    {% render 'global-quick-add' %}
+
+    {%- comment -%} Shopify's own policy pages: translated "On this page" title for assets/policy.js {%- endcomment -%}
+    {%- if request.page_type == 'policy' -%}
+      <span id="PolicyTexts" hidden data-toc-title="{{ 'policy.toc_title' | t }}"></span>
+    {%- endif -%}
+
+    {%- comment -%} Floating "Compare (3)" tab, shown once compare has products (opens /pages/compare in a new tab) {%- endcomment -%}
+    {% render 'global-compare-float' %}
+
+    {%- comment -%} Sign-in / create-account popup for signed-out shoppers (wishlist ♡, header account link) {%- endcomment -%}
+    {%- if show_account_popup -%}
+      {% render 'global-account-popup' %}
+    {%- endif -%}
   </body>
 </html>

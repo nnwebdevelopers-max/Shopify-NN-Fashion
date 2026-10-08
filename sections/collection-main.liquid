@@ -1,0 +1,446 @@
+{%- comment -%}
+  ============================================================================
+  Section: Collection main (product grid + filters + sorting)
+  ----------------------------------------------------------------------------
+  Main part of the collection page:
+  - Toolbar: "Filter" button (mobile), product count, sort dropdown
+  - Filters sidebar (desktop) / slide-in drawer (mobile)
+  - Active filter pills with "Clear all"
+  - Product grid, empty state and pagination
+
+  Filters come from Shopify's storefront filtering (collection.filters).
+  Which filters appear is set in the Shopify "Search & Discovery" app.
+  Above them: a "Categories" list of links to other collections
+  (snippets/collection-categories.liquid, "Categories" settings).
+
+  How filtering works:
+  - Everything is inside one GET <form>. Without JS it submits normally.
+  - With JS (assets/collection.js) changes are applied without a page reload
+    using the Section Rendering API; regions marked data-* below are swapped.
+
+  Used in:   templates/collection.json ("main")
+  Snippets:  snippets/collection-categories.liquid (categories list)
+             snippets/collection-filters.liquid (filter groups)
+             snippets/global-product-card.liquid (each product)
+  CSS:       assets/collection.css (classes .collection*, .collection-filters*,
+             .filter*, .active-filters*, .product-grid, .pagination)
+             assets/global-product-card.css (product cards)
+  JS:        assets/collection.js
+  Editable:  Theme editor > Collections > Product grid
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Current sort order (falls back to the collection's default from admin)
+  assign current_sort = collection.sort_by | default: collection.default_sort_by
+
+  # Sidebar is shown when filtering is on AND there is something in it:
+  # the "Categories" list and/or filters set up in Search & Discovery
+  assign show_categories = false
+  if section.settings.enable_filtering and section.settings.show_categories
+    assign show_categories = true
+  endif
+  assign has_filters = false
+  if section.settings.enable_filtering
+    if collection.filters.size > 0 or show_categories
+      assign has_filters = true
+    endif
+  endif
+
+  # Count active filters (each checked value = 1, a price range = 1)
+  assign active_filter_count = 0
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign active_filter_count = active_filter_count | plus: 1
+      endif
+    else
+      assign active_filter_count = active_filter_count | plus: filter.active_values.size
+    endif
+  endfor
+
+  # "Clear all" URL: the collection without filters, keeping the sort order
+  assign clear_all_url = collection.url | append: '?sort_by=' | append: current_sort
+
+  # Card image aspect ratio for CSS
+  case section.settings.image_ratio
+    when 'square'
+      assign card_ratio = '1 / 1'
+    when 'landscape'
+      assign card_ratio = '4 / 3'
+    else
+      assign card_ratio = '3 / 4'
+  endcase
+
+  # Responsive "sizes" for product images, based on the column settings
+  assign cols = section.settings.columns_desktop
+  assign mobile_cols = section.settings.columns_mobile
+  assign image_sizes = '(min-width: 990px) calc((min(100vw, 1200px) - 320px) / ' | append: cols | append: '), (min-width: 750px) calc(100vw / ' | append: cols | append: '), calc(100vw / ' | append: mobile_cols | append: ')'
+-%}
+
+{%- comment -%}
+  Section wrapper.
+  - data-collection / data-section-id → used by collection.js to find the
+    section and request its updated HTML.
+  - Column counts and card ratio are passed to CSS as custom properties.
+{%- endcomment -%}
+<div
+  class="page-width collection"
+  data-collection
+  data-section-id="{{ section.id }}"
+  style="--cols-desktop: {{ cols }}; --cols-mobile: {{ mobile_cols }}; --card-ratio: {{ card_ratio }};"
+>
+  {%- comment -%} Optional page title: turn on when the banner (which has the h1) is hidden {%- endcomment -%}
+  {%- if section.settings.show_title -%}
+    <h1 class="collection__title">{{ collection.title }}</h1>
+  {%- endif -%}
+
+  {%- paginate collection.products by section.settings.products_per_page -%}
+    {%- comment -%} One form holds filters + sort, so a single submit/change sends them all {%- endcomment -%}
+    <form
+      id="CollectionForm-{{ section.id }}"
+      class="collection__form"
+      action="{{ collection.url }}"
+      method="get"
+      data-filters-form
+    >
+      {%- comment -%} ---------- Toolbar ---------- {%- endcomment -%}
+      <div class="collection__toolbar">
+        {%- comment -%} Opens the filter drawer (only visible on mobile, with JS) {%- endcomment -%}
+        {%- if has_filters -%}
+          <button
+            type="button"
+            class="collection__filter-toggle"
+            data-filters-open
+            aria-controls="CollectionFilters-{{ section.id }}"
+            aria-expanded="false"
+          >
+            {{ 'collections.filter' | t }}
+            <span data-active-count>
+              {%- if active_filter_count > 0 %} ({{ active_filter_count }}){% endif -%}
+            </span>
+          </button>
+        {%- endif -%}
+
+        {%- comment -%} Number of products matching the current filters {%- endcomment -%}
+        <p class="collection__count" data-product-count>
+          {%- comment -%} "1 product" / "24 products": plural forms come from locales {%- endcomment -%}
+          {{ 'collections.product_count' | t: count: collection.products_count }}
+        </p>
+
+        {%- comment -%} Sort dropdown (options come from Shopify: best selling, price, A–Z, …) {%- endcomment -%}
+        {%- if section.settings.enable_sorting -%}
+          <div class="collection__sort" data-sort>
+            <label for="SortBy-{{ section.id }}">{{ 'collections.sort_by' | t }}</label>
+            <select id="SortBy-{{ section.id }}" name="sort_by">
+              {%- for option in collection.sort_options -%}
+                <option value="{{ option.value | escape }}"{% if option.value == current_sort %} selected{% endif %}>
+                  {{- option.name | escape -}}
+                </option>
+              {%- endfor -%}
+            </select>
+            {%- comment -%} Only shown without JS (hidden by .is-js in CSS) {%- endcomment -%}
+            <button type="submit" class="button collection__no-js-submit">{{ 'collections.sort' | t }}</button>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="collection__layout{% if has_filters %} collection__layout--has-filters{% endif %}">
+        {%- comment -%} ---------- Filters: sidebar on desktop, drawer on mobile ---------- {%- endcomment -%}
+        {%- if has_filters -%}
+          <aside
+            id="CollectionFilters-{{ section.id }}"
+            class="collection-filters"
+            aria-label="{{ 'collections.filters_label' | t }}"
+          >
+            {%- comment -%} Drawer header (mobile only) {%- endcomment -%}
+            <div class="collection-filters__header">
+              <h2 class="collection-filters__title">{{ 'collections.filter' | t }}</h2>
+              <button type="button" class="collection-filters__close" data-filters-close aria-label="{{ 'collections.close_filters' | t }}">
+                &times;
+              </button>
+            </div>
+
+            {%- comment -%}
+              Filter groups — replaced by collection.js after each change (counts update).
+              1. Categories: links to other collections (snippets/collection-categories.liquid)
+              2. Filters from Search & Discovery: variant options (color swatches,
+                 size pills), star rating, price, type, … (snippets/collection-filters.liquid)
+            {%- endcomment -%}
+            <div class="collection-filters__body" data-filters-body>
+              {%- if show_categories -%}
+                {% render 'collection-categories',
+                  menu: section.settings.categories_menu,
+                  show_count: section.settings.categories_show_count,
+                  open: section.settings.categories_open
+                %}
+              {%- endif -%}
+              {% render 'collection-filters', filters: collection.filters, section_id: section.id %}
+            </div>
+
+            <div class="collection-filters__footer">
+              {%- comment -%} No-JS fallback: applies filters with a normal page load {%- endcomment -%}
+              <button type="submit" class="button collection__no-js-submit">{{ 'collections.apply_filters' | t }}</button>
+              {%- comment -%} JS + mobile: results update live, this just closes the drawer {%- endcomment -%}
+              <button type="button" class="button collection-filters__done" data-filters-close>
+                {{ 'collections.view_results' | t }}
+              </button>
+            </div>
+          </aside>
+
+          {%- comment -%} Dark overlay behind the open drawer; click closes it {%- endcomment -%}
+          <div class="collection-filters__overlay" data-filters-close></div>
+        {%- endif -%}
+
+        <div class="collection__results">
+          {%- comment -%} ---------- Active filters (removable pills) ---------- {%- endcomment -%}
+          <div class="active-filters" data-active-filters>
+            {%- if active_filter_count > 0 -%}
+              <ul class="active-filters__list" role="list">
+                {%- for filter in collection.filters -%}
+                  {%- if filter.type == 'price_range' -%}
+                    {%- comment -%} Price range pill, e.g. "Rs. 500.00 – Rs. 2,000.00" {%- endcomment -%}
+                    {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+                      <li>
+                        <a class="active-filters__pill" href="{{ filter.url_to_remove }}" data-ajax-link>
+                          {{ filter.min_value.value | default: 0 | money }} &ndash;
+                          {{ filter.max_value.value | default: filter.range_max | money }}
+                          <span aria-hidden="true">&times;</span>
+                          <span class="visually-hidden">{{ 'collections.remove_filter' | t }}</span>
+                        </a>
+                      </li>
+                    {%- endif -%}
+                  {%- else -%}
+                    {%- comment -%} One pill per checked value, e.g. "Color: Red" {%- endcomment -%}
+                    {%- for value in filter.active_values -%}
+                      <li>
+                        <a class="active-filters__pill" href="{{ value.url_to_remove }}" data-ajax-link>
+                          {{ filter.label | escape }}: {{ value.label | escape }}
+                          <span aria-hidden="true">&times;</span>
+                          <span class="visually-hidden">{{ 'collections.remove_filter' | t }}</span>
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                <li>
+                  <a class="active-filters__clear" href="{{ clear_all_url }}" data-ajax-link>{{ 'collections.clear_all' | t }}</a>
+                </li>
+              </ul>
+            {%- endif -%}
+          </div>
+
+          {%- comment -%} ---------- Results: grid / empty state + pagination ---------- {%- endcomment -%}
+          <div data-results>
+            {%- if collection.products.size > 0 -%}
+              <ul class="product-grid" role="list">
+                {%- for product in collection.products -%}
+                  <li class="product-grid__item">
+                    {% render 'global-product-card',
+                      product: product,
+                      image_sizes: image_sizes,
+                      show_secondary_image: section.settings.show_secondary_image,
+                      show_vendor: section.settings.show_vendor,
+                      show_options: true
+                    %}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- else -%}
+              {%- comment -%} Empty state: different message when filters caused it {%- endcomment -%}
+              <div class="collection__empty">
+                {%- if active_filter_count > 0 -%}
+                  <p>{{ 'collections.no_matches' | t }}</p>
+                  <a class="button" href="{{ clear_all_url }}" data-ajax-link>{{ 'collections.clear_all_filters' | t }}</a>
+                {%- else -%}
+                  <p>{{ 'collections.empty' | t }}</p>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+
+            {%- comment -%}
+              Pagination: links keep the active filters and sort in their URLs.
+              data-scroll-top → collection.js scrolls back to the top of the grid.
+            {%- endcomment -%}
+            {%- if paginate.pages > 1 -%}
+              <nav class="pagination" aria-label="{{ 'collections.pagination_label' | t }}">
+                <ul class="pagination__list" role="list">
+                  {%- if paginate.previous -%}
+                    <li>
+                      <a href="{{ paginate.previous.url }}" class="pagination__link" data-ajax-link data-scroll-top aria-label="{{ 'collections.previous_page' | t }}">&larr;</a>
+                    </li>
+                  {%- endif -%}
+
+                  {%- for part in paginate.parts -%}
+                    <li>
+                      {%- if part.is_link -%}
+                        <a href="{{ part.url }}" class="pagination__link" data-ajax-link data-scroll-top>{{ part.title }}</a>
+                      {%- elsif part.title == paginate.current_page -%}
+                        <span class="pagination__link pagination__link--current" aria-current="page">{{ part.title }}</span>
+                      {%- else -%}
+                        {%- comment -%} Gap ("…") between page numbers {%- endcomment -%}
+                        <span class="pagination__link">{{ part.title }}</span>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+
+                  {%- if paginate.next -%}
+                    <li>
+                      <a href="{{ paginate.next.url }}" class="pagination__link" data-ajax-link data-scroll-top aria-label="{{ 'collections.next_page' | t }}">&rarr;</a>
+                    </li>
+                  {%- endif -%}
+                </ul>
+              </nav>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    </form>
+  {%- endpaginate -%}
+</div>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["collection"] → only available on collection pages.
+  Settings:
+  - Layout:               products_per_page (8–48), columns_desktop (2–5),
+                          columns_mobile (1–2), show_title
+  - Filtering & sorting:  enable_filtering, enable_sorting
+  - Categories:           show_categories, categories_menu (empty → all collections
+                          with products), categories_show_count, categories_open
+  - Product card:         image_ratio (portrait/square/landscape),
+                          show_secondary_image (on hover), show_vendor
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Product grid",
+  "tag": "section",
+  "class": "section-collection-main",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show collection title",
+      "info": "Turn on when the banner is hidden, so the page still has a title.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Filtering and sorting"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "label": "Enable filtering",
+      "info": "Choose which filters appear with the Shopify Search & Discovery app.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Enable sorting",
+      "default": true
+    },
+    {
+      "type": "paragraph",
+      "content": "Variant filters (Size, Color…) and a star rating filter: add them in Search & Discovery > Filters. Colors show as swatches and sizes as pills (option names from Theme settings > Product cards). A filter whose source contains \"rating\" shows stars."
+    },
+    {
+      "type": "header",
+      "content": "Categories"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_categories",
+      "label": "Show categories list",
+      "info": "Links to other collections, above the filters.",
+      "default": true
+    },
+    {
+      "type": "link_list",
+      "id": "categories_menu",
+      "label": "Category menu",
+      "info": "Links (and one level of sub-links) to list. Leave empty to list every collection that has products."
+    },
+    {
+      "type": "checkbox",
+      "id": "categories_show_count",
+      "label": "Show product counts",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "categories_open",
+      "label": "Open categories by default",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Product card"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "portrait", "label": "Portrait (3:4)" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "landscape", "label": "Landscape (4:3)" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second image on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product grid"
+    }
+  ]
+}
+{% endschema %}

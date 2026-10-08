@@ -1,0 +1,258 @@
+{%- comment -%}
+  ============================================================================
+  Section: Customer account (account dashboard, /account)
+  ----------------------------------------------------------------------------
+  The signed-in customer's home:
+
+      ┌──────────────────────────────────────────────────────────┐
+      │ (JD)  Hello, Jane                                        │ ← dark hero
+      │       Here's what's happening with your account.         │
+      └──────────────────────────────────────────────────────────┘
+      ┌────────────┐ ┌──────────────────────────────────────────┐
+      │ Dashboard  │ │ [Orders 4] [Spent $320] [Addr. 2] [♡ 6]  │ ← stats
+      │ Addresses  │ │ ORDER HISTORY                            │
+      │ Wishlist   │ │ #1004 ▢▢  Mar 3  Paid  Fulfilled  $79 →  │
+      │ Log out    │ │ #1003 ▢   Feb 9  Paid  Unfulfilled $54 → │
+      └────────────┘ │ ‹ 1 2 ›                                  │
+                     │ DEFAULT ADDRESS          [Manage]        │
+                     └──────────────────────────────────────────┘
+  - Orders: paginated (setting), each links to its order page
+    (sections/customer-order.liquid). Payment / fulfillment labels are
+    translated by Shopify (order.financial_status_label etc.).
+  - Wishlist number: filled by assets/global-product-card.js
+    ([data-wishlist-total]) from the customer's saved wishlist.
+
+  Used in:   templates/customers/account.json
+  CSS:       assets/customer.css (classes .customer*, .customer-orders*)
+  Text:      locales → customer.account.*
+  Editable:  Theme editor > Customer account (needs a signed-in preview)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Avatar initials, e.g. "JD" (falls back to the email's first letter)
+  assign first_initial = customer.first_name | slice: 0
+  assign last_initial = customer.last_name | slice: 0
+  assign initials = first_initial | append: last_initial | upcase
+  if initials == blank
+    assign initials = customer.email | slice: 0 | upcase
+  endif
+
+  if customer.first_name != blank
+    assign greeting = 'customer.account.greeting' | t: name: customer.first_name
+  else
+    assign greeting = 'customer.account.greeting_fallback' | t
+  endif
+
+  assign wishlist_url = pages.wishlist.url
+-%}
+
+<section class="page-width customer">
+  {%- comment -%} ---------- Hero: avatar + greeting ---------- {%- endcomment -%}
+  <header class="customer-hero">
+    <span class="customer-hero__glow" aria-hidden="true"></span>
+    <span class="customer-hero__avatar" aria-hidden="true">{{ initials }}</span>
+    <div>
+      <p class="customer-hero__eyebrow">{{ 'customer.account.title' | t }}</p>
+      <h1 class="customer-hero__title">{{ greeting }}</h1>
+      <p class="customer-hero__text">{{ 'customer.account.intro' | t }}</p>
+    </div>
+  </header>
+
+  <div class="customer__layout">
+    {% render 'customer-nav', current: 'dashboard' %}
+
+    <div class="customer__content">
+      {%- comment -%} ---------- Stats ---------- {%- endcomment -%}
+      {%- if section.settings.show_stats -%}
+        <ul class="customer-stats" role="list">
+          <li class="customer-stat">
+            <span class="customer-stat__icon" aria-hidden="true">{% render 'global-icon', name: 'box', size: 20 %}</span>
+            <span class="customer-stat__value">{{ customer.orders_count }}</span>
+            <span class="customer-stat__label">{{ 'customer.account.stat_orders' | t }}</span>
+          </li>
+          <li class="customer-stat">
+            <span class="customer-stat__icon" aria-hidden="true">{% render 'global-icon', name: 'bolt', size: 20 %}</span>
+            <span class="customer-stat__value">{{ customer.total_spent | money }}</span>
+            <span class="customer-stat__label">{{ 'customer.account.stat_spent' | t }}</span>
+          </li>
+          <li class="customer-stat">
+            <a href="{{ routes.account_addresses_url }}" class="customer-stat__link">
+              <span class="customer-stat__icon" aria-hidden="true">{% render 'global-icon', name: 'map-pin', size: 20 %}</span>
+              <span class="customer-stat__value">{{ customer.addresses_count }}</span>
+              <span class="customer-stat__label">{{ 'customer.account.stat_addresses' | t }}</span>
+            </a>
+          </li>
+          {%- if wishlist_url != blank -%}
+            <li class="customer-stat">
+              <a href="{{ wishlist_url }}" class="customer-stat__link">
+                <span class="customer-stat__icon customer-stat__icon--accent" aria-hidden="true">{% render 'global-icon', name: 'heart', size: 20 %}</span>
+                <span class="customer-stat__value" data-wishlist-total>0</span>
+                <span class="customer-stat__label">{{ 'customer.account.stat_wishlist' | t }}</span>
+              </a>
+            </li>
+          {%- endif -%}
+        </ul>
+      {%- endif -%}
+
+      {%- comment -%} ---------- Order history ---------- {%- endcomment -%}
+      <div class="customer-box">
+        <h2 class="customer-box__title">{{ 'customer.account.orders_title' | t }}</h2>
+
+        {%- paginate customer.orders by section.settings.orders_per_page -%}
+          {%- if customer.orders.size > 0 -%}
+            <div class="customer-orders">
+              {%- comment -%} Column titles (hidden on phones, where rows become cards) {%- endcomment -%}
+              <div class="customer-orders__row customer-orders__row--head" aria-hidden="true">
+                <span>{{ 'customer.account.order' | t }}</span>
+                <span>{{ 'customer.account.date' | t }}</span>
+                <span>{{ 'customer.account.payment' | t }}</span>
+                <span>{{ 'customer.account.fulfillment' | t }}</span>
+                <span class="customer-orders__total">{{ 'customer.account.total' | t }}</span>
+                <span></span>
+              </div>
+              <ul class="customer-orders__list" role="list">
+                {%- for order in customer.orders -%}
+                  {%- liquid
+                    assign fulfillment = order.fulfillment_status | default: 'unfulfilled'
+                    if order.cancelled
+                      assign fulfillment = 'cancelled'
+                    endif
+                  -%}
+                  <li class="customer-orders__row">
+                    {%- comment -%} Order number + up to 3 product thumbnails {%- endcomment -%}
+                    <div class="customer-orders__order">
+                      <a href="{{ order.customer_url }}" class="customer-orders__name">{{ order.name }}</a>
+                      <span class="customer-orders__thumbs" aria-hidden="true">
+                        {%- for line_item in order.line_items limit: 3 -%}
+                          {%- if line_item.image -%}
+                            {{ line_item.image | image_url: width: 96 | image_tag: loading: 'lazy', alt: '', class: 'customer-orders__thumb' }}
+                          {%- endif -%}
+                        {%- endfor -%}
+                        {%- if order.line_items.size > 3 -%}
+                          <span class="customer-orders__more">+{{ order.line_items.size | minus: 3 }}</span>
+                        {%- endif -%}
+                      </span>
+                    </div>
+                    <span class="customer-orders__cell" data-label="{{ 'customer.account.date' | t }}">
+                      {{- order.created_at | date: format: 'month_day_year' -}}
+                    </span>
+                    <span class="customer-orders__cell" data-label="{{ 'customer.account.payment' | t }}">
+                      <span class="customer-badge customer-badge--{{ order.financial_status | handle }}">{{ order.financial_status_label }}</span>
+                    </span>
+                    <span class="customer-orders__cell" data-label="{{ 'customer.account.fulfillment' | t }}">
+                      <span class="customer-badge customer-badge--{{ fulfillment | handle }}">{{ order.fulfillment_status_label }}</span>
+                    </span>
+                    <span class="customer-orders__cell customer-orders__total" data-label="{{ 'customer.account.total' | t }}">
+                      {{- order.total_price | money -}}
+                    </span>
+                    <a
+                      href="{{ order.customer_url }}"
+                      class="customer-orders__view"
+                      aria-label="{{ 'customer.account.view_order_label' | t: name: order.name }}"
+                    >
+                      <span class="customer-orders__view-text">{{ 'customer.account.view_order' | t }}</span>
+                      {% render 'global-icon', name: 'arrow-right', size: 16 %}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+
+            {%- comment -%} Pagination: ‹ previous | 1 2 3 | next › {%- endcomment -%}
+            {%- if paginate.pages > 1 -%}
+              <nav class="customer-pagination" aria-label="{{ 'collections.pagination_label' | t }}">
+                {%- if paginate.previous -%}
+                  <a href="{{ paginate.previous.url }}" class="customer-pagination__arrow" aria-label="{{ 'collections.previous_page' | t }}">
+                    {% render 'global-icon', name: 'chevron-left', size: 16 %}
+                  </a>
+                {%- endif -%}
+                {%- for part in paginate.parts -%}
+                  {%- if part.is_link -%}
+                    <a href="{{ part.url }}" class="customer-pagination__page">{{ part.title }}</a>
+                  {%- elsif part.title == paginate.current_page -%}
+                    <span class="customer-pagination__page is-current" aria-current="page">{{ part.title }}</span>
+                  {%- else -%}
+                    <span class="customer-pagination__page">{{ part.title }}</span>
+                  {%- endif -%}
+                {%- endfor -%}
+                {%- if paginate.next -%}
+                  <a href="{{ paginate.next.url }}" class="customer-pagination__arrow" aria-label="{{ 'collections.next_page' | t }}">
+                    {% render 'global-icon', name: 'chevron-right', size: 16 %}
+                  </a>
+                {%- endif -%}
+              </nav>
+            {%- endif -%}
+          {%- else -%}
+            {%- comment -%} No orders yet {%- endcomment -%}
+            <div class="customer-empty">
+              <span class="customer-empty__icon" aria-hidden="true">{% render 'global-icon', name: 'box', size: 30 %}</span>
+              <h3 class="customer-empty__title">{{ 'customer.account.no_orders_title' | t }}</h3>
+              <p>{{ 'customer.account.no_orders_text' | t }}</p>
+              <a href="{{ section.settings.shop_link | default: routes.all_products_collection_url }}" class="button customer-button">
+                {{ 'customer.account.start_shopping' | t }}
+                {% render 'global-icon', name: 'arrow-right', size: 16 %}
+              </a>
+            </div>
+          {%- endif -%}
+        {%- endpaginate -%}
+      </div>
+
+      {%- comment -%} ---------- Default address ---------- {%- endcomment -%}
+      <div class="customer-box">
+        <div class="customer-box__head">
+          <h2 class="customer-box__title">{{ 'customer.account.default_address' | t }}</h2>
+          <a href="{{ routes.account_addresses_url }}" class="customer-box__link">
+            {{- 'customer.account.manage_addresses' | t -}}
+          </a>
+        </div>
+        {%- if customer.default_address -%}
+          <address class="customer-address">{{ customer.default_address | format_address }}</address>
+        {%- else -%}
+          <p class="customer-muted">{{ 'customer.account.no_address' | t }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: only the account dashboard template.
+  Settings: show_stats (number tiles), orders_per_page (5–20),
+            shop_link ("Start shopping" when there are no orders; empty → All products)
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Customer account",
+  "tag": "div",
+  "class": "section-customer-account",
+  "enabled_on": {
+    "templates": ["customers/account"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_stats",
+      "label": "Show account numbers",
+      "info": "Orders, total spent, saved addresses and wishlist items.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "orders_per_page",
+      "label": "Orders per page",
+      "min": 5,
+      "max": 20,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "url",
+      "id": "shop_link",
+      "label": "\"Start shopping\" link",
+      "info": "Shown when the customer has no orders. Leave empty for All products."
+    }
+  ]
+}
+{% endschema %}

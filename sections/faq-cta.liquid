@@ -1,0 +1,72 @@
+{%- comment -%}
+  ============================================================================
+  Section: FAQ CTA ("Still have questions?", FAQ page)
+  ----------------------------------------------------------------------------
+      ┌──────────────────────────────────────────────────────┐
+      │ (💬)  Still have questions?          [ CONTACT US ]  │  ← dark rounded card
+      │       Our team is happy to help…      hello@…         │
+      └──────────────────────────────────────────────────────┘
+  Animated (GSAP → initFaqCta): the card opens from a smaller, rounder
+  shape as it scrolls in (scrubbed); the button is magnetic.
+
+  Used in:   templates/page.faq.json
+  CSS:       assets/faq.css → "4. Still have questions" (.faq-cta*)
+  JS:        assets/global-scroll-animations.js → initFaqCta()
+  Text:      locales → faq.still_title / still_text / contact_button (settings override)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign contact_url = section.settings.button_link | default: pages.contact.url | default: '/pages/contact'
+  assign cta_email = section.settings.email | default: shop.email
+-%}
+
+<section
+  class="faq faq-cta{% if section.settings.serif %} faq--serif{% endif %}"
+  data-scroll-fx="faq-cta"
+  style="--faq-text: {{ section.settings.card_color }}; --faq-card-text: {{ section.settings.card_text_color }}; --faq-accent: {{ section.settings.accent_color }};"
+>
+  <div class="faq__inner">
+    <div class="faq-cta__card" data-faq-cta-card>
+      <span class="faq-cta__icon" aria-hidden="true">{% render 'global-icon', name: 'chat', size: 28 %}</span>
+      <div class="faq-cta__text">
+        <h2 class="faq-cta__title">
+          {%- if section.settings.title != blank -%}{{ section.settings.title | escape }}{%- else -%}{{ 'faq.still_title' | t }}{%- endif -%}
+        </h2>
+        <p>
+          {%- if section.settings.text != blank -%}{{ section.settings.text | escape }}{%- else -%}{{ 'faq.still_text' | t }}{%- endif -%}
+        </p>
+      </div>
+      <div class="faq-cta__actions">
+        <a href="{{ contact_url }}" class="button button--lg faq-cta__button" data-magnetic>
+          {{- 'faq.contact_button' | t }}
+          {% render 'global-icon', name: 'arrow-right', size: 16 %}
+        </a>
+        {%- if cta_email != blank -%}
+          <a href="mailto:{{ cta_email }}" class="faq-cta__email">{{ cta_email | escape }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%} Schema — settings: title, text, button link, email, serif, colors {%- endcomment -%}
+{% schema %}
+{
+  "name": "FAQ: still have questions",
+  "tag": "div",
+  "class": "section-faq-cta",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "text", "id": "title", "label": "Title", "info": "Leave empty for the translated default." },
+    { "type": "text", "id": "text", "label": "Text", "info": "Leave empty for the translated default." },
+    { "type": "url", "id": "button_link", "label": "Button link", "info": "Leave empty for the Contact page." },
+    { "type": "text", "id": "email", "label": "Email", "info": "Leave empty to use the store email." },
+    { "type": "checkbox", "id": "serif", "label": "Serif title", "default": true },
+    { "type": "color", "id": "card_color", "label": "Card", "default": "#2F3A2F" },
+    { "type": "color", "id": "card_text_color", "label": "Card text", "default": "#F6F3EC" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "presets": [{ "name": "FAQ: still have questions" }]
+}
+{% endschema %}

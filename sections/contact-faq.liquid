@@ -1,0 +1,129 @@
+{%- comment -%}
+  ============================================================================
+  Section: Contact FAQ (questions & answers, Contact page)
+  ----------------------------------------------------------------------------
+      ┌────────────────────────┐ ┌──────────────────────────────────────┐
+      │ FAQ                    │ │ How long does shipping take?      (+)│
+      │ Quick answers          │ │──────────────────────────────────────│
+      │ Can't find it? Write   │ │ Can I return an item?             (−)│
+      │ to us above.           │ │   Yes — within 30 days…              │
+      └────────────────────────┘ └──────────────────────────────────────┘
+  One question per block. Built on <details>/<summary>, so it works
+  without JavaScript too.
+  Animated (GSAP, assets/global-scroll-animations.js → initContactFaq): the
+  questions slide up one after another; answers open and close with a
+  smooth height animation; the + turns into − (CSS).
+
+  Used in:   templates/page.contact.json
+  CSS:       assets/contact.css → "5. FAQ" (.contact-faq*)
+  JS:        assets/global-scroll-animations.js → initContactFaq()
+  Content from the page editor (Online Store > Pages > Contact): page
+  fields contact.faq_eyebrow, contact.faq_heading, contact.faq_text, and
+  the lists contact.faq_questions + contact.faq_answers (paired in order:
+  1st question ↔ 1st answer). When the questions list is filled it
+  replaces the question blocks; otherwise the blocks below are used.
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Page fields (Online Store > Pages > Contact) first, then the section settings
+  assign mf = page.metafields.contact
+  assign faq_eyebrow = mf.faq_eyebrow.value | default: section.settings.eyebrow
+  assign faq_heading = mf.faq_heading.value | default: section.settings.heading
+  if mf.faq_text.value != blank
+    assign faq_text = mf.faq_text.value | escape | newline_to_br | prepend: '<p>' | append: '</p>'
+  else
+    assign faq_text = section.settings.text
+  endif
+  assign page_questions = mf.faq_questions.value
+  assign page_answers = mf.faq_answers.value
+-%}
+
+<section
+  class="contact contact-faq{% if section.settings.serif %} contact--serif{% endif %}"
+  data-scroll-fx="contact-faq"
+  style="--contact-bg: {{ section.settings.background_color }}; --contact-text: {{ section.settings.text_color }}; --contact-accent: {{ section.settings.accent_color }};"
+>
+  <div class="contact__inner contact-faq__grid">
+    <div class="contact-faq__intro">
+      {%- if faq_eyebrow != blank -%}
+        <p class="contact__eyebrow" data-fade>{{ faq_eyebrow | escape }}</p>
+      {%- endif -%}
+      <h2 class="contact__heading" data-split>{{ faq_heading | escape }}</h2>
+      {%- if faq_text != blank -%}
+        <div class="contact__text" data-fade>{{ faq_text }}</div>
+      {%- endif -%}
+    </div>
+
+    <div class="contact-faq__list" role="group" aria-label="{{ 'contact.faq_label' | t }}">
+      {%- if page_questions != blank -%}
+        {%- comment -%} From the page fields: questions list + answers list, paired by position {%- endcomment -%}
+        {%- for question in page_questions -%}
+          {%- assign answer = page_answers[forloop.index0] -%}
+          <details class="contact-faq__item" data-faq {% if forloop.first and section.settings.open_first %}open{% endif %}>
+            <summary class="contact-faq__question">
+              <span>{{ question | escape }}</span>
+              <span class="contact-faq__icon" aria-hidden="true"></span>
+            </summary>
+            <div class="contact-faq__answer" data-faq-answer>
+              <div class="contact-faq__answer-inner"><p>{{ answer | escape | newline_to_br }}</p></div>
+            </div>
+          </details>
+        {%- endfor -%}
+      {%- else -%}
+      {%- for block in section.blocks -%}
+        <details class="contact-faq__item" data-faq {% if forloop.first and section.settings.open_first %}open{% endif %} {{ block.shopify_attributes }}>
+          <summary class="contact-faq__question">
+            <span>{{ block.settings.question | escape }}</span>
+            <span class="contact-faq__icon" aria-hidden="true"></span>
+          </summary>
+          <div class="contact-faq__answer" data-faq-answer>
+            <div class="contact-faq__answer-inner">{{ block.settings.answer }}</div>
+          </div>
+        </details>
+      {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema — settings: eyebrow, heading, text, open_first, serif, colors
+  blocks: question (question, answer)
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Contact: FAQ",
+  "tag": "div",
+  "class": "section-contact-faq",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "paragraph", "content": "Headings, text and the questions/answers can also be edited in Online Store > Pages > Contact (page fields contact.*). Filled page fields replace the values and question blocks here." },
+    { "type": "text", "id": "eyebrow", "label": "Small heading", "default": "FAQ" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Quick answers" },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Can't find what you're looking for? Send us a message above.</p>" },
+    { "type": "checkbox", "id": "open_first", "label": "Open the first question", "default": true },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "serif", "label": "Serif heading", "default": true },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#E9E2D3" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question", "default": "Your question" },
+        { "type": "richtext", "id": "answer", "label": "Answer", "default": "<p>Your answer.</p>" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Contact: FAQ",
+      "blocks": [{ "type": "question" }, { "type": "question" }, { "type": "question" }]
+    }
+  ]
+}
+{% endschema %}

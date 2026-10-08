@@ -1,0 +1,230 @@
+{%- comment -%}
+  ============================================================================
+  Section: Blog main (blog page, /blogs/<handle>)
+  ----------------------------------------------------------------------------
+                         JOURNAL
+                    News & style notes              ← blog title, words rise
+               Stories, outfit ideas and care tips
+         [ All ] [ Style ] [ Care ] [ Trends ] …     ← topics (tags) → filtered pages
+      ┌──────────────────────────────┬────────────────┐
+      │                              │ FEATURED       │ ← newest post, large
+      │         photo                │ Title…         │   (first page, no topic)
+      │                              │ Read more →    │
+      └──────────────────────────────┴────────────────┘
+      ┌──────────┐ ┌──────────┐ ┌──────────┐
+      │  card    │ │  card    │ │  card    │            ← snippets/blog-card.liquid
+      └──────────┘ └──────────┘ └──────────┘
+                      ‹ 1 2 3 ›
+  Layout from the Athora theme's blog page (centered title, 3-column grid
+  of rounded cards with a topic pill, date and "Read more").
+  Animated (GSAP, assets/global-scroll-animations.js → initBlogMain):
+  title words rise; topic pills pop in; the featured photo grows from an
+  inset card; cards rise one after another with their photos unveiling.
+
+  No posts yet + "Show sample posts" on: 6 sample cards (photos from
+  Content > Files) show the design — turn the setting off before launch.
+  Posts are added in Shopify admin > Online Store > Blog posts.
+
+  Used in:   templates/blog.json
+  Snippets:  snippets/blog-card.liquid
+  CSS:       assets/blog.css (classes .blog*, .blog-card*)
+  JS:        assets/global-scroll-animations.js → initBlogMain()
+  Text:      locales → blog.*; heading / intro in the theme editor
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  if section.settings.heading != blank
+    assign heading = section.settings.heading
+  else
+    assign heading = blog.title
+  endif
+
+  # Featured post: newest post, on the first page, when not filtered by a topic
+  assign show_featured = false
+  if section.settings.show_featured and current_tags == blank and blog.articles_count > 1
+    assign show_featured = true
+  endif
+
+  # Sample cards while the blog is empty: title|tag|image (Content > Files)|excerpt,
+  # separated by "~" (double quotes: the texts contain apostrophes)
+  assign samples = "Five easy pieces for a smarter wardrobe|Style|photo-1516762689617-e1cffcef479d_388c7393-ee09-40fb-8858-f840023d5676.jpg|Build a closet that works every morning with five versatile basics.~How to style an oversized hoodie|Trends|photo-1529139574466-a303027c1d8b_07fb9522-30e0-4861-a641-de148de545dc.jpg|Three looks, one hoodie: from errands to dinner plans.~The denim guide: fits that flatter|Guides|photo-1517841905240-472988babdf9_6a381994-0630-4ecf-941b-9d6fb3ba522f.jpg|Straight, relaxed or wide-leg? Find the cut that suits you.~Caring for knits so they last for years|Care|photo-1490481651871-ab68de25d43d_e0a6c406-4da5-4a87-9a71-91f0f3f9e93f.jpg|Wash less, fold more and say goodbye to pilling.~Weekend layers for changing weather|Style|photo-1525507119028-ed4c629a60a3_562f9089-89e4-459a-acf0-718b9984cb98.jpg|Smart layering that keeps up when the forecast doesn't.~Accessories that finish a look|Trends|photo-1516762689617-e1cffcef479d_388c7393-ee09-40fb-8858-f840023d5676.jpg|Belts, bags and watches that pull an outfit together.~Our guide to fabrics you can feel good about|Guides|photo-1529139574466-a303027c1d8b_07fb9522-30e0-4861-a641-de148de545dc.jpg|Cotton, linen and wool blends: what to look for on the label." | split: '~'
+-%}
+
+<section
+  class="blog{% if section.settings.serif %} blog--serif{% endif %}"
+  data-scroll-fx="blog-main"
+  style="--blog-bg: {{ section.settings.background_color }}; --blog-text: {{ section.settings.text_color }}; --blog-accent: {{ section.settings.accent_color }}; --blog-columns: {{ section.settings.columns }}; --blog-ratio: {{ section.settings.image_ratio }};"
+>
+  {%- comment -%} ---------- Hero: eyebrow, title, intro, topics ---------- {%- endcomment -%}
+  <header class="blog-hero">
+    <div class="blog__inner">
+      <p class="blog__eyebrow" data-fade>
+        {%- if section.settings.eyebrow != blank -%}{{ section.settings.eyebrow | escape }}{%- else -%}{{ 'blog.eyebrow' | t }}{%- endif -%}
+      </p>
+      <h1 class="blog-hero__title" data-split>{{ heading | escape }}</h1>
+      {%- if section.settings.intro != blank -%}
+        <div class="blog-hero__intro" data-fade>{{ section.settings.intro }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.show_tags and blog.all_tags.size > 0 -%}
+        <nav class="blog-tags" aria-label="{{ 'blog.tags_label' | t }}">
+          <a href="{{ blog.url }}" class="blog-tag{% if current_tags == blank %} is-active{% endif %}" data-blog-tag {% if current_tags == blank %}aria-current="page"{% endif %}>
+            {{- 'blog.all' | t -}}
+          </a>
+          {%- for tag in blog.all_tags -%}
+            {%- assign is_current = false -%}
+            {%- if current_tags contains tag -%}{%- assign is_current = true -%}{%- endif -%}
+            <a href="{{ blog.url }}/tagged/{{ tag | handleize }}" class="blog-tag{% if is_current %} is-active{% endif %}" data-blog-tag {% if is_current %}aria-current="page"{% endif %}>
+              {{- tag | escape -}}
+            </a>
+          {%- endfor -%}
+        </nav>
+      {%- endif -%}
+    </div>
+  </header>
+
+  <div class="blog__inner blog__body">
+    {%- paginate blog.articles by section.settings.per_page -%}
+      {%- if blog.articles.size > 0 -%}
+        {%- comment -%} Featured (first page only) {%- endcomment -%}
+        {%- assign grid_offset = 0 -%}
+        {%- if show_featured and paginate.current_page == 1 -%}
+          {%- assign grid_offset = 1 -%}
+          <div class="blog-featured" data-blog-featured>
+            {% render 'blog-card',
+              article: blog.articles.first,
+              featured: true,
+              heading_tag: 'h2',
+              show_excerpt: true,
+              show_date: section.settings.show_date,
+              show_reading_time: section.settings.show_reading_time
+            %}
+          </div>
+        {%- endif -%}
+
+        <ul class="blog-grid" role="list">
+          {%- for article in blog.articles offset: grid_offset -%}
+            <li>
+              {% render 'blog-card',
+                article: article,
+                show_excerpt: section.settings.show_excerpt,
+                show_date: section.settings.show_date,
+                show_reading_time: section.settings.show_reading_time
+              %}
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        {%- comment -%} Pagination: ‹ 1 2 3 › {%- endcomment -%}
+        {%- if paginate.pages > 1 -%}
+          <nav class="blog-pagination" aria-label="{{ 'collections.pagination_label' | t }}">
+            {%- if paginate.previous -%}
+              <a href="{{ paginate.previous.url }}" class="blog-pagination__item" aria-label="{{ 'collections.previous_page' | t }}">
+                {% render 'global-icon', name: 'chevron-left', size: 16 %}
+              </a>
+            {%- endif -%}
+            {%- for part in paginate.parts -%}
+              {%- if part.is_link -%}
+                <a href="{{ part.url }}" class="blog-pagination__item">{{ part.title }}</a>
+              {%- elsif part.title == paginate.current_page -%}
+                <span class="blog-pagination__item is-current" aria-current="page">{{ part.title }}</span>
+              {%- else -%}
+                <span class="blog-pagination__item">{{ part.title }}</span>
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if paginate.next -%}
+              <a href="{{ paginate.next.url }}" class="blog-pagination__item" aria-label="{{ 'collections.next_page' | t }}">
+                {% render 'global-icon', name: 'chevron-right', size: 16 %}
+              </a>
+            {%- endif -%}
+          </nav>
+        {%- endif -%}
+      {%- elsif section.settings.show_samples -%}
+        {%- comment -%} No posts yet: sample cards to preview the design {%- endcomment -%}
+        <div class="blog-featured" data-blog-featured>
+          {% render 'blog-card',
+            sample: samples[0],
+            sample_url: blog.url,
+            featured: true,
+            heading_tag: 'h2',
+            show_excerpt: true,
+            show_date: section.settings.show_date,
+            show_reading_time: section.settings.show_reading_time
+          %}
+        </div>
+        <ul class="blog-grid" role="list">
+          {%- for sample in samples offset: 1 -%}
+            <li>
+              {% render 'blog-card',
+                sample: sample,
+                sample_url: blog.url,
+                show_excerpt: section.settings.show_excerpt,
+                show_date: section.settings.show_date,
+                show_reading_time: section.settings.show_reading_time
+              %}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- else -%}
+        <div class="blog-empty" data-fade>
+          <h2 class="blog-empty__title">{{ 'blog.empty_title' | t }}</h2>
+          <p>{{ 'blog.empty_text' | t }}</p>
+        </div>
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+</section>
+
+{%- comment -%}
+  Schema — settings: eyebrow, heading (empty → blog title), intro, show_tags,
+  show_featured, per_page, columns, image_ratio, card details (excerpt,
+  date, reading time), show_samples (while empty), serif, colors
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Blog posts",
+  "tag": "div",
+  "class": "section-blog-main",
+  "enabled_on": { "templates": ["blog"] },
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small heading", "info": "Leave empty for the translated default (\"Journal\")." },
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Leave empty to use the blog's title." },
+    { "type": "richtext", "id": "intro", "label": "Intro", "default": "<p>Stories, outfit ideas and care tips from our studio.</p>" },
+    { "type": "checkbox", "id": "show_tags", "label": "Show topics (post tags)", "default": true },
+    { "type": "checkbox", "id": "show_featured", "label": "Show the newest post large", "default": true },
+    { "type": "range", "id": "per_page", "label": "Posts per page", "min": 6, "max": 24, "step": 1, "default": 10 },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Posts per row on desktop",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "4 / 3", "label": "Landscape (4:3)" },
+        { "value": "3 / 4", "label": "Portrait (3:4)" },
+        { "value": "1 / 1", "label": "Square (1:1)" }
+      ],
+      "default": "4 / 3"
+    },
+    { "type": "header", "content": "Cards" },
+    { "type": "checkbox", "id": "show_excerpt", "label": "Show excerpt", "default": true },
+    { "type": "checkbox", "id": "show_date", "label": "Show date", "default": true },
+    { "type": "checkbox", "id": "show_reading_time", "label": "Show reading time", "default": true },
+    { "type": "checkbox", "id": "show_samples", "label": "Show sample posts while the blog is empty", "info": "Preview cards with example titles. Turn off before launch.", "default": true },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "serif", "label": "Serif headings", "default": true },
+    { "type": "color", "id": "background_color", "label": "Hero background", "default": "#F6F3EC" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ]
+}
+{% endschema %}

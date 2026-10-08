@@ -1,0 +1,187 @@
+{%- comment -%}
+  ============================================================================
+  Section: Policy main (Privacy policy, Refund policy, Terms… pages)
+  ----------------------------------------------------------------------------
+      ━━━━━━━━━━━━━━━━━━━━━━━ reading progress bar (top of the screen)
+      LEGAL
+      Privacy policy                            ← page title
+      How we collect, use and protect…          ← intro (setting)
+      ┌──────────────────┐ ┌───────────────────────────────────────┐
+      │ ON THIS PAGE     │ │ Last updated: …                       │
+      │ ▍Personal info…  │ │ Fashion operates this store…          │
+      │  How we use…     │ │ ## Personal information we collect    │
+      │  Cookies         │ │ …                                     │
+      │  (sticky)        │ │ ┌ Questions about this policy? ─────┐ │
+      └──────────────────┘ │ └ [CONTACT US]  hello@…             ┘ │
+                           └───────────────────────────────────────┘   (↑)
+  Text source ("Content" setting):
+  - Automatic (default): the page's own content (Online Store > Pages);
+    when that is empty, the Shopify policy matching the page handle
+    (privacy-policy, refund-policy, shipping-policy, terms-of-service,
+    contact-information) from Settings > Policies — so the page stays in
+    sync with the policy written there. Any other handle → privacy policy.
+  - Or always a chosen Shopify policy / always the page content.
+  "On this page" is built by assets/policy.js from the text's headings
+  (h2), with the current section highlighted while reading; on phones it is
+  a dropdown above the text. Also: reading progress bar, Back to top.
+
+  Used in:   templates/page.policy.json
+  CSS:       assets/policy.css (classes .policy*)
+  JS:        assets/policy.js (contents list, progress bar, back to top)
+  Text:      locales → policy.*; intro and contact box texts in the theme editor
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Pick the text: the page's content, or a Shopify policy (Settings > Policies)
+  assign policy_body = ''
+  assign source = section.settings.source
+  if source == 'auto'
+    if page.content != blank
+      assign source = 'page'
+    else
+      case page.handle
+        when 'refund-policy', 'refund', 'returns', 'return-policy'
+          assign source = 'refund_policy'
+        when 'shipping-policy', 'shipping'
+          assign source = 'shipping_policy'
+        when 'terms-of-service', 'terms', 'terms-and-conditions'
+          assign source = 'terms_of_service'
+        when 'contact-information'
+          assign source = 'contact_information'
+        else
+          assign source = 'privacy_policy'
+      endcase
+    endif
+  endif
+  case source
+    when 'page'
+      assign policy_body = page.content
+    when 'refund_policy'
+      assign policy_body = shop.refund_policy.body
+    when 'shipping_policy'
+      assign policy_body = shop.shipping_policy.body
+    when 'terms_of_service'
+      assign policy_body = shop.terms_of_service.body
+    when 'contact_information'
+      assign policy_body = shop.contact_information.body
+    else
+      assign policy_body = shop.privacy_policy.body
+  endcase
+
+  assign contact_url = section.settings.contact_link | default: pages.contact.url | default: '/pages/contact'
+  assign contact_email = section.settings.email | default: shop.email
+-%}
+
+<section
+  class="policy{% if section.settings.serif %} policy--serif{% endif %}"
+  data-policy
+  style="--policy-bg: {{ section.settings.background_color }}; --policy-text: {{ section.settings.text_color }}; --policy-accent: {{ section.settings.accent_color }};"
+>
+  {%- comment -%} Reading progress (filled by policy.js) {%- endcomment -%}
+  <div class="policy-progress" aria-hidden="true"><span data-policy-progress></span></div>
+
+  {%- comment -%} ---------- Hero ---------- {%- endcomment -%}
+  <header class="policy-hero">
+    <div class="policy__inner">
+      <p class="policy-hero__eyebrow">
+        {%- if section.settings.eyebrow != blank -%}{{ section.settings.eyebrow | escape }}{%- else -%}{{ 'policy.eyebrow' | t }}{%- endif -%}
+      </p>
+      <h1 class="policy-hero__title">{{ page.title | escape }}</h1>
+      {%- if section.settings.intro != blank -%}
+        <div class="policy-hero__intro">{{ section.settings.intro }}</div>
+      {%- endif -%}
+    </div>
+  </header>
+
+  {%- comment -%} ---------- Contents list + text ---------- {%- endcomment -%}
+  <div class="policy__inner policy__layout">
+    {%- comment -%} Filled by policy.js from the h2 headings (hidden until then) {%- endcomment -%}
+    <nav class="policy-toc" aria-label="{{ 'policy.toc_title' | t }}" data-policy-toc hidden>
+      <details class="policy-toc__box" open data-policy-toc-details>
+        <summary class="policy-toc__title">{{ 'policy.toc_title' | t }}</summary>
+        <ol class="policy-toc__list" data-policy-toc-list></ol>
+      </details>
+    </nav>
+
+    <article class="policy__body">
+      {%- if policy_body != blank -%}
+        <div class="policy-rte" data-policy-content>{{ policy_body }}</div>
+      {%- else -%}
+        <p class="policy__empty">{{ 'policy.empty' | t }}</p>
+      {%- endif -%}
+
+      {%- comment -%} Questions box {%- endcomment -%}
+      {%- if section.settings.show_contact -%}
+        <aside class="policy-contact">
+          <div>
+            <h2 class="policy-contact__title">
+              {%- if section.settings.contact_title != blank -%}{{ section.settings.contact_title | escape }}{%- else -%}{{ 'policy.questions_title' | t }}{%- endif -%}
+            </h2>
+            <p class="policy-contact__text">
+              {%- if section.settings.contact_text != blank -%}{{ section.settings.contact_text | escape }}{%- else -%}{{ 'policy.questions_text' | t }}{%- endif -%}
+            </p>
+          </div>
+          <div class="policy-contact__actions">
+            <a href="{{ contact_url }}" class="button policy-button">
+              {{- 'policy.contact_button' | t -}}
+              {% render 'global-icon', name: 'arrow-right', size: 16 %}
+            </a>
+            {%- if contact_email != blank -%}
+              <a href="mailto:{{ contact_email }}" class="policy-contact__email">{{ contact_email | escape }}</a>
+            {%- endif -%}
+          </div>
+        </aside>
+      {%- endif -%}
+    </article>
+  </div>
+
+  {%- comment -%} Back to top (shown by policy.js after scrolling down) {%- endcomment -%}
+  <a href="#MainContent" class="policy-top" data-policy-top aria-label="{{ 'policy.back_to_top' | t }}" hidden>
+    {% render 'global-icon', name: 'chevron-up', size: 20 %}
+  </a>
+</section>
+
+{%- comment -%}
+  Schema — settings: source (auto / page / a Shopify policy), eyebrow, intro,
+  contact box (show, title, text, link, email), serif, colors
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Policy",
+  "tag": "div",
+  "class": "section-policy-main",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    {
+      "type": "select",
+      "id": "source",
+      "label": "Content",
+      "options": [
+        { "value": "auto", "label": "Automatic (page text, else policy)" },
+        { "value": "page", "label": "This page's content" },
+        { "value": "privacy_policy", "label": "Privacy policy (Settings > Policies)" },
+        { "value": "refund_policy", "label": "Refund policy (Settings > Policies)" },
+        { "value": "shipping_policy", "label": "Shipping policy (Settings > Policies)" },
+        { "value": "terms_of_service", "label": "Terms of service (Settings > Policies)" }
+      ],
+      "default": "auto",
+      "info": "Automatic: the page's own text from Online Store > Pages; when it's empty, the Shopify policy matching the page address (e.g. privacy-policy)."
+    },
+    { "type": "text", "id": "eyebrow", "label": "Small heading", "info": "Leave empty for the translated default (\"Legal\")." },
+    { "type": "richtext", "id": "intro", "label": "Intro", "default": "<p>How we collect, use and protect your personal information when you shop with us.</p>" },
+    { "type": "header", "content": "Questions box" },
+    { "type": "checkbox", "id": "show_contact", "label": "Show questions box", "default": true },
+    { "type": "text", "id": "contact_title", "label": "Title", "info": "Leave empty for the translated default." },
+    { "type": "text", "id": "contact_text", "label": "Text", "info": "Leave empty for the translated default." },
+    { "type": "url", "id": "contact_link", "label": "Button link", "info": "Leave empty for the Contact page." },
+    { "type": "text", "id": "email", "label": "Email", "info": "Leave empty to use the store email." },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "serif", "label": "Serif headings", "default": true },
+    { "type": "color", "id": "background_color", "label": "Hero background", "default": "#F6F3EC" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "presets": [{ "name": "Policy" }]
+}
+{% endschema %}

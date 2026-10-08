@@ -1,0 +1,43 @@
+/*
+ * ============================================================================
+ * Template: Search results (search.json) — /search?q=…
+ * ----------------------------------------------------------------------------
+ * Opened by the header search ("Show all results" / Enter).
+ * Sections:
+ *   main → sections/search-main.liquid (dark top band with title, search box
+ *          and type tabs; filters + sort + product cards like the collection
+ *          page; journal / page cards; popular searches + trending products
+ *          when nothing is found)
+ * Assets (layout/theme.liquid, template "search"): search.css,
+ * collection.css + collection.js (filters / sort / pagination), GSAP +
+ * global-scroll-animations.js (initSearchMain).
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "search-main",
+      "settings": {
+        "results_per_page": 24,
+        "columns_desktop": 3,
+        "columns_mobile": "2",
+        "show_tabs": true,
+        "enable_filtering": true,
+        "enable_sorting": true,
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "popular_searches": "Bags, Hoodie, Dress, Sneakers, Jacket, T-Shirt",
+        "show_trending": true,
+        "trending_count": 6,
+        "hero_background": "#121212",
+        "hero_text": "#FFFFFF",
+        "accent_color": "#C8102E"
+      }
+    }
+  },
+  "order": ["main"]
+}

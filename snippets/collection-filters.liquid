@@ -1,0 +1,293 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Collection filters
+  ----------------------------------------------------------------------------
+  Renders every filter group as a collapsible <details> element. Which
+  filters exist, and their order, is set in the Shopify "Search & Discovery"
+  app (Filters). Each filter is drawn in the style that fits it:
+
+  - price    → "From" / "To" number inputs              (Price)
+  - swatch   → color chips: ● Red  ● Navy               (variant option named
+               like a color in Theme settings > Product cards > "Color option
+               names", or a filter set to show swatches in the app)
+  - size     → pill buttons: [S] [M] [L] [XL]           (variant option named
+               like "Size option names" in Theme settings > Product cards)
+  - rating   → ★★★★★ (12) / ★★★★☆ (30) …, highest first  (any filter whose
+               source contains "rating", e.g. a product metafield
+               custom.star_rating — see README "Collection filters")
+  - list     → checkboxes                               (everything else:
+               product type, category, vendor, tags, availability, other
+               variant options, metafields)
+
+  Every value is a real checkbox / input named with Shopify's filter params
+  (filter.v.option.size, filter.p.m.custom.star_rating, …), so submitting
+  the parent form filters the collection (assets/collection.js does it
+  live). Pills and chips only hide the checkbox visually.
+
+  Parameters:
+  - filters    {Array<Filter>}  collection.filters
+  - section_id {String}         section.id, keeps input ids unique
+
+  Usage:
+  {% render 'collection-filters', filters: collection.filters, section_id: section.id %}
+
+  Used in:  sections/collection-main.liquid
+  CSS:      assets/collection.css → "4. Filters" (classes .filter*)
+  JS:       assets/collection.js (listens for changes on these inputs)
+  Text:     locales → collections.price_*, highest_price, rating_label
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Option names treated as colors / sizes (same settings as the product cards)
+  assign color_names = settings.card_color_option_names | downcase | split: ','
+  assign size_names = settings.card_size_option_names | downcase | split: ','
+-%}
+
+{%- for filter in filters -%}
+  {%- liquid
+    # Stable id for this group; collection.js uses it to remember open/closed state
+    assign filter_id = filter.param_name | handle
+
+    # Active count shown next to the group label
+    if filter.type == 'price_range'
+      assign active_count = 0
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign active_count = 1
+      endif
+    else
+      assign active_count = filter.active_values.size
+    endif
+
+    # How to draw this filter (see the header comment)
+    assign presentation = 'list'
+    assign label_down = filter.label | downcase | strip
+    if filter.type == 'price_range'
+      assign presentation = 'price'
+    elsif filter.param_name contains 'rating'
+      assign presentation = 'rating'
+    elsif filter.presentation == 'swatch'
+      assign presentation = 'swatch'
+    elsif filter.param_name contains 'filter.v.option.'
+      for name in color_names
+        assign clean_name = name | strip
+        if clean_name == label_down
+          assign presentation = 'swatch'
+        endif
+      endfor
+      for name in size_names
+        assign clean_name = name | strip
+        if clean_name == label_down
+          assign presentation = 'size'
+        endif
+      endfor
+    endif
+  -%}
+
+  {%- comment -%} Group starts open if it's one of the first 3 or has an active value {%- endcomment -%}
+  <details
+    class="filter filter--{{ presentation }}"
+    data-filter-id="{{ filter_id }}"
+    {% if forloop.index <= 3 or active_count > 0 %}open{% endif %}
+  >
+    <summary class="filter__summary">
+      <span class="filter__label-text">{{ filter.label | escape }}</span>
+      {%- if active_count > 0 -%}
+        <span class="filter__count">({{ active_count }})</span>
+      {%- endif -%}
+      <span class="filter__icon" aria-hidden="true"></span>
+    </summary>
+
+    <div class="filter__body">
+      {%- case presentation -%}
+        {%- when 'price' -%}
+          {%- liquid
+            # Shopify gives prices in cents; inputs show whole currency units
+            assign range_max = filter.range_max | divided_by: 100.0 | ceil
+            assign min_input_id = 'Filter-' | append: section_id | append: '-' | append: filter_id | append: '-min'
+            assign max_input_id = 'Filter-' | append: section_id | append: '-' | append: filter_id | append: '-max'
+          -%}
+          {%- comment -%} ---------- Price range: From / To ---------- {%- endcomment -%}
+          <div class="filter-price">
+            <div class="filter-price__field">
+              <label for="{{ min_input_id }}">{{ 'collections.price_from' | t }}</label>
+              <div class="filter-price__input-wrap">
+                <span class="filter-price__currency">{{ cart.currency.symbol }}</span>
+                <input
+                  type="number"
+                  id="{{ min_input_id }}"
+                  name="{{ filter.min_value.param_name }}"
+                  value="{% if filter.min_value.value != nil %}{{ filter.min_value.value | divided_by: 100.0 }}{% endif %}"
+                  placeholder="0"
+                  min="0"
+                  max="{{ range_max }}"
+                  step="any"
+                  inputmode="decimal"
+                >
+              </div>
+            </div>
+
+            <span class="filter-price__separator" aria-hidden="true">&ndash;</span>
+
+            <div class="filter-price__field">
+              <label for="{{ max_input_id }}">{{ 'collections.price_to' | t }}</label>
+              <div class="filter-price__input-wrap">
+                <span class="filter-price__currency">{{ cart.currency.symbol }}</span>
+                <input
+                  type="number"
+                  id="{{ max_input_id }}"
+                  name="{{ filter.max_value.param_name }}"
+                  value="{% if filter.max_value.value != nil %}{{ filter.max_value.value | divided_by: 100.0 }}{% endif %}"
+                  placeholder="{{ range_max }}"
+                  min="0"
+                  max="{{ range_max }}"
+                  step="any"
+                  inputmode="decimal"
+                >
+              </div>
+            </div>
+          </div>
+          {%- assign highest_price = filter.range_max | money -%}
+          <p class="filter-price__note">{{ 'collections.highest_price' | t: price: highest_price }}</p>
+
+        {%- when 'rating' -%}
+          {%- comment -%}
+            ---------- Star rating: ★★★★★ (12) ----------
+            Highest rating first. The stars come from the value (4.6 → 5 filled
+            stars after rounding); screen readers hear "4.6 out of 5 stars".
+            A value that isn't a number is shown as plain text.
+          {%- endcomment -%}
+          {%- assign rating_values = filter.values | sort: 'value' | reverse -%}
+          <ul class="filter__list filter-rating" role="list">
+            {%- for value in rating_values -%}
+              {%- liquid
+                assign input_id = 'Filter-' | append: section_id | append: '-' | append: filter_id | append: '-' | append: forloop.index
+                assign rating_number = value.label | plus: 0
+                assign rating_stars = rating_number | round
+              -%}
+              <li class="filter__item">
+                <input
+                  type="checkbox"
+                  class="filter__checkbox"
+                  id="{{ input_id }}"
+                  name="{{ value.param_name }}"
+                  value="{{ value.value | escape }}"
+                  {% if value.active %}checked{% endif %}
+                  {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                >
+                <label for="{{ input_id }}" class="filter__label">
+                  {%- if rating_number > 0 -%}
+                    <span class="filter-rating__stars" aria-hidden="true">
+                      {%- for i in (1..5) -%}
+                        <span class="filter-rating__star{% if i <= rating_stars %} is-filled{% endif %}">
+                          {%- render 'global-icon', name: 'star', size: 16 -%}
+                        </span>
+                      {%- endfor -%}
+                    </span>
+                    <span class="visually-hidden">{{ 'collections.rating_label' | t: rating: value.label }}</span>
+                  {%- else -%}
+                    <span>{{ value.label | escape }}</span>
+                  {%- endif -%}
+                  <span class="filter__value-count">({{ value.count }})</span>
+                </label>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+        {%- when 'swatch' -%}
+          {%- comment -%}
+            ---------- Colors: chips with a color dot ----------
+            Dot color: the swatch set in Shopify (color or image), else the
+            color list in snippets/global-swatch-color.liquid (Cream,
+            Charcoal, "Black Floral" → black…). If the browser still doesn't
+            understand it, the light grey stays.
+          {%- endcomment -%}
+          <ul class="filter-chips" role="list">
+            {%- for value in filter.values -%}
+              {%- liquid
+                assign input_id = 'Filter-' | append: section_id | append: '-' | append: filter_id | append: '-' | append: forloop.index
+                # Color names → CSS (Cream, Charcoal, "Black Floral" → black…)
+                capture css_color
+                  render 'global-swatch-color', value: value.label
+                endcapture
+              -%}
+              <li>
+                <input
+                  type="checkbox"
+                  class="filter-chips__input visually-hidden"
+                  id="{{ input_id }}"
+                  name="{{ value.param_name }}"
+                  value="{{ value.value | escape }}"
+                  {% if value.active %}checked{% endif %}
+                  {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                >
+                <label for="{{ input_id }}" class="filter-chips__chip" title="{{ value.label | escape }} ({{ value.count }})">
+                  {%- if value.swatch.image -%}
+                    <span
+                      class="filter-chips__dot"
+                      style="background-image: url('{{ value.swatch.image | image_url: width: 60 }}');"
+                      aria-hidden="true"
+                    ></span>
+                  {%- elsif value.swatch.color -%}
+                    <span class="filter-chips__dot" style="background-color: {{ value.swatch.color }};" aria-hidden="true"></span>
+                  {%- else -%}
+                    <span class="filter-chips__dot" style="background: #e5e5e5; background: {{ css_color }};" aria-hidden="true"></span>
+                  {%- endif -%}
+                  <span>{{ value.label | escape }}</span>
+                </label>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+        {%- when 'size' -%}
+          {%- comment -%} ---------- Sizes: pill buttons; sizes with no products are crossed out ---------- {%- endcomment -%}
+          <ul class="filter-pills" role="list">
+            {%- for value in filter.values -%}
+              {%- assign input_id = 'Filter-' | append: section_id | append: '-' | append: filter_id | append: '-' | append: forloop.index -%}
+              <li>
+                <input
+                  type="checkbox"
+                  class="filter-pills__input visually-hidden"
+                  id="{{ input_id }}"
+                  name="{{ value.param_name }}"
+                  value="{{ value.value | escape }}"
+                  {% if value.active %}checked{% endif %}
+                  {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                >
+                <label for="{{ input_id }}" class="filter-pills__pill" title="{{ value.label | escape }} ({{ value.count }})">
+                  {{- value.label | escape -}}
+                </label>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+        {%- else -%}
+          {%- comment -%} ---------- List / boolean: checkboxes ---------- {%- endcomment -%}
+          <ul class="filter__list" role="list">
+            {%- for value in filter.values -%}
+              {%- assign input_id = 'Filter-' | append: section_id | append: '-' | append: filter_id | append: '-' | append: forloop.index -%}
+              <li class="filter__item">
+                {%- comment -%}
+                  Values with 0 matching products are disabled (unless already checked,
+                  so the shopper can still uncheck them).
+                {%- endcomment -%}
+                <input
+                  type="checkbox"
+                  class="filter__checkbox"
+                  id="{{ input_id }}"
+                  name="{{ value.param_name }}"
+                  value="{{ value.value | escape }}"
+                  {% if value.active %}checked{% endif %}
+                  {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                >
+                <label for="{{ input_id }}" class="filter__label">
+                  <span>{{ value.label | escape }}</span>
+                  <span class="filter__value-count">({{ value.count }})</span>
+                </label>
+              </li>
+            {%- endfor -%}
+          </ul>
+      {%- endcase -%}
+    </div>
+  </details>
+{%- endfor -%}

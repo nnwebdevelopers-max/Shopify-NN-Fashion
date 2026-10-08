@@ -1,0 +1,165 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Header search (search bar + live results popup)
+  ----------------------------------------------------------------------------
+  Search bar in the header. When the shopper focuses it, a large popup opens
+  attached under the search bar, filling the header width:
+
+    ┌ Popular Search (chips) ─────────────────────────── [eye: show/hide] ┐
+    ├ Your Search History (chips) ─────────────────────── [trash: clear] ┤
+    ├ [Products] [Categories]  tabs                                      ┤
+    │  product cards / collections                                       │
+    │                      [ SHOW ALL RESULTS ]                          │
+    └────────────────────────────────────────────────────────────────────┘
+
+  - Results load only after `min_chars` characters are typed (default 3).
+  - Results come from Shopify's Predictive Search API, rendered by
+    sections/header-search-results.liquid and inserted by header-search.js.
+  - "Show all results" / pressing Enter → the full search page (/search?q=…).
+  - Search history is saved in the shopper's own browser (localStorage).
+  - Without JavaScript it is a normal search form (Enter → search page).
+
+  Parameters:
+  - placeholder       {String}   input placeholder
+  - min_chars         {Number}   characters before results load
+  - product_limit     {Number}   products in the popup (max 10)
+  - show_collections  {Boolean}  also search collections ("Categories" tab)
+  - show_popular      {Boolean}  show "Popular Search" chips
+  - popular_searches  {String}   comma-separated popular terms
+  - show_history      {Boolean}  show "Your Search History" chips
+
+  Used in:  sections/header.liquid
+  CSS:      assets/header-search.css (classes .header-search*, .search-popup*)
+  JS:       assets/header-search.js
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Resource types requested from the Predictive Search API
+  assign resource_types = 'product'
+  if show_collections
+    assign resource_types = 'product,collection'
+  endif
+
+  assign popular_terms = popular_searches | split: ','
+  assign min_chars = min_chars | default: 3
+
+  # Placeholder: theme editor text if filled in, else the translated default
+  if placeholder != blank
+    assign placeholder_text = placeholder
+  else
+    assign placeholder_text = 'search.placeholder' | t
+  endif
+-%}
+
+{%- comment -%}
+  Wrapper: settings handed to header-search.js as data-* attributes.
+  - data-url         → Shopify's predictive search endpoint (/search/suggest)
+  - data-section-id  → section that renders the results HTML
+  - data-text-*      → translated text the script shows (from locales/<language>.json)
+{%- endcomment -%}
+<div
+  class="header-search"
+  data-predictive-search
+  data-url="{{ routes.predictive_search_url }}"
+  data-section-id="header-search-results"
+  data-min-chars="{{ min_chars }}"
+  data-limit="{{ product_limit | default: 8 }}"
+  data-types="{{ resource_types }}"
+  data-history="{{ show_history }}"
+  data-text-show-popular="{{ 'search.show_popular' | t }}"
+  data-text-hide-popular="{{ 'search.hide_popular' | t }}"
+  data-text-unavailable="{{ 'search.unavailable' | t }}"
+>
+  {%- comment -%} ---------- Search bar ---------- {%- endcomment -%}
+  <form action="{{ routes.search_url }}" method="get" role="search" class="header-search__form" data-search-form>
+    {%- comment -%} Close (×): visible while the popup is open {%- endcomment -%}
+    <button type="button" class="header-search__close" data-search-close aria-label="{{ 'search.close' | t }}">
+      {% render 'global-icon', name: 'close', size: 18 %}
+    </button>
+
+    {%- comment -%}
+      combobox + aria-* attributes tell screen readers this input
+      controls the results popup.
+    {%- endcomment -%}
+    <label class="visually-hidden" for="HeaderSearchInput">{{ 'search.label' | t }}</label>
+    <input
+      id="HeaderSearchInput"
+      class="header-search__input"
+      type="search"
+      name="q"
+      value="{{ search.terms | escape }}"
+      placeholder="{{ placeholder_text | escape }}"
+      autocomplete="off"
+      role="combobox"
+      aria-expanded="false"
+      aria-controls="SearchPopup"
+      aria-haspopup="dialog"
+      data-search-input
+    >
+
+    {%- comment -%} Search page settings: products only, partial word matches ("shi" → "shirt") {%- endcomment -%}
+    <input type="hidden" name="type" value="product">
+    <input type="hidden" name="options[prefix]" value="last">
+
+    <button type="submit" class="header-search__submit" aria-label="{{ 'search.submit' | t }}">
+      {% render 'global-icon', name: 'search', size: 18 %}
+    </button>
+  </form>
+
+  {%- comment -%} ---------- Results popup ---------- {%- endcomment -%}
+  <div id="SearchPopup" class="search-popup" data-search-popup hidden>
+    {%- comment -%} Popular searches (merchant's list). Eye button hides/shows the chips. {%- endcomment -%}
+    {%- if show_popular and popular_terms.size > 0 -%}
+      <div class="search-popup__group" data-popular>
+        <div class="search-popup__group-header">
+          <h2 class="search-popup__group-title">{{ 'search.popular_title' | t }}</h2>
+          <button type="button" class="search-popup__group-action" data-popular-toggle aria-pressed="false" aria-label="{{ 'search.hide_popular' | t }}">
+            <span class="search-popup__icon-show">{% render 'global-icon', name: 'eye', size: 16 %}</span>
+            <span class="search-popup__icon-hide">{% render 'global-icon', name: 'eye-off', size: 16 %}</span>
+          </button>
+        </div>
+        <ul class="search-popup__chips" role="list" data-popular-list>
+          {%- for term in popular_terms -%}
+            {%- assign term = term | strip -%}
+            {%- if term != blank -%}
+              <li>
+                {%- comment -%} Link works without JS; with JS it fills the search bar instead {%- endcomment -%}
+                <a class="search-popup__chip" href="{{ routes.search_url }}?q={{ term | url_encode }}&type=product&options%5Bprefix%5D=last" data-search-term="{{ term | escape }}">
+                  {{- term | escape -}}
+                </a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} Search history: filled by header-search.js; hidden while empty {%- endcomment -%}
+    {%- if show_history -%}
+      <div class="search-popup__group" data-history-group hidden>
+        <div class="search-popup__group-header">
+          <h2 class="search-popup__group-title">{{ 'search.history_title' | t }}</h2>
+          <button type="button" class="search-popup__group-action" data-history-clear aria-label="{{ 'search.clear_history' | t }}">
+            {% render 'global-icon', name: 'trash', size: 16 %}
+          </button>
+        </div>
+        <ul class="search-popup__chips" role="list" data-history-list></ul>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      Results area: replaced with sections/header-search-results.liquid output.
+      aria-live announces "N results" changes to screen readers.
+    {%- endcomment -%}
+    <div class="search-popup__results" data-search-results aria-live="polite"></div>
+
+    {%- comment -%} Shown when the shopper has typed fewer than min_chars characters {%- endcomment -%}
+    <p class="search-popup__hint" data-search-hint>
+      {{ 'search.min_characters' | t: count: min_chars }}
+    </p>
+  </div>
+
+  {%- comment -%} Dim layer behind the popup; click closes it {%- endcomment -%}
+  <div class="search-popup__overlay" data-search-close hidden></div>
+</div>

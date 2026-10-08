@@ -1,0 +1,96 @@
+{%- comment -%}
+  ============================================================================
+  Section: FAQ hero (FAQ page)
+  ----------------------------------------------------------------------------
+                          HELP CENTER
+                  Frequently asked questions           ← page title, words rise
+            Quick answers about orders, sizing and more
+          ┌ 🔍 Search for an answer…                ✕ ┐  ← live search
+          └───────────────────────────────────────────┘
+                       12 answers found                 ← result count (JS)
+  The search box filters the questions in the FAQ section below as you
+  type (assets/faq.js); topics without a match hide, and a message shows
+  when nothing matches. Without JavaScript the box is hidden.
+  Animated (GSAP, assets/global-scroll-animations.js → initFaqHero): heading
+  words rise, the text and search box fade up.
+
+  Used in:   templates/page.faq.json
+  CSS:       assets/faq.css → "2. Hero" (.faq-hero*)
+  JS:        assets/faq.js (search), assets/global-scroll-animations.js
+  Text:      locales → faq.*; heading (empty → page title) and text in the theme editor
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  if section.settings.heading != blank
+    assign heading = section.settings.heading
+  else
+    assign heading = page.title
+  endif
+-%}
+
+<section
+  class="faq faq-hero{% if section.settings.serif %} faq--serif{% endif %}"
+  data-scroll-fx="faq-hero"
+  style="--faq-bg: {{ section.settings.background_color }}; --faq-text: {{ section.settings.text_color }}; --faq-accent: {{ section.settings.accent_color }};"
+>
+  <div class="faq__inner">
+    <p class="faq__eyebrow" data-fade>
+      {%- if section.settings.eyebrow != blank -%}{{ section.settings.eyebrow | escape }}{%- else -%}{{ 'faq.eyebrow' | t }}{%- endif -%}
+    </p>
+    <h1 class="faq-hero__title" data-split>{{ heading | escape }}</h1>
+    {%- if section.settings.text != blank -%}
+      <div class="faq-hero__text" data-fade>{{ section.settings.text }}</div>
+    {%- endif -%}
+
+    {%- if section.settings.show_search -%}
+      <div class="faq-search" data-fade data-faq-search hidden>
+        <label for="FaqSearch-{{ section.id }}" class="visually-hidden">{{ 'faq.search_label' | t }}</label>
+        <span class="faq-search__icon" aria-hidden="true">{% render 'global-icon', name: 'search', size: 20 %}</span>
+        <input
+          type="search"
+          id="FaqSearch-{{ section.id }}"
+          class="faq-search__input"
+          placeholder="{{ 'faq.search_placeholder' | t }}"
+          autocomplete="off"
+          data-faq-search-input
+          aria-controls="FaqList"
+        >
+        <button type="button" class="faq-search__clear" aria-label="{{ 'faq.clear_search' | t }}" data-faq-search-clear hidden>
+          {% render 'global-icon', name: 'close', size: 18 %}
+        </button>
+      </div>
+      <p
+        class="faq-search__status"
+        role="status"
+        aria-live="polite"
+        data-faq-search-status
+        data-text-one="{{ 'faq.results_one' | t }}"
+        data-text-other="{{ 'faq.results_other' | t: number: '[number]' }}"
+        data-text-none="{{ 'faq.no_results' | t: terms: '[terms]' }}"
+      ></p>
+    {%- endif -%}
+  </div>
+</section>
+
+{%- comment -%} Schema — settings: eyebrow, heading (empty → page title), text, show_search, serif, colors {%- endcomment -%}
+{% schema %}
+{
+  "name": "FAQ: hero",
+  "tag": "div",
+  "class": "section-faq-hero",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small heading", "info": "Leave empty for the translated default (\"Help center\")." },
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Leave empty to use the page title." },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Quick answers about orders, shipping, returns and sizing.</p>" },
+    { "type": "checkbox", "id": "show_search", "label": "Show search box", "default": true },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "serif", "label": "Serif heading", "default": true },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#F6F3EC" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "presets": [{ "name": "FAQ: hero" }]
+}
+{% endschema %}

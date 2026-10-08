@@ -1,0 +1,340 @@
+{%- comment -%}
+  ============================================================================
+  Section: Contact main (info + contact form, Contact page)
+  ----------------------------------------------------------------------------
+      ┌───────────────────────────┐  ┌──────────────────────────────────┐
+      │ CONTACT US                │  │ ┌ Name ───────┐ ┌ Email * ─────┐ │
+      │ Drop us a line.           │  │ ┌ Phone number ────────────────┐ │
+      │ Our team is available…    │  │ ┌ Subject ▾ ───────────────────┐ │
+      │ (📍) Address  198 Galley… │  │ ┌ Your message ────────────────┐ │
+      │ (✉) Email     hello@…     │  │ │                              │ │
+      │ (☎) Phone     +1 (800)…   │  │ └──────────────────────────────┘ │
+      │ FOLLOW US (f)(◎)(▶)       │  │ [        SEND MESSAGE       →  ] │
+      └───────────────────────────┘  └──────────────────────────────────┘
+  Layout from the Athora theme's contact page; Shopify "contact" form
+  (messages go to the store email, Settings > Notifications).
+  - Info rows (blocks): Address, Email (empty → store email, mailto link),
+    Phone (empty → Theme settings > Contact, tel link), Custom (icon +
+    title + text). Social icons from Theme settings > Social media.
+  - Form: name, email (required), optional phone, optional subject list
+    (setting, comma separated), message. After sending: a thank-you panel
+    with a check mark; errors are listed above the fields.
+  Animated (GSAP, assets/global-scroll-animations.js → initContactMain):
+  heading words rise; info rows slide in with their icons popping; form
+  fields slide in one by one; the send button's fill follows the mouse
+  and the button leans toward it (magnetic); the check mark draws itself
+  after sending. Field underlines/labels animate with CSS.
+
+  Content from the page editor (Online Store > Pages > Contact): page
+  fields contact.form_eyebrow, contact.form_heading, contact.form_text,
+  contact.address, contact.email, contact.phone, contact.info_title +
+  contact.info_text (first "Custom info" row) and contact.subjects win
+  when filled; empty ones fall back to the settings / blocks below.
+
+  Used in:   templates/page.contact.json
+  CSS:       assets/contact.css → "3. Contact form" (.contact-main*, .contact-field*)
+  JS:        assets/global-scroll-animations.js → initContactMain()
+  Text:      locales → contact.* (labels, button, messages); headings and
+             info rows are typed in the theme editor
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign form_id = 'ContactForm-' | append: section.id
+  assign socials = 'facebook,instagram,pinterest,youtube,tiktok,x' | split: ','
+
+  # Page fields (Online Store > Pages > Contact) first, then the section settings
+  assign mf = page.metafields.contact
+  assign main_eyebrow = mf.form_eyebrow.value | default: section.settings.eyebrow
+  assign main_heading = mf.form_heading.value | default: section.settings.heading
+  if mf.form_text.value != blank
+    assign main_text = mf.form_text.value | escape | newline_to_br | prepend: '<p>' | append: '</p>'
+  else
+    assign main_text = section.settings.text
+  endif
+  assign subject_list = mf.subjects.value | default: section.settings.subjects
+  assign subjects = subject_list | split: ','
+
+  # Becomes true after the first "Custom info" row (which can use page fields)
+  assign custom_done = false
+-%}
+
+<section
+  class="contact contact-main{% if section.settings.serif %} contact--serif{% endif %}"
+  data-scroll-fx="contact-main"
+  style="--contact-bg: {{ section.settings.background_color }}; --contact-text: {{ section.settings.text_color }}; --contact-accent: {{ section.settings.accent_color }};"
+>
+  <div class="contact__inner contact-main__grid">
+    {%- comment -%} ---------- Left: heading, text, info rows, social ---------- {%- endcomment -%}
+    <div class="contact-main__info">
+      {%- if main_eyebrow != blank -%}
+        <p class="contact__eyebrow" data-fade>{{ main_eyebrow | escape }}</p>
+      {%- endif -%}
+      <h2 class="contact__heading" data-split>{{ main_heading | escape }}</h2>
+      {%- if main_text != blank -%}
+        <div class="contact__text" data-fade>{{ main_text }}</div>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="contact-main__items" role="list">
+          {%- for block in section.blocks -%}
+            {%- liquid
+              # Value: page field first (contact.email / phone / address / info_*),
+              # then the block's own setting, then the store defaults
+              assign item_link = ''
+              assign item_title = block.settings.title
+              assign item_text = block.settings.text
+              case block.type
+                when 'email'
+                  assign item_icon = 'mail'
+                  assign item_value = mf.email.value | default: block.settings.email | default: shop.email
+                  assign item_link = 'mailto:' | append: item_value
+                when 'phone'
+                  assign item_icon = 'phone'
+                  assign item_value = mf.phone.value | default: block.settings.phone | default: settings.contact_phone
+                  assign digits = item_value | remove: ' ' | remove: '(' | remove: ')' | remove: '-'
+                  assign item_link = 'tel:' | append: digits
+                when 'address'
+                  assign item_icon = 'map-pin'
+                  assign item_value = mf.address.value | default: block.settings.address
+                else
+                  assign item_icon = block.settings.icon
+                  assign item_value = ''
+                  # The first "Custom info" row can come from contact.info_title / contact.info_text
+                  if custom_done != true
+                    assign custom_done = true
+                    assign item_title = mf.info_title.value | default: block.settings.title
+                    if mf.info_text.value != blank
+                      assign item_text = mf.info_text.value | escape | newline_to_br | prepend: '<p>' | append: '</p>'
+                    endif
+                  endif
+              endcase
+            -%}
+            <li class="contact-main__item" data-contact-item {{ block.shopify_attributes }}>
+              <span class="contact-main__icon" aria-hidden="true" data-contact-icon>{% render 'global-icon', name: item_icon, size: 22 %}</span>
+              <div class="contact-main__item-text">
+                <p class="contact-main__item-title">
+                  {%- if item_title != blank -%}
+                    {{ item_title | escape }}
+                  {%- elsif block.type == 'email' -%}
+                    {{ 'contact.email_label' | t }}
+                  {%- elsif block.type == 'phone' -%}
+                    {{ 'contact.phone_label' | t }}
+                  {%- elsif block.type == 'address' -%}
+                    {{ 'contact.address_label' | t }}
+                  {%- endif -%}
+                </p>
+                {%- if block.type == 'custom' -%}
+                  <div class="contact-main__item-value">{{ item_text }}</div>
+                {%- elsif item_link != blank and item_value != blank -%}
+                  <a href="{{ item_link }}" class="contact-main__item-value contact-main__link">{{ item_value | escape }}</a>
+                {%- else -%}
+                  <p class="contact-main__item-value">{{ item_value | escape | newline_to_br }}</p>
+                {%- endif -%}
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- comment -%} Social icons (Theme settings > Social media; only filled-in links) {%- endcomment -%}
+      {%- if section.settings.show_social -%}
+        {%- capture social_links -%}
+          {%- for name in socials -%}
+            {%- assign setting_key = 'social_' | append: name -%}
+            {%- assign social_url = settings[setting_key] -%}
+            {%- if social_url != blank -%}
+              {%- liquid
+                # Network name for screen readers (same texts as the footer)
+                case name
+                  when 'facebook'
+                    assign social_label = 'footer.social.facebook' | t
+                  when 'instagram'
+                    assign social_label = 'footer.social.instagram' | t
+                  when 'pinterest'
+                    assign social_label = 'footer.social.pinterest' | t
+                  when 'youtube'
+                    assign social_label = 'footer.social.youtube' | t
+                  when 'tiktok'
+                    assign social_label = 'footer.social.tiktok' | t
+                  else
+                    assign social_label = 'footer.social.x' | t
+                endcase
+              -%}
+              <a href="{{ social_url }}" class="contact-main__social" target="_blank" rel="noopener" aria-label="{{ social_label }}">
+                {% render 'global-icon', name: name, size: 18 %}
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endcapture -%}
+        {%- if social_links != blank -%}
+          <div class="contact-main__socials" data-fade>
+            <p class="contact__eyebrow">{{ 'contact.social_label' | t }}</p>
+            <div class="contact-main__social-row">{{ social_links }}</div>
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} ---------- Right: the form ---------- {%- endcomment -%}
+    <div class="contact-main__card" data-contact-card>
+      {%- form 'contact', id: form_id, class: 'contact-form', novalidate: 'novalidate' -%}
+        {%- if form.posted_successfully? -%}
+          {%- comment -%} Sent: thank-you panel (the check mark draws itself, JS) {%- endcomment -%}
+          <div class="contact-form__success" role="status" tabindex="-1" data-contact-success>
+            <svg class="contact-form__check" viewBox="0 0 52 52" aria-hidden="true" focusable="false">
+              <circle cx="26" cy="26" r="24" fill="none" stroke="currentColor" stroke-width="2.5"/>
+              <path d="M15 27l7 7 15-16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h3 class="contact-form__success-title">{{ 'contact.success_title' | t }}</h3>
+            <p>{{ 'contact.success_text' | t }}</p>
+          </div>
+        {%- else -%}
+          <h3 class="visually-hidden">{{ 'contact.form_label' | t }}</h3>
+
+          {%- if form.errors -%}
+            <div class="contact-form__errors" role="alert">
+              <p>{{ 'contact.errors_title' | t }}</p>
+              {{ form.errors | default_errors }}
+            </div>
+          {%- endif -%}
+
+          <div class="contact-form__row">
+            <div class="contact-field" data-contact-field>
+              <input class="contact-field__input" type="text" id="{{ form_id }}-name" name="contact[name]" value="{{ form.name }}" placeholder=" " autocomplete="name">
+              <label class="contact-field__label" for="{{ form_id }}-name">{{ 'contact.name' | t }}</label>
+            </div>
+            <div class="contact-field" data-contact-field>
+              <input class="contact-field__input" type="email" id="{{ form_id }}-email" name="contact[email]" value="{{ form.email }}" placeholder=" " autocomplete="email" autocapitalize="off" spellcheck="false" required aria-required="true">
+              <label class="contact-field__label" for="{{ form_id }}-email">{{ 'contact.email' | t }} <span aria-hidden="true">*</span><span class="visually-hidden">{{ 'contact.required' | t }}</span></label>
+            </div>
+          </div>
+
+          {%- if section.settings.show_phone_field -%}
+            <div class="contact-field" data-contact-field>
+              <input class="contact-field__input" type="tel" id="{{ form_id }}-phone" name="contact[{{ 'contact.phone' | t }}]" placeholder=" " autocomplete="tel">
+              <label class="contact-field__label" for="{{ form_id }}-phone">{{ 'contact.phone' | t }}</label>
+            </div>
+          {%- endif -%}
+
+          {%- if subject_list != blank -%}
+            <div class="contact-field contact-field--select" data-contact-field>
+              <select class="contact-field__input" id="{{ form_id }}-subject" name="contact[{{ 'contact.subject' | t }}]">
+                <option value="" selected disabled>{{ 'contact.subject_placeholder' | t }}</option>
+                {%- for subject in subjects -%}
+                  {%- assign clean_subject = subject | strip -%}
+                  {%- if clean_subject != blank -%}
+                    <option value="{{ clean_subject | escape }}">{{ clean_subject | escape }}</option>
+                  {%- endif -%}
+                {%- endfor -%}
+              </select>
+              <label class="contact-field__label" for="{{ form_id }}-subject">{{ 'contact.subject' | t }}</label>
+            </div>
+          {%- endif -%}
+
+          <div class="contact-field contact-field--textarea" data-contact-field>
+            <textarea class="contact-field__input" id="{{ form_id }}-message" name="contact[body]" rows="6" placeholder=" ">{{ form.body }}</textarea>
+            <label class="contact-field__label" for="{{ form_id }}-message">{{ 'contact.message' | t }}</label>
+          </div>
+
+          {%- comment -%} Send: the fill circle follows the mouse (--x / --y set by JS) {%- endcomment -%}
+          <button type="submit" class="button button--lg button--full contact-send" data-contact-send data-magnetic data-text-sending="{{ 'contact.sending' | t }}">
+            <span class="contact-send__fill" aria-hidden="true"></span>
+            <span class="contact-send__label" data-send-label>{{ 'contact.send' | t }}</span>
+            {% render 'global-icon', name: 'arrow-right', size: 18 %}
+          </button>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema — settings: eyebrow, heading, text, show_social, show_phone_field,
+  subjects (comma separated; empty hides the list), serif, colors
+  blocks: address (title, address), email (title, email → empty = store
+  email), phone (title, phone → empty = Theme settings > Contact),
+  custom (icon, title, rich text)
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Contact: form",
+  "tag": "div",
+  "class": "section-contact-main",
+  "enabled_on": { "templates": ["page"] },
+  "max_blocks": 6,
+  "settings": [
+    { "type": "paragraph", "content": "Heading, text, address, email, phone, the first custom info row and the subjects can also be edited in Online Store > Pages > Contact (page fields contact.*). Filled page fields replace the values here." },
+    { "type": "text", "id": "eyebrow", "label": "Small heading", "default": "Contact us" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Drop us a line." },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Our team is here to make sure you have the best shopping experience. Write to us anytime.</p>" },
+    { "type": "checkbox", "id": "show_social", "label": "Show social icons", "info": "Links from Theme settings > Social media.", "default": true },
+    { "type": "header", "content": "Form" },
+    { "type": "checkbox", "id": "show_phone_field", "label": "Show phone field", "default": true },
+    { "type": "text", "id": "subjects", "label": "Subjects", "info": "Comma separated. Leave empty to hide the subject list.", "default": "Order question, Shipping & delivery, Returns & exchanges, Sizing help, Other" },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "serif", "label": "Serif heading", "default": true },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#F6F3EC" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "blocks": [
+    {
+      "type": "address",
+      "name": "Address",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "info": "Leave empty for the translated default (\"Address\")." },
+        { "type": "textarea", "id": "address", "label": "Address", "default": "198 Galley Street, 1740-street, 12040 NY" }
+      ]
+    },
+    {
+      "type": "email",
+      "name": "Email",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "info": "Leave empty for the translated default (\"Email\")." },
+        { "type": "text", "id": "email", "label": "Email", "info": "Leave empty to use the store email." }
+      ]
+    },
+    {
+      "type": "phone",
+      "name": "Phone",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "info": "Leave empty for the translated default (\"Phone\")." },
+        { "type": "text", "id": "phone", "label": "Phone", "info": "Leave empty to use Theme settings > Contact." }
+      ]
+    },
+    {
+      "type": "custom",
+      "name": "Custom info",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "chat", "label": "Chat" },
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "box", "label": "Box" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "star", "label": "Star" }
+          ],
+          "default": "chat"
+        },
+        { "type": "text", "id": "title", "label": "Title", "default": "Opening hours" },
+        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Mon – Fri, 9am – 6pm</p>" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Contact: form",
+      "blocks": [{ "type": "address" }, { "type": "email" }, { "type": "phone" }]
+    }
+  ]
+}
+{% endschema %}

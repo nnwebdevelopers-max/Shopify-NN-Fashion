@@ -1,0 +1,721 @@
+/* ============================================================================
+   about.css — About page sections (template page.about)
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (page template "about" only)
+   Styles:
+     sections/about-hero.liquid        → 2. Scroll hero
+     sections/about-split.liquid       → 3. Image with text
+     sections/about-marquee.liquid     → 4. Marquee
+     sections/about-stack.liquid       → 5. Stacking cards
+     sections/about-horizontal.liquid  → 6. Horizontal gallery
+     sections/about-quote.liquid       → 7. Scroll-filled quote
+     sections/about-cta.liquid         → 8. Call to action
+   JS: assets/global-scroll-animations.js (GSAP + ScrollTrigger: assets/global-gsap*.min.js)
+
+   Two layers:
+   - Static layout (this file, default): a normal, readable page. Used
+     without JavaScript, for "reduce motion", and before GSAP starts.
+   - Animated layout: global-scroll-animations.js adds .is-animated to a section when it runs
+     its GSAP effects; rules under ".is-animated" set up pinning stages,
+     starting positions etc. (GSAP then animates them).
+
+   Colors per section (settings): --about-bg, --about-text, --about-muted,
+   --about-accent. Heading font: .about--serif (Georgia) or the theme font.
+   ============================================================================ */
+
+/* ==========================================================================
+   1. Shared
+   ========================================================================== */
+.about {
+  --about-bg: #f6f3ec;
+  --about-text: #2f3a2f;
+  --about-accent: #b8734f;
+  --about-muted: color-mix(in srgb, var(--about-text) 70%, transparent);
+  position: relative;
+  background: var(--about-bg);
+  color: var(--about-text);
+}
+.about__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.about__eyebrow {
+  margin: 0 0 16px;
+  color: var(--about-accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.about__heading {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 64px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+.about--serif .about__heading {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+.about__text {
+  color: var(--about-muted);
+  font-size: 17px;
+  line-height: 1.7;
+}
+.about__text p {
+  margin: 0 0 1em;
+}
+.about__text > :last-child {
+  margin-bottom: 0;
+}
+.about__placeholder {
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, var(--about-text) 10%, transparent);
+  fill: color-mix(in srgb, var(--about-text) 35%, transparent);
+}
+/* Buttons: shared .button.button--lg (global-buttons.css) in the page's
+   colours — outline by default, --solid filled */
+.about-button {
+  --btn-bg: transparent;
+  --btn-text: var(--about-text);
+  --btn-border: var(--about-text);
+  --btn-hover-bg: var(--about-text);
+  --btn-hover-border: var(--about-text);
+  --btn-hover-text: var(--about-bg);
+  --btn-focus: var(--about-accent);
+}
+.about-button--solid {
+  --btn-bg: var(--about-text);
+  --btn-text: var(--about-bg);
+  --btn-hover-bg: var(--about-accent);
+  --btn-hover-border: var(--about-accent);
+  --btn-hover-text: #ffffff;
+}
+
+/* Split text (global-scroll-animations.js wraps words: a mask + a moving inner span) */
+.about .word {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  vertical-align: top;
+}
+.about .word__inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ==========================================================================
+   2. Scroll hero (about-hero)
+   ========================================================================== */
+.about-hero {
+  padding: 72px 0 48px;
+  overflow: hidden;
+}
+.about-hero__stage {
+  display: grid;
+  gap: 40px;
+}
+.about-hero__intro {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+  text-align: center;
+}
+.about-hero__intro .about__text {
+  max-width: 620px;
+  margin: 20px auto 0;
+}
+.about-hero__media {
+  position: relative;
+  max-width: 1200px;
+  width: calc(100% - 48px);
+  margin: 0 auto;
+  aspect-ratio: 16 / 8;
+  overflow: hidden;
+  border-radius: 24px;
+}
+.about-hero__frame,
+.about-hero__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.about-hero__overlay {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 48px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.6));
+  color: #ffffff;
+}
+.about-hero__overlay .about__heading {
+  max-width: 760px;
+  font-size: clamp(28px, 4vw, 54px);
+}
+.about-hero__overlay p {
+  max-width: 520px;
+  margin: 14px 0 0;
+  font-size: 17px;
+  opacity: 0.85;
+}
+.about-hero__float,
+.about-hero__hint {
+  display: none; /* animated layout only */
+}
+
+/* Animated: tall track + sticky full-screen stage */
+.about-hero.is-animated {
+  height: 320vh;
+  padding: 0;
+  overflow: visible;
+}
+.about-hero.is-animated .about-hero__stage {
+  position: sticky;
+  top: 0;
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+.about-hero.is-animated .about-hero__intro {
+  position: absolute;
+  top: 11vh;
+  left: 50%;
+  z-index: 3;
+  width: min(900px, 100%);
+  transform: translateX(-50%);
+}
+/* The image covers the stage; clip-path shows a small card first */
+.about-hero.is-animated .about-hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  max-width: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+  clip-path: inset(56% 35% 6% 35% round 24px);
+  will-change: clip-path;
+}
+.about-hero.is-animated .about-hero__frame img {
+  transform: scale(1.3);
+  will-change: transform;
+}
+.about-hero.is-animated .about-hero__overlay {
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 8vh 6vw;
+  opacity: 0;
+}
+/* Floating photos around the card */
+.about-hero.is-animated .about-hero__float {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  border-radius: 18px;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.45);
+  will-change: transform, opacity;
+}
+.about-hero__float img,
+.about-hero__float svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.about-hero__float--1 { top: 46%; left: 6%; width: 15vw; aspect-ratio: 3 / 4; }
+.about-hero__float--2 { top: 64%; left: 19%; width: 11vw; aspect-ratio: 1; }
+.about-hero__float--3 { top: 44%; right: 6%; width: 14vw; aspect-ratio: 4 / 5; }
+.about-hero__float--4 { top: 70%; right: 20%; width: 10vw; aspect-ratio: 1; }
+/* "Scroll" hint with a moving line */
+.about-hero.is-animated .about-hero__hint {
+  position: absolute;
+  bottom: 3vh;
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--about-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+}
+.about-hero__hint-line {
+  position: relative;
+  width: 1px;
+  height: 36px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--about-text) 20%, transparent);
+}
+.about-hero__hint-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--about-text);
+  animation: about-hint 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes about-hint {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+/* ==========================================================================
+   3. Image with text (about-split)
+   ========================================================================== */
+.about-split {
+  padding: 120px 0;
+}
+.about-split__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 72px;
+}
+.about-split--image-left .about-split__media {
+  order: -1;
+}
+.about-split__text .about__text {
+  margin-top: 24px;
+}
+.about-split__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 24px;
+}
+.about-split__img {
+  position: absolute;
+  inset: -10% 0;
+}
+.about-split__img img,
+.about-split__img svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Small accent badge on the image corner */
+.about-split__badge {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--about-bg);
+  color: var(--about-text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   4. Marquee (about-marquee)
+   ========================================================================== */
+.about-marquee {
+  padding: 40px 0;
+  overflow: hidden;
+}
+.about-marquee__band {
+  padding: 22px 0;
+  background: var(--about-text);
+  color: var(--about-bg);
+  transform: rotate(var(--marquee-tilt, 0deg)) scale(1.05);
+}
+.about-marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+.about-marquee__group {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+.about-marquee__item {
+  padding: 0 28px;
+  font-size: clamp(28px, 4.5vw, 64px);
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+.about--serif .about-marquee__item {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+}
+.about-marquee__sep {
+  color: var(--about-accent);
+  font-size: clamp(20px, 3vw, 40px);
+}
+/* Without JS: the band scrolls with a simple CSS loop */
+.about-marquee:not(.is-animated) .about-marquee__track {
+  animation: about-marquee 40s linear infinite;
+}
+@keyframes about-marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* ==========================================================================
+   5. Stacking cards (about-stack)
+   ========================================================================== */
+.about-stack {
+  padding: 120px 0;
+}
+.about-stack__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: 72px;
+}
+.about-stack__intro {
+  position: sticky;
+  top: 14vh;
+}
+.about-stack__intro .about__text {
+  margin-top: 24px;
+}
+.about-stack__cards {
+  display: grid;
+  gap: 24px;
+}
+.about-stack__card {
+  --card-bg: #2f3a2f;
+  --card-text: #f6f3ec;
+  position: relative;
+  display: grid;
+  gap: 18px;
+  min-height: 340px;
+  padding: 40px;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--card-bg);
+  color: var(--card-text);
+  box-shadow: 0 -20px 40px -30px rgba(0, 0, 0, 0.5);
+  transform-origin: center top;
+}
+.about-stack__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.about-stack__icon {
+  font-size: 44px;
+  line-height: 1;
+}
+.about-stack__number {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+}
+.about-stack__title {
+  align-self: end;
+  margin: 0;
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 800;
+  line-height: 1.1;
+}
+.about--serif .about-stack__title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+.about-stack__text {
+  max-width: 440px;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+/* Animated: cards stick on top of each other (offset per card) */
+.about-stack.is-animated .about-stack__cards {
+  gap: 12vh;
+  padding-bottom: 6vh;
+}
+.about-stack.is-animated .about-stack__card {
+  position: sticky;
+  top: calc(14vh + var(--i, 0) * 22px);
+  will-change: transform, filter;
+}
+
+/* ==========================================================================
+   6. Horizontal gallery (about-horizontal)
+   ========================================================================== */
+.about-hscroll {
+  padding: 120px 0;
+  overflow: hidden;
+}
+.about-hscroll__track {
+  display: flex;
+  gap: 28px;
+  padding: 0 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 24px; /* cards snap inside the side padding, not flush to the edge */
+  scrollbar-width: none;
+}
+.about-hscroll__track::-webkit-scrollbar {
+  display: none;
+}
+.about-hscroll__intro {
+  display: grid;
+  flex: 0 0 min(420px, 80vw);
+  align-content: center;
+  gap: 24px;
+  padding-right: 24px;
+}
+.about-hscroll__card {
+  display: grid;
+  flex: 0 0 min(420px, 78vw);
+  gap: 14px;
+  color: inherit;
+  text-decoration: none;
+  scroll-snap-align: start;
+}
+.about-hscroll__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 22px;
+}
+.about-hscroll__media img,
+.about-hscroll__media svg {
+  position: absolute;
+  inset: 0 -12%;
+  width: 124%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+a.about-hscroll__card:hover .about-hscroll__media img {
+  transform: scale(1.05);
+}
+.about-hscroll__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+.about--serif .about-hscroll__title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+.about-hscroll__text {
+  margin: 0;
+  color: var(--about-muted);
+  font-size: 15px;
+}
+.about-hscroll__progress {
+  display: none;
+}
+/* Animated: the section pins and the track slides sideways (GSAP) */
+.about-hscroll.is-animated {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100vh;
+  padding: 0;
+}
+.about-hscroll.is-animated .about-hscroll__track {
+  width: max-content;
+  padding: 0 6vw;
+  overflow: visible;
+  scroll-snap-type: none;
+  will-change: transform;
+}
+.about-hscroll.is-animated .about-hscroll__card {
+  flex-basis: min(30vw, 440px);
+}
+.about-hscroll.is-animated .about-hscroll__intro {
+  flex-basis: min(34vw, 460px);
+}
+.about-hscroll.is-animated .about-hscroll__progress {
+  display: block;
+  width: min(320px, 60vw);
+  height: 2px;
+  margin: 48px auto 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--about-text) 15%, transparent);
+}
+.about-hscroll__progress span {
+  display: block;
+  height: 100%;
+  background: var(--about-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* ==========================================================================
+   7. Scroll-filled quote (about-quote)
+   ========================================================================== */
+.about-quote {
+  padding: 140px 0;
+  text-align: center;
+  overflow: hidden;
+}
+.about-quote__mark {
+  display: block;
+  height: 0.5em;
+  color: var(--about-accent);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(120px, 16vw, 220px);
+  line-height: 1;
+}
+.about-quote__text {
+  max-width: 1000px;
+  margin: 40px auto 0;
+  font-size: clamp(28px, 4.2vw, 56px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.about--serif .about-quote__text {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+.about-quote__caption {
+  margin: 32px 0 0;
+  color: var(--about-accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+/* Fill words (plain spans, no mask) */
+.about-quote__text .fill {
+  will-change: opacity;
+}
+
+/* ==========================================================================
+   8. Call to action (about-cta)
+   ========================================================================== */
+.about-cta {
+  display: grid;
+  min-height: 80vh;
+  place-items: center;
+  padding: 120px 24px;
+  overflow: hidden;
+  text-align: center;
+}
+.about-cta__bg {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.about-cta__bg img,
+.about-cta__bg svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.about-cta__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, var(--cta-dim, 0.5));
+}
+.about-cta__content {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+}
+.about-cta--image .about-cta__content {
+  color: #ffffff;
+}
+.about-cta--image .about__text {
+  color: rgba(255, 255, 255, 0.85);
+}
+.about-cta .about__text {
+  max-width: 560px;
+  margin: 24px auto 0;
+}
+.about-cta__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 40px;
+}
+/* On a photo: white outline (hover → white), solid = white (hover → accent) */
+.about-cta--image .about-button {
+  --btn-text: #ffffff;
+  --btn-border: #ffffff;
+  --btn-hover-bg: #ffffff;
+  --btn-hover-border: #ffffff;
+  --btn-hover-text: #121212;
+}
+.about-cta--image .about-button--solid {
+  --btn-bg: #ffffff;
+  --btn-text: #121212;
+  --btn-hover-bg: var(--about-accent);
+  --btn-hover-border: var(--about-accent);
+  --btn-hover-text: #ffffff;
+}
+.about-cta .about-button {
+  will-change: transform;
+}
+
+/* ==========================================================================
+   Tablets / phones
+   ========================================================================== */
+@media (max-width: 989px) {
+  .about-split__grid,
+  .about-stack__grid {
+    gap: 48px;
+  }
+}
+@media (max-width: 749px) {
+  .about-split,
+  .about-stack,
+  .about-hscroll,
+  .about-quote {
+    padding: 72px 0;
+  }
+  .about-split__grid,
+  .about-stack__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .about-split--image-left .about-split__media {
+    order: 0;
+  }
+  .about-stack__intro {
+    position: static;
+  }
+  .about-stack__card {
+    min-height: 280px;
+    padding: 28px;
+  }
+  .about-hero__media {
+    aspect-ratio: 4 / 5;
+  }
+  .about-hero__overlay {
+    padding: 24px;
+  }
+  /* Phones: the hero card starts wider, floats are smaller */
+  .about-hero.is-animated .about-hero__media {
+    clip-path: inset(52% 10% 8% 10% round 20px);
+  }
+  .about-hero.is-animated .about-hero__intro {
+    top: 9vh;
+  }
+  .about-hero__float--1 { top: 40%; left: -4%; width: 26vw; }
+  .about-hero__float--2 { display: none !important; }
+  .about-hero__float--3 { top: 38%; right: -4%; width: 24vw; }
+  .about-hero__float--4 { display: none !important; }
+  .about-cta {
+    min-height: 70vh;
+  }
+}
+
+/* Reduced motion: the scroll animations don't run; the CSS loops stop too */
+@media (prefers-reduced-motion: reduce) {
+  .about-marquee__track,
+  .about-hero__hint-line::after {
+    animation: none !important;
+  }
+}

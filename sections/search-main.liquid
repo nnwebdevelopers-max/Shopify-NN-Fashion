@@ -1,0 +1,518 @@
+{%- comment -%}
+  ============================================================================
+  Section: Search results page (/search?q=…)
+  ----------------------------------------------------------------------------
+  The page behind the header search's "Show all results" (and Enter).
+
+      ┌──────────────────────────────────────────────────────────────────┐
+      │ SEARCH                       b a g  b a g  (huge outlined word, │
+      │ Results for “bag”             slides sideways while scrolling)   │
+      │ 3 results                                                        │
+      │ [ 🔍 bag                                         (Search →) ]    │
+      │ (All) (Products) (Journal) (Pages)                               │
+      └──────────────────────────────────────────────────────────────────┘
+        Filter (2)  3 products                         Sort by [Relevance]
+      ┌────────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+      │ Filters    │ │ card   │ │ card   │ │ card   │   ← product cards
+      │ (sidebar)  │ └────────┘ └────────┘ └────────┘
+      └────────────┘ From the journal & pages: [post card] [page card]
+                     ← 1 2 3 →
+
+  - Without a search (or nothing found): popular search chips + a
+    "Trending now" product grid.
+  - Tabs switch the result type (?type=product / article / page / all).
+  - Filters, sort and pagination reuse the collection page's markup, CSS and
+    script: the results update without a page reload (assets/collection.js
+    reads this section's [data-collection] form; its action is /search and
+    the hidden q / type / options[prefix] fields keep the search).
+  - Products: snippets/global-product-card.liquid (same cards as the shop);
+    blog posts and pages: compact cards (.search-card) below the products.
+
+  Animated (GSAP, assets/global-scroll-animations.js → initSearchMain):
+  title words rise, the outlined word slides with the scroll, tabs / chips
+  pop in, cards rise in groups.
+
+  Used in:   templates/search.json ("main")
+  Snippets:  snippets/collection-filters.liquid, snippets/global-product-card.liquid,
+             snippets/global-icon.liquid
+  CSS:       assets/search.css (hero, tabs, chips, journal/page cards, empty
+             states) + assets/collection.css (toolbar, filters, grid, pagination)
+  JS:        assets/collection.js (filters / sort / pages without reload),
+             assets/global-scroll-animations.js (motion)
+  Text:      locales → search.page.*, collections.* (filters, sort, pagination)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign terms = search.terms
+  # Searched types, alphabetical (Shopify's order), e.g. "article,page,product"
+  assign types = search.types | sort | join: ','
+  if types == blank
+    assign types = 'product'
+  endif
+  assign encoded_terms = terms | url_encode
+  assign base_url = routes.search_url | append: '?q=' | append: encoded_terms | append: '&options%5Bprefix%5D=last&type='
+
+  # Current sort (search defaults to "relevance")
+  assign current_sort = search.sort_by | default: search.default_sort_by
+
+  # Filters only for searches that include products
+  assign has_filters = false
+  if section.settings.enable_filtering and search.filters.size > 0 and types contains 'product'
+    assign has_filters = true
+  endif
+
+  # Count active filters (each checked value = 1, a price range = 1)
+  assign active_filter_count = 0
+  for filter in search.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign active_filter_count = active_filter_count | plus: 1
+      endif
+    else
+      assign active_filter_count = active_filter_count | plus: filter.active_values.size
+    endif
+  endfor
+  assign clear_all_url = base_url | append: types | append: '&sort_by=' | append: current_sort
+
+  case section.settings.image_ratio
+    when 'square'
+      assign card_ratio = '1 / 1'
+    when 'landscape'
+      assign card_ratio = '4 / 3'
+    else
+      assign card_ratio = '3 / 4'
+  endcase
+  assign cols = section.settings.columns_desktop
+  assign mobile_cols = section.settings.columns_mobile
+  assign image_sizes = '(min-width: 990px) calc((min(100vw, 1200px) - 320px) / ' | append: cols | append: '), (min-width: 750px) calc(100vw / ' | append: cols | append: '), calc(100vw / ' | append: mobile_cols | append: ')'
+
+  # Popular search chips (comma-separated setting)
+  assign popular = section.settings.popular_searches | split: ','
+
+  # Products for "Trending now" (empty search / no results)
+  assign trending = section.settings.trending_collection.products
+  if section.settings.trending_collection == blank
+    assign trending = collections.all.products
+  endif
+
+  assign show_results = false
+  if search.performed and search.results_count > 0
+    assign show_results = true
+  endif
+-%}
+
+<section
+  class="search-page"
+  data-scroll-fx="search-main"
+  style="--search-bg: {{ section.settings.hero_background }}; --search-text: {{ section.settings.hero_text }}; --search-accent: {{ section.settings.accent_color }}; --cols-desktop: {{ cols }}; --cols-mobile: {{ mobile_cols }}; --card-ratio: {{ card_ratio }};"
+>
+  {%- comment -%} ---------- Hero: title, search box, type tabs ---------- {%- endcomment -%}
+  <div class="search-hero">
+    {%- if search.performed -%}
+      {%- comment -%} Huge outlined search word behind the title (decoration) {%- endcomment -%}
+      <div class="search-hero__ghost" aria-hidden="true">
+        <span data-search-ghost>{{ terms | escape }} &middot; {{ terms | escape }} &middot; {{ terms | escape }} &middot; {{ terms | escape }}</span>
+      </div>
+    {%- endif -%}
+
+    <div class="page-width search-hero__inner">
+      <p class="search-hero__eyebrow" data-search-pop>{{ 'search.page.eyebrow' | t }}</p>
+      <h1 class="search-hero__title" data-split>
+        {%- if search.performed -%}
+          {{ 'search.page.results_for' | t }} “{{ terms | escape }}”
+        {%- else -%}
+          {{ 'search.page.title' | t }}
+        {%- endif -%}
+      </h1>
+      {%- if search.performed -%}
+        <p class="search-hero__count" data-search-pop>{{ 'search.page.result_count' | t: count: search.results_count }}</p>
+      {%- else -%}
+        <p class="search-hero__count" data-search-pop>{{ 'search.page.empty_text' | t }}</p>
+      {%- endif -%}
+
+      {%- comment -%} Search box: keeps the current result type {%- endcomment -%}
+      <form action="{{ routes.search_url }}" method="get" role="search" class="search-hero__form" data-search-pop>
+        <label for="SearchPageInput-{{ section.id }}" class="visually-hidden">{{ 'search.label' | t }}</label>
+        <span class="search-hero__icon" aria-hidden="true">{% render 'global-icon', name: 'search', size: 22 %}</span>
+        <input
+          id="SearchPageInput-{{ section.id }}"
+          class="search-hero__input"
+          type="search"
+          name="q"
+          value="{{ terms | escape }}"
+          placeholder="{{ 'search.placeholder' | t }}"
+          autocomplete="off"
+        >
+        <input type="hidden" name="type" value="{{ types }}">
+        <input type="hidden" name="options[prefix]" value="last">
+        <button type="submit" class="button button--primary search-hero__submit">
+          <span>{{ 'search.submit' | t }}</span>
+          {% render 'global-icon', name: 'arrow-right', size: 18 %}
+        </button>
+      </form>
+
+      {%- comment -%} Result type tabs (only after a search) {%- endcomment -%}
+      {%- if search.performed and section.settings.show_tabs -%}
+        <nav class="search-tabs" aria-label="{{ 'search.page.tabs_label' | t }}">
+          {%- liquid
+            # Same alphabetical order as "types" so the current tab matches
+            assign tab_types = 'article,page,product|product|article|page' | split: '|'
+          -%}
+          {%- for tab_type in tab_types -%}
+            {%- liquid
+              case forloop.index
+                when 1
+                  assign tab_label = 'search.page.tab_all' | t
+                when 2
+                  assign tab_label = 'search.page.tab_products' | t
+                when 3
+                  assign tab_label = 'search.page.tab_articles' | t
+                else
+                  assign tab_label = 'search.page.tab_pages' | t
+              endcase
+              assign tab_url = base_url | append: tab_type
+            -%}
+            <a
+              class="search-tabs__link"
+              href="{{ tab_url }}"
+              data-search-pop
+              {% if tab_type == types %}aria-current="page"{% endif %}
+            >
+              {{- tab_label -}}
+            </a>
+          {%- endfor -%}
+        </nav>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if show_results -%}
+    {%- comment -%}
+      ---------- Results: same structure as sections/collection-main.liquid,
+      so assets/collection.css + collection.js handle filters / sort / pages ----------
+    {%- endcomment -%}
+    <div class="page-width collection search-results" data-collection data-section-id="{{ section.id }}">
+      {%- paginate search.results by section.settings.results_per_page -%}
+        <form
+          id="SearchForm-{{ section.id }}"
+          class="collection__form"
+          action="{{ routes.search_url }}"
+          method="get"
+          data-filters-form
+        >
+          {%- comment -%} Keep the search itself when filters / sort change {%- endcomment -%}
+          <input type="hidden" name="q" value="{{ terms | escape }}">
+          <input type="hidden" name="type" value="{{ types }}">
+          <input type="hidden" name="options[prefix]" value="last">
+
+          <div class="collection__toolbar">
+            {%- if has_filters -%}
+              <button type="button" class="collection__filter-toggle" data-filters-open aria-controls="SearchFilters-{{ section.id }}" aria-expanded="false">
+                {{ 'collections.filter' | t }}
+                <span data-active-count>
+                  {%- if active_filter_count > 0 %} ({{ active_filter_count }}){% endif -%}
+                </span>
+              </button>
+            {%- endif -%}
+
+            <p class="collection__count" data-product-count>{{ 'search.page.result_count' | t: count: search.results_count }}</p>
+
+            {%- if section.settings.enable_sorting and types contains 'product' -%}
+              <div class="collection__sort" data-sort>
+                <label for="SearchSortBy-{{ section.id }}">{{ 'collections.sort_by' | t }}</label>
+                <select id="SearchSortBy-{{ section.id }}" name="sort_by">
+                  {%- for option in search.sort_options -%}
+                    <option value="{{ option.value | escape }}"{% if option.value == current_sort %} selected{% endif %}>
+                      {{- option.name | escape -}}
+                    </option>
+                  {%- endfor -%}
+                </select>
+                <button type="submit" class="button collection__no-js-submit">{{ 'collections.sort' | t }}</button>
+              </div>
+            {%- endif -%}
+          </div>
+
+          <div class="collection__layout{% if has_filters %} collection__layout--has-filters{% endif %}">
+            {%- comment -%} Filters: sidebar on desktop, drawer on mobile {%- endcomment -%}
+            {%- if has_filters -%}
+              <aside id="SearchFilters-{{ section.id }}" class="collection-filters" aria-label="{{ 'collections.filters_label' | t }}">
+                <div class="collection-filters__header">
+                  <h2 class="collection-filters__title">{{ 'collections.filter' | t }}</h2>
+                  <button type="button" class="collection-filters__close" data-filters-close aria-label="{{ 'collections.close_filters' | t }}">&times;</button>
+                </div>
+                <div class="collection-filters__body" data-filters-body>
+                  {% render 'collection-filters', filters: search.filters, section_id: section.id %}
+                </div>
+                <div class="collection-filters__footer">
+                  <button type="submit" class="button collection__no-js-submit">{{ 'collections.apply_filters' | t }}</button>
+                  <button type="button" class="button collection-filters__done" data-filters-close>{{ 'collections.view_results' | t }}</button>
+                </div>
+              </aside>
+              <div class="collection-filters__overlay" data-filters-close></div>
+            {%- endif -%}
+
+            <div class="collection__results">
+              {%- comment -%} Active filters (removable pills) {%- endcomment -%}
+              <div class="active-filters" data-active-filters>
+                {%- if active_filter_count > 0 -%}
+                  <ul class="active-filters__list" role="list">
+                    {%- for filter in search.filters -%}
+                      {%- if filter.type == 'price_range' -%}
+                        {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+                          <li>
+                            <a class="active-filters__pill" href="{{ filter.url_to_remove }}" data-ajax-link>
+                              {{ filter.min_value.value | default: 0 | money }} &ndash;
+                              {{ filter.max_value.value | default: filter.range_max | money }}
+                              <span aria-hidden="true">&times;</span>
+                              <span class="visually-hidden">{{ 'collections.remove_filter' | t }}</span>
+                            </a>
+                          </li>
+                        {%- endif -%}
+                      {%- else -%}
+                        {%- for value in filter.active_values -%}
+                          <li>
+                            <a class="active-filters__pill" href="{{ value.url_to_remove }}" data-ajax-link>
+                              {{ filter.label | escape }}: {{ value.label | escape }}
+                              <span aria-hidden="true">&times;</span>
+                              <span class="visually-hidden">{{ 'collections.remove_filter' | t }}</span>
+                            </a>
+                          </li>
+                        {%- endfor -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    <li><a class="active-filters__clear" href="{{ clear_all_url }}" data-ajax-link>{{ 'collections.clear_all' | t }}</a></li>
+                  </ul>
+                {%- endif -%}
+              </div>
+
+              {%- comment -%} Results (swapped by collection.js after each change) {%- endcomment -%}
+              <div data-results>
+                {%- liquid
+                  assign product_count = 0
+                  assign other_count = 0
+                  for item in search.results
+                    if item.object_type == 'product'
+                      assign product_count = product_count | plus: 1
+                    else
+                      assign other_count = other_count | plus: 1
+                    endif
+                  endfor
+                -%}
+
+                {%- if product_count > 0 -%}
+                  <ul class="product-grid" role="list">
+                    {%- for item in search.results -%}
+                      {%- if item.object_type == 'product' -%}
+                        <li class="product-grid__item" data-search-card>
+                          {% render 'global-product-card',
+                            product: item,
+                            image_sizes: image_sizes,
+                            show_secondary_image: section.settings.show_secondary_image,
+                            show_vendor: section.settings.show_vendor,
+                            show_options: true
+                          %}
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+
+                {%- comment -%} Blog posts and pages: compact cards {%- endcomment -%}
+                {%- if other_count > 0 -%}
+                  {%- if product_count > 0 -%}
+                    <h2 class="search-more__title">{{ 'search.page.more_results' | t }}</h2>
+                  {%- endif -%}
+                  <ul class="search-more" role="list">
+                    {%- for item in search.results -%}
+                      {%- unless item.object_type == 'product' -%}
+                        {%- liquid
+                          assign item_text = item.excerpt_or_content | default: item.content | strip_html | truncatewords: 24
+                          if item.object_type == 'article'
+                            assign item_type = 'search.page.type_article' | t
+                          else
+                            assign item_type = 'search.page.type_page' | t
+                          endif
+                        -%}
+                        <li class="search-card" data-search-card>
+                          <a class="search-card__link" href="{{ item.url }}">
+                            <span class="search-card__media">
+                              {%- if item.object_type == 'article' and item.image -%}
+                                {{ item.image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '300, 450, 600', sizes: '(min-width: 750px) 200px, 100vw', alt: item.title, class: 'search-card__image' }}
+                              {%- else -%}
+                                <span class="search-card__placeholder">
+                                  {%- if item.object_type == 'article' -%}
+                                    {% render 'global-icon', name: 'edit', size: 30 %}
+                                  {%- else -%}
+                                    {% render 'global-icon', name: 'link', size: 30 %}
+                                  {%- endif -%}
+                                </span>
+                              {%- endif -%}
+                            </span>
+                            <span class="search-card__info">
+                              <span class="search-card__type">
+                                {{- item_type -}}
+                                {%- if item.object_type == 'article' %} &middot; {{ item.published_at | date: format: 'month_day_year' }}{% endif -%}
+                              </span>
+                              <span class="search-card__title">{{ item.title | escape }}</span>
+                              {%- if item_text != blank -%}
+                                <span class="search-card__text">{{ item_text }}</span>
+                              {%- endif -%}
+                              <span class="search-card__more">
+                                {{- 'search.page.read_more' | t }} {% render 'global-icon', name: 'arrow-right', size: 14 -%}
+                              </span>
+                            </span>
+                          </a>
+                        </li>
+                      {%- endunless -%}
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+
+                {%- if product_count == 0 and other_count == 0 -%}
+                  <div class="collection__empty">
+                    <p>{{ 'collections.no_matches' | t }}</p>
+                    <a class="button" href="{{ clear_all_url }}" data-ajax-link>{{ 'collections.clear_all_filters' | t }}</a>
+                  </div>
+                {%- endif -%}
+
+                {%- comment -%} Pagination (keeps search, filters and sort in the links) {%- endcomment -%}
+                {%- if paginate.pages > 1 -%}
+                  <nav class="pagination" aria-label="{{ 'collections.pagination_label' | t }}">
+                    <ul class="pagination__list" role="list">
+                      {%- if paginate.previous -%}
+                        <li><a href="{{ paginate.previous.url }}" class="pagination__link" data-ajax-link data-scroll-top aria-label="{{ 'collections.previous_page' | t }}">&larr;</a></li>
+                      {%- endif -%}
+                      {%- for part in paginate.parts -%}
+                        <li>
+                          {%- if part.is_link -%}
+                            <a href="{{ part.url }}" class="pagination__link" data-ajax-link data-scroll-top>{{ part.title }}</a>
+                          {%- elsif part.title == paginate.current_page -%}
+                            <span class="pagination__link pagination__link--current" aria-current="page">{{ part.title }}</span>
+                          {%- else -%}
+                            <span class="pagination__link">{{ part.title }}</span>
+                          {%- endif -%}
+                        </li>
+                      {%- endfor -%}
+                      {%- if paginate.next -%}
+                        <li><a href="{{ paginate.next.url }}" class="pagination__link" data-ajax-link data-scroll-top aria-label="{{ 'collections.next_page' | t }}">&rarr;</a></li>
+                      {%- endif -%}
+                    </ul>
+                  </nav>
+                {%- endif -%}
+              </div>
+            </div>
+          </div>
+        </form>
+      {%- endpaginate -%}
+    </div>
+  {%- else -%}
+    {%- comment -%} ---------- No search yet / nothing found: ideas + trending products ---------- {%- endcomment -%}
+    <div class="page-width search-empty">
+      {%- if search.performed -%}
+        <div class="search-empty__message">
+          <span class="search-empty__icon" aria-hidden="true">{% render 'global-icon', name: 'search', size: 30 %}</span>
+          <h2 class="search-empty__title">{{ 'search.page.no_results_title' | t: terms: terms }}</h2>
+          <p class="search-empty__text">{{ 'search.page.no_results_text' | t }}</p>
+        </div>
+      {%- endif -%}
+
+      {%- if popular.size > 0 -%}
+        <div class="search-popular">
+          <h2 class="search-popular__title">{{ 'search.page.popular' | t }}</h2>
+          <ul class="search-popular__list" role="list">
+            {%- for word in popular -%}
+              {%- assign word = word | strip -%}
+              {%- if word != blank -%}
+                <li>
+                  <a class="search-popular__chip" href="{{ routes.search_url }}?q={{ word | url_encode }}&type=product&options%5Bprefix%5D=last" data-search-pop>
+                    {%- render 'global-icon', name: 'search', size: 14 -%}
+                    {{ word | escape }}
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_trending and trending.size > 0 -%}
+        <div class="search-trending">
+          <h2 class="search-trending__title" data-split>{{ 'search.page.trending' | t }}</h2>
+          <ul class="product-grid search-trending__grid" role="list">
+            {%- for product in trending limit: section.settings.trending_count -%}
+              <li class="product-grid__item" data-search-card>
+                {% render 'global-product-card',
+                  product: product,
+                  image_sizes: '(min-width: 990px) 300px, 50vw',
+                  show_secondary_image: section.settings.show_secondary_image,
+                  show_vendor: section.settings.show_vendor,
+                  show_options: true
+                %}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{%- comment -%}
+  Schema — settings:
+  - Results:       results_per_page, columns_desktop, columns_mobile, show_tabs
+  - Filtering:     enable_filtering, enable_sorting (products only)
+  - Product card:  image_ratio, show_secondary_image, show_vendor
+  - Empty search / no results: popular_searches (comma-separated),
+                   show_trending, trending_collection (empty → all products),
+                   trending_count
+  - Colors:        hero_background, hero_text, accent_color
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Search results",
+  "tag": "div",
+  "class": "section-search-main",
+  "enabled_on": { "templates": ["search"] },
+  "settings": [
+    { "type": "header", "content": "Results" },
+    { "type": "range", "id": "results_per_page", "label": "Results per page", "min": 8, "max": 48, "step": 4, "default": 24 },
+    { "type": "range", "id": "columns_desktop", "label": "Columns on desktop", "min": 2, "max": 5, "step": 1, "default": 3 },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [{ "value": "1", "label": "1" }, { "value": "2", "label": "2" }],
+      "default": "2"
+    },
+    { "type": "checkbox", "id": "show_tabs", "label": "Show result type tabs", "info": "All / Products / Journal / Pages", "default": true },
+    { "type": "header", "content": "Filtering and sorting" },
+    { "type": "checkbox", "id": "enable_filtering", "label": "Enable filtering", "info": "Filters come from the Search & Discovery app.", "default": true },
+    { "type": "checkbox", "id": "enable_sorting", "label": "Enable sorting", "default": true },
+    { "type": "header", "content": "Product card" },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "portrait", "label": "Portrait (3:4)" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "landscape", "label": "Landscape (4:3)" }
+      ],
+      "default": "portrait"
+    },
+    { "type": "checkbox", "id": "show_secondary_image", "label": "Show second image on hover", "default": true },
+    { "type": "checkbox", "id": "show_vendor", "label": "Show vendor", "default": false },
+    { "type": "header", "content": "Empty search / no results" },
+    { "type": "text", "id": "popular_searches", "label": "Popular searches", "info": "Separate with commas.", "default": "Bags, Hoodie, Dress, Sneakers, Jacket, T-Shirt" },
+    { "type": "checkbox", "id": "show_trending", "label": "Show trending products", "default": true },
+    { "type": "collection", "id": "trending_collection", "label": "Trending collection", "info": "Leave empty to show all products." },
+    { "type": "range", "id": "trending_count", "label": "Trending products", "min": 3, "max": 12, "step": 1, "default": 6 },
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "hero_background", "label": "Top band background", "default": "#121212" },
+    { "type": "color", "id": "hero_text", "label": "Top band text", "default": "#FFFFFF" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#C8102E" }
+  ],
+  "presets": [{ "name": "Search results" }]
+}
+{% endschema %}

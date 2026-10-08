@@ -1,0 +1,41 @@
+/*
+ * ============================================================================
+ * Template: Blog post (article.json) — /blogs/<blog>/<post>
+ * ----------------------------------------------------------------------------
+ * Sections:
+ *   main    → sections/article-main.liquid    (photo header, share, text, tags, comments)
+ *   related → sections/article-related.liquid ("More from the journal" cards)
+ * GSAP scroll effects shared with About / Contact (global-scroll-animations.js).
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "article-main",
+      "settings": {
+        "show_reading_time": true,
+        "show_author": true,
+        "show_share": true,
+        "show_tags": true,
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "related": {
+      "type": "article-related",
+      "settings": {
+        "limit": 3,
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    }
+  },
+  "order": ["main", "related"]
+}

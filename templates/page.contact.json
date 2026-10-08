@@ -1,0 +1,95 @@
+/*
+ * ============================================================================
+ * Template: Contact page (page.contact.json) — animated Contact page
+ * ----------------------------------------------------------------------------
+ * Assign it in Shopify admin: Online Store > Pages > Contact > Theme
+ * template: "contact". (Preview without assigning: /pages/contact?view=contact)
+ *
+ * Sections (top → bottom), each with a GSAP scroll effect
+ * (assets/global-scroll-animations.js, shared with the About page):
+ *   hero → sections/contact-hero.liquid  ("Let's talk." + growing photo)
+ *   main → sections/contact-main.liquid  (info + contact form, Athora layout)
+ *   map  → sections/contact-map.liquid   (Google map + store card)
+ *   faq  → sections/contact-faq.liquid   (questions & answers)
+ * Messages from the form go to the store email (Settings > Notifications).
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "contact-hero",
+      "settings": {
+        "eyebrow": "Get in touch",
+        "heading": "Let's talk.",
+        "text": "<p>We're here to help with orders, sizing, styling and anything in between. Real people, quick answers.</p>",
+        "show_email": true,
+        "show_phone": true,
+        "image": "shopify:\/\/shop_images\/photo-1490481651871-ab68de25d43d_e0a6c406-4da5-4a87-9a71-91f0f3f9e93f.jpg",
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "main": {
+      "type": "contact-main",
+      "blocks": {
+        "address": { "type": "address", "settings": { "address": "198 Galley Street, 1740-street, 12040 NY" } },
+        "email": { "type": "email", "settings": {} },
+        "phone": { "type": "phone", "settings": {} },
+        "hours": { "type": "custom", "settings": { "icon": "chat", "title": "Support hours", "text": "<p>Mon – Fri, 9am – 6pm. We reply within one business day.</p>" } }
+      },
+      "block_order": ["address", "email", "phone", "hours"],
+      "settings": {
+        "eyebrow": "Contact us",
+        "heading": "Drop us a line.",
+        "text": "<p>Our team is here to make sure you have the best shopping experience. Write to us anytime.</p>",
+        "show_social": true,
+        "show_phone_field": true,
+        "subjects": "Order question, Shipping & delivery, Returns & exchanges, Sizing help, Other",
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "map": {
+      "type": "contact-map",
+      "settings": {
+        "address": "198 Galley Street, New York, NY",
+        "zoom": 14,
+        "eyebrow": "Visit us",
+        "heading": "Our flagship store",
+        "hours": "<p><strong>Mon – Fri:</strong> 10am – 8pm<br><strong>Sat – Sun:</strong> 11am – 6pm</p>",
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "faq": {
+      "type": "contact-faq",
+      "blocks": {
+        "q1": { "type": "question", "settings": { "question": "How long does shipping take?", "answer": "<p>Orders ship within 1–2 business days. Standard delivery takes 3–5 business days; express arrives in 1–2.</p>" } },
+        "q2": { "type": "question", "settings": { "question": "Can I return or exchange an item?", "answer": "<p>Yes. Unworn items with tags can be returned or exchanged within 30 days of delivery.</p>" } },
+        "q3": { "type": "question", "settings": { "question": "How do I find my size?", "answer": "<p>Each product has a size guide, and our team is happy to help — send us your usual size and the item you like.</p>" } },
+        "q4": { "type": "question", "settings": { "question": "How can I track my order?", "answer": "<p>You'll get a tracking link by email as soon as your order ships. Signed-in customers can also see it under My account.</p>" } }
+      },
+      "block_order": ["q1", "q2", "q3", "q4"],
+      "settings": {
+        "eyebrow": "FAQ",
+        "heading": "Quick answers",
+        "text": "<p>Can't find what you're looking for? Send us a message above.</p>",
+        "open_first": true,
+        "serif": true,
+        "background_color": "#E9E2D3",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    }
+  },
+  "order": ["hero", "main", "map", "faq"]
+}

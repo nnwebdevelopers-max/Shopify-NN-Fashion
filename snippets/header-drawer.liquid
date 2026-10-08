@@ -1,0 +1,187 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Header drawer (mobile menu)
+  ----------------------------------------------------------------------------
+  Slide-in menu opened by the ☰ button on mobile. Contains:
+  - Main menu, up to 3 levels:
+      LEVEL 1 ITEM ⌄                ← accordion; open = highlight color + left bar
+        View all ›                  ← link to the level-1 page
+        LEVEL 2 HEADING +           ← level 2 with its own links: bold heading row,
+          View all                     opens its links (level 3)
+          Level 3 link
+        Level 2 link                ← level 2 without links: plain link
+    Accordions start open when the shopper is on one of their pages.
+  - Secondary menu (e.g. Shop men / women / kids — the top bar menu is
+    hidden on mobile, so it is repeated here)
+  - Account link, phone number, currency/language selectors
+
+  Parameters:
+  - menu               {Linklist}  main menu
+  - secondary_menu     {Linklist}  optional extra menu
+  - highlighted        {String}    "|handle|handle|" list of highlighted menu items
+  - show_account       {Boolean}   show the account link
+  - show_phone         {Boolean}   show the store phone (Theme settings > Contact)
+  - show_localization  {Boolean}   show currency/language selectors
+
+  Used in:  sections/header.liquid
+  CSS:      assets/header.css (classes .drawer*)
+  JS:       assets/header.js (open/close, focus, Escape key)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Selectors only when the store has more than one option
+  assign drawer_show_country = false
+  assign drawer_show_language = false
+  if show_localization
+    if localization.available_countries.size > 1
+      assign drawer_show_country = true
+    endif
+    if localization.available_languages.size > 1
+      assign drawer_show_language = true
+    endif
+  endif
+-%}
+
+{%- comment -%}
+  Drawer root. Closed by default; header.js adds .is-open.
+  inert while closed → its links can't be reached with Tab.
+{%- endcomment -%}
+<div id="HeaderDrawer" class="drawer" data-drawer inert>
+  {%- comment -%} Dark overlay; click closes the drawer {%- endcomment -%}
+  <div class="drawer__overlay" data-drawer-close></div>
+
+  <div class="drawer__panel" role="dialog" aria-modal="true" aria-label="{{ 'header.menu_title' | t }}" tabindex="-1">
+    {%- comment -%} ---------- Drawer header ---------- {%- endcomment -%}
+    <div class="drawer__header">
+      <span class="drawer__title">{{ 'header.menu_title' | t }}</span>
+      <button type="button" class="drawer__close" data-drawer-close aria-label="{{ 'header.close_menu' | t }}">
+        {% render 'global-icon', name: 'close', size: 22 %}
+      </button>
+    </div>
+
+    {%- comment -%} ---------- Main menu ---------- {%- endcomment -%}
+    {%- if menu != blank and menu.links.size > 0 -%}
+      <nav class="drawer__nav" aria-label="{{ 'header.main_menu_label' | t }}">
+        <ul class="drawer__menu" role="list">
+          {%- for link in menu.links -%}
+            {%- liquid
+              assign link_handle = link.title | handleize
+              assign search_handle = '|' | append: link_handle | append: '|'
+              assign link_class = 'drawer__link'
+              if highlighted contains search_handle
+                assign link_class = link_class | append: ' drawer__link--highlight'
+              endif
+            -%}
+            <li class="drawer__item">
+              {%- if link.links.size > 0 -%}
+                {%- comment -%}
+                  Level 1 with children → accordion (details/summary, no JS needed).
+                  Starts open when the shopper is on one of its pages.
+                  Open state is styled in header.css (highlight color + left bar).
+                {%- endcomment -%}
+                <details class="drawer__details"{% if link.child_active %} open{% endif %}>
+                  <summary class="{{ link_class }}">
+                    {{- link.title | escape -}}
+                    {% render 'global-icon', name: 'chevron-down', size: 18 %}
+                  </summary>
+
+                  <div class="drawer__submenu">
+                    {%- comment -%} "View all" → the level-1 page itself; title added for screen readers {%- endcomment -%}
+                    <a href="{{ link.url }}" class="drawer__view-all">
+                      {{- 'header.view_all' | t -}}
+                      <span class="visually-hidden"> {{ link.title | escape }}</span>
+                      {% render 'global-icon', name: 'chevron-right', size: 14 %}
+                    </a>
+
+                    <ul class="drawer__sublist" role="list">
+                      {%- for child in link.links -%}
+                        <li class="drawer__subitem">
+                          {%- if child.links.size > 0 -%}
+                            {%- comment -%}
+                              Level 2 with its own links (e.g. "Featured categories") → a
+                              heading row that opens its links. Starts open when the
+                              shopper is on one of its pages.
+                            {%- endcomment -%}
+                            <details class="drawer__group"{% if child.child_active %} open{% endif %}>
+                              <summary class="drawer__group-title">{{ child.title | escape }}</summary>
+                              <ul class="drawer__grouplist" role="list">
+                                <li>
+                                  <a href="{{ child.url }}" class="drawer__sublink drawer__sublink--all"{% if child.active %} aria-current="page"{% endif %}>
+                                    {{- 'header.view_all' | t -}}
+                                    <span class="visually-hidden"> {{ child.title | escape }}</span>
+                                  </a>
+                                </li>
+                                {%- for grandchild in child.links -%}
+                                  <li>
+                                    <a href="{{ grandchild.url }}" class="drawer__sublink"{% if grandchild.active %} aria-current="page"{% endif %}>
+                                      {{- grandchild.title | escape -}}
+                                    </a>
+                                  </li>
+                                {%- endfor -%}
+                              </ul>
+                            </details>
+                          {%- else -%}
+                            {%- comment -%} Level 2 without its own links → a plain link {%- endcomment -%}
+                            <a href="{{ child.url }}" class="drawer__sublink drawer__sublink--level2"{% if child.active %} aria-current="page"{% endif %}>
+                              {{- child.title | escape -}}
+                            </a>
+                          {%- endif -%}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </div>
+                </details>
+              {%- else -%}
+                <a href="{{ link.url }}" class="{{ link_class }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    {%- comment -%} ---------- Secondary menu ---------- {%- endcomment -%}
+    {%- if secondary_menu != blank and secondary_menu.links.size > 0 -%}
+      <ul class="drawer__secondary" role="list">
+        {%- for link in secondary_menu.links -%}
+          <li><a href="{{ link.url }}"{% if link.active %} aria-current="page"{% endif %}>{{ link.title | escape }}</a></li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- comment -%} ---------- Footer: account, phone, selectors ---------- {%- endcomment -%}
+    <div class="drawer__footer">
+      {%- comment -%}
+        Signed out: closes the drawer (data-drawer-close, header.js) and opens
+        the sign-in popup (data-account-open, global-account.js)
+      {%- endcomment -%}
+      {%- if show_account and shop.customer_accounts_enabled -%}
+        <a
+          href="{{ routes.account_url }}"
+          class="drawer__utility"
+          {% if customer == nil %}data-account-open="login" data-drawer-close{% endif %}
+        >
+          {% render 'global-icon', name: 'account', size: 18 %}
+          {%- if customer -%}{{ 'header.account_logged_in' | t }}{%- else -%}{{ 'header.log_in' | t }}{%- endif -%}
+        </a>
+      {%- endif -%}
+
+      {%- if show_phone and settings.contact_phone != blank -%}
+        {%- assign phone_digits = settings.contact_phone | remove: ' ' | remove: '(' | remove: ')' | remove: '-' -%}
+        <a href="tel:{{ phone_digits }}" class="drawer__utility">
+          {% render 'global-icon', name: 'phone', size: 18 %}
+          {{ settings.contact_phone | escape }}
+        </a>
+      {%- endif -%}
+
+      {%- if drawer_show_country or drawer_show_language -%}
+        {% render 'header-localization-form',
+          form_id: 'DrawerLocalization',
+          show_country: drawer_show_country,
+          show_language: drawer_show_language
+        %}
+      {%- endif -%}
+    </div>
+  </div>
+</div>

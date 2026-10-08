@@ -1,0 +1,72 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "banner": {
+      "type": "collection-banner",
+      "disabled": true,
+      "settings": {
+        "show_banner": true,
+        "use_collection_image": true,
+        "overlay_opacity": 30,
+        "show_title": true,
+        "show_description": false,
+        "height": "medium",
+        "alignment": "center",
+        "background_color": "#121212",
+        "text_color": "#ffffff"
+      }
+    },
+    "text-top": {
+      "type": "collection-text",
+      "settings": {
+        "show_section": true,
+        "content_source": "collection_description",
+        "heading": "zdxcfxc",
+        "text": "<p>zxczxczxcxcvcvbvcbvcb</p><p>cghbvcbcvb</p>",
+        "alignment": "center",
+        "padding_top": 32,
+        "padding_bottom": 0
+      }
+    },
+    "main": {
+      "type": "collection-main",
+      "settings": {
+        "products_per_page": 16,
+        "columns_desktop": 3,
+        "columns_mobile": "2",
+        "show_title": false,
+        "enable_filtering": true,
+        "enable_sorting": true,
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_vendor": false
+      }
+    },
+    "text-bottom": {
+      "type": "collection-text",
+      "settings": {
+        "show_section": true,
+        "content_source": "custom",
+        "heading": "About this collection",
+        "text": "<p>Add a few lines about this collection here, such as styling tips, fabric details or sizing notes.</p>",
+        "alignment": "left",
+        "padding_top": 32,
+        "padding_bottom": 48
+      }
+    }
+  },
+  "order": [
+    "banner",
+    "text-top",
+    "main",
+    "text-bottom"
+  ]
+}
