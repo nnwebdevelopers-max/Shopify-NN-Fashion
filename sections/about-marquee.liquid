@@ -1,0 +1,76 @@
+{%- comment -%}
+  ============================================================================
+  Section: About marquee (scrolling text band, About page)
+  ----------------------------------------------------------------------------
+      ╲ Made for everyone ✦ Built to last ✦ Easy to style ✦ Honest pricing ✦ ╲
+  A dark band (optionally tilted) with big text that loops sideways.
+  Animated (GSAP, assets/global-scroll-animations.js → initMarquee): the loop speeds up while
+  you scroll and turns around when you scroll back up, then eases back.
+  Without GSAP: a plain CSS loop.
+  The text is written twice (the second copy hidden from screen readers)
+  so the loop is seamless.
+
+  Used in:   templates/page.about.json
+  CSS:       assets/about.css → "4. Marquee" (.about-marquee*)
+  JS:        assets/global-scroll-animations.js → initMarquee()
+  ============================================================================
+{%- endcomment -%}
+
+<section
+  class="about about-marquee{% if section.settings.serif %} about--serif{% endif %}"
+  data-about="marquee"
+  data-speed="{{ section.settings.speed }}"
+  style="--about-bg: {{ section.settings.background_color }}; --about-text: {{ section.settings.text_color }}; --about-accent: {{ section.settings.accent_color }}; --marquee-tilt: {{ section.settings.tilt }}deg;"
+>
+  <div class="about-marquee__band">
+    <div class="about-marquee__track" data-marquee-track>
+      {%- for copy in (1..2) -%}
+        <div class="about-marquee__group" {% if copy == 2 %}aria-hidden="true"{% endif %}>
+          {%- for block in section.blocks -%}
+            <span class="about-marquee__item" {% if copy == 1 %}{{ block.shopify_attributes }}{% endif %}>{{ block.settings.text | escape }}</span>
+            <span class="about-marquee__sep" aria-hidden="true">✦</span>
+          {%- endfor -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema — settings: speed (seconds per loop), tilt (−4…4°), serif, colors
+  (the band uses the text color as its background) · blocks: text item
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "About: marquee",
+  "tag": "div",
+  "class": "section-about-marquee",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "range", "id": "speed", "label": "Seconds per loop", "min": 10, "max": 60, "step": 2, "default": 26 },
+    { "type": "range", "id": "tilt", "label": "Tilt", "min": -4, "max": 4, "step": 1, "unit": "°", "default": -2 },
+    { "type": "checkbox", "id": "serif", "label": "Serif italic text", "default": true },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#F6F3EC" },
+    { "type": "color", "id": "text_color", "label": "Band color", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent (✦)", "default": "#B8734F" }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Text",
+      "settings": [{ "type": "text", "id": "text", "label": "Text", "default": "Made for everyone" }]
+    }
+  ],
+  "presets": [
+    {
+      "name": "About: marquee",
+      "blocks": [
+        { "type": "item", "settings": { "text": "Made for everyone" } },
+        { "type": "item", "settings": { "text": "Built to last" } },
+        { "type": "item", "settings": { "text": "Easy to style" } },
+        { "type": "item", "settings": { "text": "Honest pricing" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

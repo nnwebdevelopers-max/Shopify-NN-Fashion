@@ -1,0 +1,84 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Global account panel (dark side panel of the sign-in card)
+  ----------------------------------------------------------------------------
+  The branded half of the sign-in / sign-up card:
+
+      ┌──────────────────────────┐
+      │  ◌ glow + optional image │
+      │                          │
+      │  Your style, saved.      │   ← heading
+      │  Join NN Fashion to …    │   ← text
+      │                          │
+      │  (♡) Save favorites …    │   ← member perks (optional)
+      │  (⚡) Faster checkout …   │
+      │  (▢) Track orders …      │
+      └──────────────────────────┘
+  On phones it shrinks to a short banner (heading only), see global-account.css.
+
+  Settings: Theme settings > Customer accounts
+            (account_image, account_image_opacity, account_heading,
+             account_text, account_show_perks). Empty texts fall back to
+            locales → customer.panel.*
+
+  Parameters: none
+
+  Used in:  snippets/global-account-forms.liquid (popup + login/register pages),
+            sections/customer-activate.liquid, sections/customer-reset-password.liquid
+  CSS:      assets/global-account.css → "Side panel" (classes .account-panel*)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Texts: merchant's own (theme settings) or the translated default
+  if settings.account_heading != blank
+    assign panel_heading = settings.account_heading | escape
+  else
+    assign panel_heading = 'customer.panel.heading' | t
+  endif
+  if settings.account_text != blank
+    assign panel_text = settings.account_text | escape
+  else
+    assign panel_text = 'customer.panel.text' | t
+  endif
+
+  # Image dimming 0–90 % → overlay opacity 0–0.9
+  assign panel_dim = settings.account_image_opacity | default: 55 | divided_by: 100.0
+-%}
+
+<div class="account-panel" style="--account-dim: {{ panel_dim }};">
+  {%- comment -%} Optional background image (decorative: the text says it all) {%- endcomment -%}
+  {%- if settings.account_image != blank -%}
+    {{
+      settings.account_image
+      | image_url: width: 900
+      | image_tag: class: 'account-panel__image', alt: '', loading: 'lazy', widths: '450, 600, 900', sizes: '(min-width: 750px) 420px, 100vw'
+    }}
+  {%- endif -%}
+
+  {%- comment -%} Decorative glow + rings (CSS only) {%- endcomment -%}
+  <span class="account-panel__glow" aria-hidden="true"></span>
+
+  <div class="account-panel__content">
+    <p class="account-panel__brand">{{ shop.name | escape }}</p>
+    <p class="account-panel__heading">{{ panel_heading }}</p>
+    <p class="account-panel__text">{{ panel_text }}</p>
+
+    {%- if settings.account_show_perks -%}
+      <ul class="account-panel__perks" role="list" aria-label="{{ 'customer.panel.perks_label' | t }}">
+        <li class="account-panel__perk">
+          <span class="account-panel__perk-icon" aria-hidden="true">{% render 'global-icon', name: 'heart', size: 18 %}</span>
+          {{ 'customer.panel.perk_wishlist' | t }}
+        </li>
+        <li class="account-panel__perk">
+          <span class="account-panel__perk-icon" aria-hidden="true">{% render 'global-icon', name: 'bolt', size: 18 %}</span>
+          {{ 'customer.panel.perk_checkout' | t }}
+        </li>
+        <li class="account-panel__perk">
+          <span class="account-panel__perk-icon" aria-hidden="true">{% render 'global-icon', name: 'box', size: 18 %}</span>
+          {{ 'customer.panel.perk_orders' | t }}
+        </li>
+      </ul>
+    {%- endif -%}
+  </div>
+</div>

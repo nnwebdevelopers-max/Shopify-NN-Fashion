@@ -1,0 +1,254 @@
+{%- comment -%}
+  ============================================================================
+  Section: Homepage blog posts
+  ----------------------------------------------------------------------------
+  Latest articles from a chosen blog:
+
+                     EXPLORE POPULAR ARTICLES
+    ┌──────────────────────────┐  ┌────────┐ 16 Aug 2024 · Team
+    │                          │  │ image  │ Article title
+    │      latest article      │  └────────┘ Short excerpt…
+    │                          │  ┌────────┐ 15 Oct 2023 · Team
+    └──────────────────────────┘  │ image  │ Article title
+    14 Aug 2024                   └────────┘ Short excerpt…
+    The most stylish gifts…
+    Excerpt…
+    [ READ MORE ]
+
+  - Left: the newest article, large, with excerpt + button.
+  - Right: the next 1–4 articles as a compact list.
+  - Date / author / excerpt can each be switched off.
+  - Phones: the large article on top, the list below.
+
+  Used in:   templates/index.json ("blog-posts")
+  Snippets:  snippets/homepage-blog-meta.liquid (date · author line)
+  CSS:       assets/homepage.css → "9. Blog posts" (classes .blog-posts*)
+  JS:        none
+  Text:      locales → homepage.blog.* ("Read more", empty-blog notice)
+  Editable:  Theme editor > Home page > Blog posts
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign blog = section.settings.blog
+  assign side_count = section.settings.side_count
+
+  # "Read more" label: theme editor text if filled in, otherwise translated default
+  if section.settings.read_more_label != blank
+    assign read_more_label = section.settings.read_more_label
+  else
+    assign read_more_label = 'homepage.blog.read_more' | t
+  endif
+-%}
+
+{%- comment -%}
+  Shown to shoppers only when the chosen blog has articles. In the theme
+  editor an empty/unset blog shows a short notice instead, so the merchant
+  knows why the section is empty.
+{%- endcomment -%}
+{%- if blog != blank and blog.articles_count > 0 -%}
+  <section
+    class="blog-posts"
+    style="
+      --blog-bg: {{ section.settings.background_color }};
+      --blog-text: {{ section.settings.text_color }};
+      --blog-accent: {{ section.settings.accent_color }};
+      --blog-padding-top: {{ section.settings.padding_top }}px;
+      --blog-padding-bottom: {{ section.settings.padding_bottom }}px;
+    "
+  >
+    <div class="page-width">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="blog-posts__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      <div class="blog-posts__layout">
+        {%- comment -%} ---------- Featured (newest) article, large ---------- {%- endcomment -%}
+        {%- for article in blog.articles limit: 1 -%}
+          <article class="blog-posts__featured">
+            <a href="{{ article.url }}" class="blog-posts__media blog-posts__media--featured" tabindex="-1" aria-hidden="true">
+              {%- if article.image != blank -%}
+                {{ article.image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '400, 600, 800, 1000, 1200', sizes: '(min-width: 990px) 600px, 100vw', alt: '', class: 'blog-posts__image' }}
+              {%- else -%}
+                {{ 'image' | placeholder_svg_tag: 'blog-posts__image blog-posts__placeholder' }}
+              {%- endif -%}
+            </a>
+            {% render 'homepage-blog-meta', article: article, show_date: section.settings.show_date, show_author: section.settings.show_author %}
+            <h3 class="blog-posts__title blog-posts__title--featured">
+              <a href="{{ article.url }}">{{ article.title | escape }}</a>
+            </h3>
+            {%- if section.settings.show_excerpt -%}
+              {%- comment -%} Excerpt if set, else the start of the article (plain text, ~30 words) {%- endcomment -%}
+              <p class="blog-posts__excerpt">{{ article.excerpt_or_content | strip_html | truncatewords: 30 }}</p>
+            {%- endif -%}
+            <a href="{{ article.url }}" class="button button--sm blog-posts__button">
+              {{- read_more_label | escape -}}
+              <span class="visually-hidden">: {{ article.title | escape }}</span>
+              {% render 'global-icon', name: 'arrow-right', size: 14 %}
+            </a>
+          </article>
+        {%- endfor -%}
+
+        {%- comment -%} ---------- Compact list: the next articles (image + date/title) ---------- {%- endcomment -%}
+        {%- if blog.articles_count > 1 -%}
+          <ul class="blog-posts__list" role="list">
+            {%- for article in blog.articles offset: 1 limit: side_count -%}
+              <li>
+                <article class="blog-posts__item">
+                  <a href="{{ article.url }}" class="blog-posts__media" tabindex="-1" aria-hidden="true">
+                    {%- if article.image != blank -%}
+                      {{ article.image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '300, 450, 600', sizes: '(min-width: 990px) 280px, 40vw', alt: '', class: 'blog-posts__image' }}
+                    {%- else -%}
+                      {{ 'image' | placeholder_svg_tag: 'blog-posts__image blog-posts__placeholder' }}
+                    {%- endif -%}
+                  </a>
+                  <div class="blog-posts__item-content">
+                    {% render 'homepage-blog-meta', article: article, show_date: section.settings.show_date, show_author: section.settings.show_author %}
+                    <h3 class="blog-posts__title">
+                      <a href="{{ article.url }}">{{ article.title | escape }}</a>
+                    </h3>
+                    {%- if section.settings.show_list_excerpt -%}
+                      {%- comment -%} Short excerpt (~18 words, max 3 lines in CSS) {%- endcomment -%}
+                      <p class="blog-posts__excerpt blog-posts__excerpt--small">{{ article.excerpt_or_content | strip_html | truncatewords: 18 }}</p>
+                    {%- endif -%}
+                  </div>
+                </article>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </div>
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  {%- comment -%} Theme editor only: explain the empty section {%- endcomment -%}
+  <div class="page-width blog-posts__notice">
+    <p>{{ 'homepage.blog.empty' | t }}</p>
+  </div>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["index"] → home page only.
+  Settings:
+  - Content:  heading, blog (picker), side_count (articles listed beside the
+              featured one, 1–4), show_date, show_author, show_excerpt
+              (featured), show_list_excerpt (articles beside),
+              read_more_label (empty → translated "Read more")
+  - Colors:   background_color, text_color, accent_color (button + title hover)
+  - Spacing:  padding_top, padding_bottom
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Blog posts",
+  "tag": "div",
+  "class": "section-homepage-blog-posts",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Explore popular articles"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog"
+    },
+    {
+      "type": "range",
+      "id": "side_count",
+      "label": "Articles beside the featured one",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Show excerpt (featured article)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_list_excerpt",
+      "label": "Show excerpt (articles beside)",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "read_more_label",
+      "label": "Button label",
+      "info": "Leave empty to use the translated default (\"Read more\")."
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "info": "Button and title hover.",
+      "default": "#c8102e"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog posts"
+    }
+  ]
+}
+{% endschema %}

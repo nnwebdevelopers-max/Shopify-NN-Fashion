@@ -1,0 +1,24 @@
+/*
+ * ============================================================================
+ * Template: 404 page (404.json)
+ * ----------------------------------------------------------------------------
+ * Shown for any address that doesn't exist.
+ *
+ * Sections:
+ *   main → sections/404-main.liquid (404 number, message, search, buttons)
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "404-main",
+      "settings": {
+        "show_search": true
+      }
+    }
+  },
+  "order": ["main"]
+}

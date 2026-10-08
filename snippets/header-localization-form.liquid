@@ -1,0 +1,71 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Localization form (currency/country + language selectors)
+  ----------------------------------------------------------------------------
+  Shopify's localization form. Choosing a country switches the store's
+  currency (e.g. "USD $"); choosing a language switches the store language.
+
+  Each selector is a native <select> laid transparently over a compact
+  label ("USD $ ⌄"), so it looks small but keeps the browser's accessible
+  dropdown. header.js submits the form as soon as a value changes.
+
+  Parameters:
+  - form_id        {String}   required, unique id (the snippet is used twice)
+  - show_country   {Boolean}  show the currency/country selector
+  - show_language  {Boolean}  show the language selector
+
+  Usage:
+  {% render 'header-localization-form', form_id: 'TopBarLocalization', show_country: true, show_language: false %}
+
+  Used in:  sections/header-top-bar.liquid (desktop)
+            snippets/header-drawer.liquid (mobile drawer)
+  CSS:      assets/header.css (classes .localization*)
+  JS:       assets/header.js (auto-submit on change)
+  ============================================================================
+{%- endcomment -%}
+
+{%- comment -%} header.js finds this form by its "localization" class {%- endcomment -%}
+{%- form 'localization', id: form_id, class: 'localization' -%}
+  {%- comment -%} ---------- Currency / country ---------- {%- endcomment -%}
+  {%- if show_country -%}
+    <div class="localization__field">
+      {%- comment -%} Visible compact label, e.g. "USD $" {%- endcomment -%}
+      <span class="localization__current" aria-hidden="true">
+        {{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }}
+        {% render 'global-icon', name: 'chevron-down', size: 12 %}
+      </span>
+      <label class="visually-hidden" for="{{ form_id }}-country">{{ 'localization.country_label' | t }}</label>
+      {%- comment -%} Options show the full name, e.g. "India (INR ₹)" {%- endcomment -%}
+      <select id="{{ form_id }}-country" name="country_code" class="localization__select">
+        {%- for country in localization.available_countries -%}
+          <option value="{{ country.iso_code }}"{% if country.iso_code == localization.country.iso_code %} selected{% endif %}>
+            {{- country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+          </option>
+        {%- endfor -%}
+      </select>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} ---------- Language ---------- {%- endcomment -%}
+  {%- if show_language -%}
+    <div class="localization__field">
+      <span class="localization__current" aria-hidden="true">
+        {{ localization.language.iso_code | upcase }}
+        {% render 'global-icon', name: 'chevron-down', size: 12 %}
+      </span>
+      <label class="visually-hidden" for="{{ form_id }}-language">{{ 'localization.language_label' | t }}</label>
+      <select id="{{ form_id }}-language" name="language_code" class="localization__select">
+        {%- for language in localization.available_languages -%}
+          <option value="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} selected{% endif %}>
+            {{- language.endonym_name | capitalize -}}
+          </option>
+        {%- endfor -%}
+      </select>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Without JavaScript the shopper needs a button to apply the change {%- endcomment -%}
+  <noscript>
+    <button type="submit" class="button button--sm localization__submit">{{ 'localization.update' | t }}</button>
+  </noscript>
+{%- endform -%}

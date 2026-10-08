@@ -1,0 +1,518 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "slideshow": {
+      "type": "homepage-slideshow",
+      "blocks": {
+        "slide-1": {
+          "type": "slide",
+          "settings": {
+            "heading": "Timeless cuts",
+            "heading_highlight": "New arrivals",
+            "subheading": "Discover the finest in autumn workwear",
+            "button_label": "Explore collection",
+            "button_link": "shopify://collections/all",
+            "alignment": "left"
+          }
+        },
+        "slide-2": {
+          "type": "slide",
+          "settings": {
+            "heading": "Street ready",
+            "heading_highlight": "Up to 30% off",
+            "subheading": "Outlet styles for a limited time",
+            "button_label": "Shop the sale",
+            "button_link": "shopify://collections/all",
+            "alignment": "left"
+          }
+        },
+        "slide-3": {
+          "type": "slide",
+          "settings": {
+            "heading": "Layer up",
+            "heading_highlight": "Jackets & sweaters",
+            "subheading": "Warm essentials for the new season",
+            "button_label": "Explore collection",
+            "button_link": "shopify://collections/all",
+            "alignment": "left"
+          }
+        }
+      },
+      "block_order": [
+        "slide-1",
+        "slide-2",
+        "slide-3"
+      ],
+      "settings": {
+        "height": "medium",
+        "transition": "fade",
+        "autoplay": true,
+        "autoplay_speed": 5,
+        "show_arrows": true,
+        "show_dots": true,
+        "overlay_opacity": 45,
+        "text_color": "#ffffff",
+        "accent_color": "#c8102e",
+        "button_text_color": "#ffffff"
+      }
+    },
+    "features": {
+      "type": "homepage-features",
+      "blocks": {
+        "feature-1": {
+          "type": "feature",
+          "settings": {
+            "icon": "return",
+            "title": "Return & exchange",
+            "text": "You can return or exchange the item within 30 days.",
+            "link": ""
+          }
+        },
+        "feature-2": {
+          "type": "feature",
+          "settings": {
+            "icon": "shield",
+            "title": "100% quality guarantee",
+            "text": "No MOQ, customize production acceptable.",
+            "link": ""
+          }
+        },
+        "feature-3": {
+          "type": "feature",
+          "settings": {
+            "icon": "box",
+            "title": "Free delivery",
+            "text": "Free delivery on orders of $200 and more.",
+            "link": ""
+          }
+        },
+        "feature-4": {
+          "type": "feature",
+          "settings": {
+            "icon": "phone",
+            "title": "+1(800) 2345 6789",
+            "text": "Round the clock free hotline one-to-one.",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "feature-1",
+        "feature-2",
+        "feature-3",
+        "feature-4"
+      ],
+      "settings": {
+        "show_dividers": true,
+        "mobile_columns": "2",
+        "padding_top": 24,
+        "padding_bottom": 24,
+        "icon_size": 28,
+        "icon_color": "#121212",
+        "background_color": "#ffffff",
+        "text_color": "#121212"
+      }
+    },
+    "categories": {
+      "type": "homepage-categories",
+      "blocks": {
+        "category-1": {
+          "type": "category",
+          "settings": {
+            "collection": "",
+            "title": "Top trending"
+          }
+        },
+        "category-2": {
+          "type": "category",
+          "settings": {
+            "collection": "",
+            "title": "On sale"
+          }
+        },
+        "category-3": {
+          "type": "category",
+          "settings": {
+            "collection": "",
+            "title": "Bulk order"
+          }
+        },
+        "category-4": {
+          "type": "category",
+          "settings": {
+            "collection": "",
+            "title": "All product"
+          }
+        },
+        "category-5": {
+          "type": "category",
+          "settings": {
+            "collection": "",
+            "title": "Jackets & sweaters"
+          }
+        },
+        "category-6": {
+          "type": "category",
+          "settings": {
+            "collection": "",
+            "title": "Top"
+          }
+        }
+      },
+      "block_order": [
+        "category-1",
+        "category-2",
+        "category-3",
+        "category-4",
+        "category-5",
+        "category-6"
+      ],
+      "settings": {
+        "heading": "",
+        "heading_alignment": "center",
+        "columns_desktop": 6,
+        "mobile_layout": "grid-3",
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "image_ratio": "portrait",
+        "corner_radius": 4,
+        "show_gradient": true,
+        "background_color": "#111111",
+        "text_color": "#ffffff"
+      }
+    },
+    "collection-tabs": {
+      "type": "homepage-collection-tabs",
+      "blocks": {
+        "tab-1": {
+          "type": "tab",
+          "settings": {
+            "collection": "backpacks",
+            "product_sort": "featured",
+            "title": "Formal jackets",
+            "button_label": "",
+            "button_link": ""
+          }
+        },
+        "tab-2": {
+          "type": "tab",
+          "settings": {
+            "collection": "activewear",
+            "product_sort": "featured",
+            "title": "Casual jackets",
+            "button_label": "",
+            "button_link": ""
+          }
+        },
+        "tab-3": {
+          "type": "tab",
+          "settings": {
+            "collection": "flats",
+            "product_sort": "featured",
+            "title": "Sports & performance jackets",
+            "button_label": "",
+            "button_link": ""
+          }
+        },
+        "tab-4": {
+          "type": "tab",
+          "settings": {
+            "collection": "jeans",
+            "product_sort": "featured",
+            "title": "Leather jackets",
+            "button_label": "",
+            "button_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "tab-1",
+        "tab-2",
+        "tab-3",
+        "tab-4"
+      ],
+      "settings": {
+        "heading": "Jackets & sweaters",
+        "view_all_label": "",
+        "tab_style": "pills",
+        "products_to_show": 10,
+        "layout": "slider",
+        "slider_style": "progress",
+        "slider_autoplay": false,
+        "slider_speed": 5,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "boxed_cards": true,
+        "background_color": "#f6f3f9",
+        "text_color": "#121212",
+        "accent_color": "#121212",
+        "accent_text_color": "#ffffff",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "promo-banners": {
+      "type": "homepage-promo-banners",
+      "blocks": {
+        "banner-1": {
+          "type": "banner",
+          "settings": {
+            "image_position": "right",
+            "badge": "",
+            "heading": "Special bags",
+            "subheading": "Decorate your life",
+            "highlight": "15% off",
+            "text": "",
+            "button_label": "Shop now",
+            "button_link": "shopify://collections/all",
+            "button_style": "accent",
+            "background_color": "#1c1c1e",
+            "text_color": "#ffffff",
+            "accent_color": "#c8102e"
+          }
+        },
+        "banner-2": {
+          "type": "banner",
+          "settings": {
+            "image_position": "right",
+            "badge": "Sale on",
+            "heading": "Men's accessories",
+            "subheading": "",
+            "highlight": "",
+            "text": "Unbeatable deals, unmatched men's style accessories for the modern gentleman!",
+            "button_label": "Shop now",
+            "button_link": "shopify://collections/all",
+            "button_style": "light",
+            "background_color": "#1c1c1e",
+            "text_color": "#ffffff",
+            "accent_color": "#c8102e"
+          }
+        }
+      },
+      "block_order": [
+        "banner-1",
+        "banner-2"
+      ],
+      "settings": {
+        "columns": 2,
+        "card_height": "medium",
+        "background_color": "#ffffff",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "sale-banner": {
+      "type": "homepage-sale-banner",
+      "settings": {
+        "overlay_opacity": 60,
+        "heading": "30% - 60%",
+        "heading_accent": "Off all sale",
+        "text": "",
+        "button_label": "",
+        "button_link": "",
+        "height": "medium",
+        "alignment": "center",
+        "background_color": "#1c1c1e",
+        "text_color": "#ffffff",
+        "accent_color": "#c8102e"
+      }
+    },
+    "about": {
+      "type": "homepage-about",
+      "settings": {
+        "image_position": "left",
+        "image_ratio": "landscape",
+        "label": "About us",
+        "heading": "Unlock your style potential, embrace confidence: discover the epitome of men's fashion excellence",
+        "text": "<p>Welcome to our men's fashion store – the ideal destination to enhance your style. With a deep passion for men's fashion, we are confident in providing you with a fantastic shopping experience and the widest selection.</p>",
+        "button_label": "Read more",
+        "button_link": "",
+        "background_color": "#fafafa",
+        "text_color": "#121212",
+        "accent_color": "#c8102e",
+        "padding_top": 44,
+        "padding_bottom": 52
+      }
+    },
+    "testimonials": {
+      "type": "homepage-testimonials",
+      "blocks": {
+        "review-1": {
+          "type": "review",
+          "settings": {
+            "title": "\"Fast delivery & spot-on sizing!\"",
+            "text": "Package reached California in just 2 days. The cargo vest fits exactly to the size chart. My new go-to for wardrobe essentials.",
+            "rating": 0,
+            "author": "David R.",
+            "author_detail": "Premium member"
+          }
+        },
+        "review-2": {
+          "type": "review",
+          "settings": {
+            "title": "\"Great quality for the price\"",
+            "text": "The jacket feels premium and the stitching is excellent. Customer support helped me pick the right size within minutes.",
+            "rating": 0,
+            "author": "Michael T.",
+            "author_detail": "Verified buyer"
+          }
+        },
+        "review-3": {
+          "type": "review",
+          "settings": {
+            "title": "\"Easy returns, no hassle\"",
+            "text": "I exchanged a pair of jeans for a different fit and the new pair arrived before I even shipped the old one back.",
+            "rating": 0,
+            "author": "James K.",
+            "author_detail": "Verified buyer"
+          }
+        }
+      },
+      "block_order": [
+        "review-1",
+        "review-2",
+        "review-3"
+      ],
+      "settings": {
+        "heading": "Customer reviews",
+        "autoplay": true,
+        "autoplay_speed": 6,
+        "show_arrows": true,
+        "show_dots": true,
+        "overlay_opacity": 80,
+        "background_color": "#1c1c1e",
+        "text_color": "#ffffff",
+        "accent_color": "#c8102e",
+        "padding_top": 60,
+        "padding_bottom": 56
+      }
+    },
+    "blog-posts": {
+      "type": "homepage-blog-posts",
+      "settings": {
+        "heading": "Explore popular articles",
+        "blog": "news",
+        "side_count": 2,
+        "show_date": true,
+        "show_author": true,
+        "show_excerpt": true,
+        "read_more_label": "",
+        "background_color": "#ffffff",
+        "text_color": "#121212",
+        "accent_color": "#c8102e",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "brands": {
+      "type": "homepage-brands",
+      "blocks": {
+        "brand-1": {
+          "type": "brand",
+          "settings": {
+            "name": "Wrangler",
+            "link": ""
+          }
+        },
+        "brand-2": {
+          "type": "brand",
+          "settings": {
+            "name": "Black Man",
+            "link": ""
+          }
+        },
+        "brand-3": {
+          "type": "brand",
+          "settings": {
+            "name": "Calvin Klein",
+            "link": ""
+          }
+        },
+        "brand-4": {
+          "type": "brand",
+          "settings": {
+            "name": "Moores",
+            "link": ""
+          }
+        },
+        "brand-5": {
+          "type": "brand",
+          "settings": {
+            "name": "Reebok",
+            "link": ""
+          }
+        },
+        "brand-6": {
+          "type": "brand",
+          "settings": {
+            "name": "Tommy",
+            "link": ""
+          }
+        },
+        "brand-7": {
+          "type": "brand",
+          "settings": {
+            "name": "Levi's",
+            "link": ""
+          }
+        },
+        "brand-8": {
+          "type": "brand",
+          "settings": {
+            "name": "Puma",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "brand-1",
+        "brand-2",
+        "brand-3",
+        "brand-4",
+        "brand-5",
+        "brand-6",
+        "brand-7",
+        "brand-8"
+      ],
+      "settings": {
+        "heading": "",
+        "layout": "slider",
+        "per_row_desktop": 6,
+        "per_row_mobile": 3,
+        "autoplay": true,
+        "autoplay_speed": 4,
+        "logo_height": 40,
+        "grayscale": true,
+        "show_border": true,
+        "background_color": "#ffffff",
+        "text_color": "#555555",
+        "accent_color": "#c8102e",
+        "padding_top": 32,
+        "padding_bottom": 32
+      }
+    }
+  },
+  "order": [
+    "slideshow",
+    "features",
+    "categories",
+    "collection-tabs",
+    "promo-banners",
+    "sale-banner",
+    "about",
+    "testimonials",
+    "blog-posts",
+    "brands"
+  ]
+}

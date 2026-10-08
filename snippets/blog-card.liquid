@@ -1,0 +1,107 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Blog card (one post in a grid — blog page, related posts)
+  ----------------------------------------------------------------------------
+      ┌───────────────────────┐
+      │ [PlantCare]           │ ← first tag, pill on the photo
+      │       photo           │   (photo zooms slightly on hover)
+      │                       │
+      └───────────────────────┘
+      📅 Apr 21, 2026 · 4 min read
+      How to repot your plants for healthy growth     ← title
+      Short excerpt of the post…
+      Read more →
+  Layout from the Athora theme's blog cards. GSAP (global-scroll-animations
+  .js) makes the cards rise in one after another and the photo unveil.
+
+  Parameters:
+  - article  {Article}  the post (or nothing when `sample` is used)
+  - sample   {Object}   optional sample data instead of an article: a string
+                        "title|tag|image file name|excerpt" (blog-main.liquid,
+                        while the blog has no posts)
+  - sample_url {String} link for sample cards (the blog page)
+  - featured {Boolean}  large layout (photo left, text right)
+  - show_excerpt, show_date, show_reading_time {Boolean}
+  - heading_tag {String} 'h2' or 'h3' (default)
+
+  Used in:  sections/blog-main.liquid, sections/article-related.liquid
+  CSS:      assets/blog.css → "3. Cards" (.blog-card*)
+  Text:     locales → blog.read_more, blog.reading_time, blog.sample, blog.featured
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign tag_name = heading_tag | default: 'h3'
+  if sample
+    assign parts = sample | split: '|'
+    assign card_title = parts[0]
+    assign card_tag = parts[1]
+    assign card_image = images[parts[2]]
+    assign card_excerpt = parts[3]
+    assign card_url = sample_url | default: '#'
+    assign card_date = 'now' | date: format: 'month_day_year'
+    assign card_minutes = 4
+  else
+    assign card_title = article.title
+    assign card_tag = article.tags.first
+    assign card_image = article.image
+    if article.excerpt != blank
+      assign card_excerpt = article.excerpt | strip_html | truncatewords: 24
+    else
+      assign card_excerpt = article.content | strip_html | truncatewords: 24
+    endif
+    assign card_url = article.url
+    assign card_date = article.published_at | date: format: 'month_day_year'
+    assign words = article.content | strip_html | split: ' ' | size
+    assign card_minutes = words | divided_by: 200 | at_least: 1
+  endif
+-%}
+
+<article class="blog-card{% if featured %} blog-card--featured{% endif %}" data-blog-card>
+  <a href="{{ card_url }}" class="blog-card__media" tabindex="-1" aria-hidden="true" data-blog-media>
+    {%- if card_image != blank -%}
+      {%- liquid
+        if featured
+          assign card_sizes = '(min-width: 990px) 60vw, 100vw'
+        else
+          assign card_sizes = '(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw'
+        endif
+      -%}
+      {{ card_image | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '400, 600, 900, 1200, 1400', sizes: card_sizes, alt: card_title, class: 'blog-card__image' }}
+    {%- else -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'blog-card__image blog-card__placeholder' }}
+    {%- endif -%}
+    {%- if card_tag != blank -%}
+      <span class="blog-card__tag">{{ card_tag | escape }}</span>
+    {%- endif -%}
+  </a>
+
+  <div class="blog-card__info">
+    {%- if featured -%}
+      <span class="blog-card__featured">{{ 'blog.featured' | t }}</span>
+    {%- endif -%}
+    {%- if sample -%}
+      <span class="blog-card__featured blog-card__featured--sample">{{ 'blog.sample' | t }}</span>
+    {%- endif -%}
+    {%- if show_date or show_reading_time -%}
+      <p class="blog-card__meta">
+        {%- if show_date -%}
+          <span>{% render 'global-icon', name: 'calendar', size: 15 %}{{ card_date }}</span>
+        {%- endif -%}
+        {%- if show_reading_time -%}
+          <span>{% render 'global-icon', name: 'clock', size: 15 %}{{ 'blog.reading_time' | t: minutes: card_minutes }}</span>
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+    <{{ tag_name }} class="blog-card__title">
+      <a href="{{ card_url }}">{{ card_title | escape }}</a>
+    </{{ tag_name }}>
+    {%- if show_excerpt and card_excerpt != blank -%}
+      <p class="blog-card__excerpt">{{ card_excerpt | escape }}</p>
+    {%- endif -%}
+    <a href="{{ card_url }}" class="button button--link blog-card__more" aria-label="{{ 'blog.read_more_label' | t: title: card_title }}">
+      <span>{{ 'blog.read_more' | t }}</span>
+      {% render 'global-icon', name: 'arrow-right', size: 16 %}
+    </a>
+  </div>
+</article>

@@ -1,0 +1,211 @@
+{%- comment -%}
+  ============================================================================
+  Section: Wishlist main (wishlist page)
+  ----------------------------------------------------------------------------
+  Shows the products the shopper saved with the ♡ button on product cards.
+
+      WISHLIST                                   [Clear wishlist]
+      3 saved products
+      ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐
+      │ card │ │ card │ │ card │ │ card │   ← normal product cards (with dock)
+      └──────┘ └──────┘ └──────┘ └──────┘
+
+  The list lives in the shopper's browser (localStorage "nn-wishlist",
+  product handles), so this section only renders the frame. assets/wishlist.js
+  fetches each saved product's card from /products/<handle>?view=card
+  (templates/product.card.json) and fills the grid. Removing a product with
+  the ♡ on its card removes the card here too.
+
+  Signed out while "Wishlist for signed-in customers only" is on (Theme
+  settings > Customer accounts): a "Sign in to see your wishlist" screen is
+  shown instead, and the sign-in popup opens right away (data-account-autoopen,
+  assets/global-account.js). After signing in the shopper comes back here.
+
+      ┌──────────────────────────────┐
+      │            (🔒)              │
+      │ Sign in to see your wishlist │
+      │ Your wishlist is saved to …  │
+      │  [SIGN IN] [Create account]  │
+      └──────────────────────────────┘
+
+  Used in:   templates/page.wishlist.json
+             → create a page in Shopify admin (Online Store > Pages), choose
+               the template "page.wishlist", and pick that page in
+               Theme editor > Header > Wishlist page.
+  CSS:       assets/wishlist.css (classes .wishlist*)
+  JS:        assets/wishlist.js (+ window.NNCards from global-product-card.js)
+  Text:      locales → wishlist.*
+  Editable:  Theme editor > Pages > page.wishlist
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  if section.settings.heading != blank
+    assign heading = section.settings.heading
+  else
+    assign heading = 'wishlist.title' | t
+  endif
+
+  # Card image ratio (read by global-product-card.css)
+  case section.settings.image_ratio
+    when 'square'
+      assign card_ratio = '1 / 1'
+    when 'landscape'
+      assign card_ratio = '4 / 3'
+    else
+      assign card_ratio = '3 / 4'
+  endcase
+
+  # Signed out + wishlist needs an account → sign-in screen instead of the list
+  assign wishlist_locked = false
+  if customer == nil and settings.wishlist_require_login and shop.customer_accounts_enabled
+    assign wishlist_locked = true
+  endif
+-%}
+
+{%- if wishlist_locked -%}
+  {%- comment -%}
+    ---------- Signed out: sign-in screen ----------
+    Buttons open the popup on the matching tab (data-account-open); without
+    JavaScript they are plain links to the login / register pages.
+    data-account-autoopen opens the popup when the page loads.
+  {%- endcomment -%}
+  <section
+    class="page-width wishlist wishlist--locked"
+    data-account-autoopen="login"
+    data-account-return="{{ request.path }}"
+    data-account-message="{{ 'products.card_actions.login_for_wishlist' | t }}"
+  >
+    <h1 class="wishlist__title">{{ heading | escape }}</h1>
+    <div class="wishlist__locked">
+      <span class="wishlist__locked-icon" aria-hidden="true">
+        {% render 'global-icon', name: 'lock', size: 30 %}
+        <span class="wishlist__locked-heart">{% render 'global-icon', name: 'heart', size: 16 %}</span>
+      </span>
+      <h2 class="wishlist__empty-title">{{ 'wishlist.locked_title' | t }}</h2>
+      <p>{{ 'wishlist.locked_text' | t }}</p>
+      <div class="wishlist__locked-actions">
+        <a
+          href="{{ routes.account_login_url }}"
+          class="button wishlist__locked-button"
+          data-account-open="login"
+          data-account-return="{{ request.path }}"
+        >
+          {{- 'wishlist.locked_sign_in' | t -}}
+        </a>
+        <a
+          href="{{ routes.account_register_url }}"
+          class="wishlist__locked-link"
+          data-account-open="register"
+          data-account-return="{{ request.path }}"
+        >
+          {{- 'wishlist.locked_register' | t -}}
+        </a>
+      </div>
+    </div>
+  </section>
+{%- else -%}
+
+<section
+  class="page-width wishlist"
+  style="
+    --wishlist-columns: {{ section.settings.columns_desktop }};
+    --wishlist-columns-mobile: {{ section.settings.columns_mobile }};
+    --card-ratio: {{ card_ratio }};
+  "
+  data-wishlist
+  data-text-count-one="{{ 'wishlist.count_one' | t: number: '[number]' }}"
+  data-text-count-other="{{ 'wishlist.count_other' | t: number: '[number]' }}"
+>
+  {%- comment -%} ---------- Header: title, count, clear button ---------- {%- endcomment -%}
+  <div class="wishlist__header">
+    <div>
+      <h1 class="wishlist__title">{{ heading | escape }}</h1>
+      <p class="wishlist__count" data-wishlist-summary aria-live="polite"></p>
+    </div>
+    <button type="button" class="wishlist__clear" data-wishlist-clear hidden>{{ 'wishlist.clear' | t }}</button>
+  </div>
+
+  {%- comment -%} Shown while the saved cards load {%- endcomment -%}
+  <p class="wishlist__loading" data-wishlist-loading>{{ 'wishlist.loading' | t }}</p>
+
+  {%- comment -%} Filled by wishlist.js with one product card per saved product {%- endcomment -%}
+  <ul class="wishlist__grid" role="list" data-wishlist-grid></ul>
+
+  {%- comment -%} ---------- Empty state ---------- {%- endcomment -%}
+  <div class="wishlist__empty" data-wishlist-empty hidden>
+    <span class="wishlist__empty-icon" aria-hidden="true">{% render 'global-icon', name: 'heart', size: 40 %}</span>
+    <h2 class="wishlist__empty-title">{{ 'wishlist.empty_title' | t }}</h2>
+    <p>{{ 'wishlist.empty_text' | t }}</p>
+    <a href="{{ section.settings.continue_link | default: routes.all_products_collection_url }}" class="button wishlist__continue">
+      {{- 'cart.continue_shopping' | t -}}
+    </a>
+  </div>
+</section>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["page"] → only on page templates (page.wishlist).
+  Settings: heading (empty → translated "Wishlist"), columns_desktop (2–5),
+            columns_mobile (1–2), image_ratio, continue_link (empty state button)
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Wishlist",
+  "tag": "div",
+  "class": "section-wishlist-main",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Leave empty to use the translated default (\"Wishlist\")."
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Products per row on desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Products per row on mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "portrait", "label": "Portrait (3:4)" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "landscape", "label": "Landscape (4:3)" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "url",
+      "id": "continue_link",
+      "label": "\"Continue shopping\" link",
+      "info": "Shown when the wishlist is empty. Leave empty for All products."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Wishlist"
+    }
+  ]
+}
+{% endschema %}

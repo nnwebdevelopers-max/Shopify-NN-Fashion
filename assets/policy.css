@@ -1,0 +1,526 @@
+/* ============================================================================
+   policy.css — Policy pages (Privacy policy, Refund policy, Terms…)
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid on
+     - pages using the "policy" template (sections/policy-main.liquid)
+     - Shopify's own policy pages /policies/… (request.page_type 'policy'),
+       whose markup Shopify writes (.shopify-policy__container / __title /
+       __body) — styled here to match.
+   JS: assets/policy.js (contents list, reading progress, back to top)
+
+   Look: same palette as the About / Contact pages — cream hero band with a
+   big serif title, then [sticky contents list | text in a reading width],
+   terracotta accents.
+   Colors (section settings): --policy-bg, --policy-text, --policy-accent.
+
+   Sections of this file:
+     1. Shared   2. Hero   3. Layout + contents list   4. Policy text
+     5. Questions box   6. Progress bar + back to top
+     7. Shopify's own /policies pages   8. Phones
+   ============================================================================ */
+
+/* ==========================================================================
+   1. Shared
+   ========================================================================== */
+.policy,
+.shopify-policy__container {
+  --policy-bg: #f6f3ec;
+  --policy-text: #2f3a2f;
+  --policy-accent: #b8734f;
+  --policy-muted: color-mix(in srgb, var(--policy-text) 72%, transparent);
+  --policy-line: color-mix(in srgb, var(--policy-text) 14%, transparent);
+  color: var(--policy-text);
+}
+.policy__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ==========================================================================
+   2. Hero
+   ========================================================================== */
+.policy-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 88px 0 72px;
+  background: var(--policy-bg);
+}
+/* Soft decorative circle */
+.policy-hero::after {
+  content: "";
+  position: absolute;
+  top: -140px;
+  right: -100px;
+  width: 420px;
+  height: 420px;
+  border: 1px solid color-mix(in srgb, var(--policy-accent) 35%, transparent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 60px color-mix(in srgb, var(--policy-accent) 6%, transparent);
+  pointer-events: none;
+}
+.policy-hero__eyebrow {
+  margin: 0 0 16px;
+  color: var(--policy-accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  animation: policy-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.policy-hero__title {
+  margin: 0;
+  font-size: clamp(40px, 6.5vw, 84px);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  animation: policy-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+.policy--serif .policy-hero__title,
+.policy--serif .policy-contact__title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+.policy-hero__intro {
+  max-width: 620px;
+  margin-top: 22px;
+  color: var(--policy-muted);
+  font-size: 18px;
+  line-height: 1.65;
+  animation: policy-rise 1s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+}
+.policy-hero__intro p {
+  margin: 0;
+}
+@keyframes policy-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   3. Layout + contents list
+   ========================================================================== */
+.policy__layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 760px);
+  justify-content: center;
+  align-items: start;
+  gap: 72px;
+  padding-top: 64px;
+  padding-bottom: 96px;
+}
+/* Without headings (or JS) the text is centered on its own */
+.policy__layout:not(.has-toc) {
+  grid-template-columns: minmax(0, 760px);
+}
+.policy-toc {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.policy-toc[hidden] {
+  display: none;
+}
+.policy-toc__title {
+  margin-bottom: 14px;
+  color: var(--policy-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  list-style: none;
+  cursor: default;
+}
+.policy-toc__title::-webkit-details-marker {
+  display: none;
+}
+/* Desktop: a plain heading (the list can't be folded); phones: a dropdown */
+@media (min-width: 990px) {
+  .policy-toc__title {
+    pointer-events: none;
+  }
+}
+.policy-toc__list {
+  margin: 0;
+  padding: 0 0 0 2px;
+  list-style: none;
+  border-left: 1.5px solid var(--policy-line);
+}
+.policy-toc__link {
+  position: relative;
+  display: block;
+  padding: 7px 0 7px 18px;
+  color: var(--policy-muted);
+  font-size: 14px;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+.policy-toc__link::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: -3.5px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--policy-accent);
+  transform: scaleY(0);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.policy-toc__link:hover {
+  color: var(--policy-text);
+}
+.policy-toc__link[aria-current="true"] {
+  color: var(--policy-text);
+  font-weight: 700;
+}
+.policy-toc__link[aria-current="true"]::before {
+  transform: scaleY(1);
+}
+.policy-toc__link:focus-visible {
+  outline: 2px solid var(--policy-accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   4. Policy text (from Settings > Policies or the page editor)
+   ========================================================================== */
+.policy-rte,
+.shopify-policy__body .rte {
+  color: color-mix(in srgb, var(--policy-text) 88%, transparent);
+  font-size: 17px;
+  line-height: 1.8;
+}
+.policy-rte > :first-child,
+.shopify-policy__body .rte > div > :first-child {
+  margin-top: 0;
+}
+/* "Last updated: …" (first paragraph of Shopify's policies) as a small tag */
+.policy-rte > div > p:first-child,
+.policy-rte > p:first-child,
+.shopify-policy__body .rte > div > p:first-child {
+  display: inline-block;
+  margin-bottom: 24px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--policy-bg);
+  color: var(--policy-text);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.policy-rte h2,
+.shopify-policy__body h2 {
+  margin: 2.2em 0 0.7em;
+  padding-top: 1.6em;
+  border-top: 1px solid var(--policy-line);
+  color: var(--policy-text);
+  font-size: clamp(22px, 2.2vw, 28px);
+  font-weight: 800;
+  line-height: 1.25;
+  scroll-margin-top: 24px;
+}
+.policy--serif .policy-rte h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+.policy-rte h3,
+.shopify-policy__body h3 {
+  margin: 1.6em 0 0.5em;
+  color: var(--policy-text);
+  font-size: 19px;
+  font-weight: 700;
+}
+.policy-rte p,
+.shopify-policy__body p {
+  margin: 0 0 1.1em;
+}
+.policy-rte ul,
+.policy-rte ol,
+.shopify-policy__body ul,
+.shopify-policy__body ol {
+  margin: 0 0 1.3em;
+  padding-left: 1.3em;
+}
+.policy-rte li,
+.shopify-policy__body li {
+  margin-bottom: 0.65em;
+  padding-left: 0.3em;
+}
+.policy-rte li::marker,
+.shopify-policy__body li::marker {
+  color: var(--policy-accent);
+}
+.policy-rte strong,
+.shopify-policy__body strong {
+  color: var(--policy-text);
+}
+.policy-rte a,
+.shopify-policy__body a {
+  color: var(--policy-text);
+  font-weight: 600;
+  text-decoration-color: var(--policy-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.policy-rte a:hover,
+.shopify-policy__body a:hover {
+  color: var(--policy-accent);
+}
+.policy-rte table,
+.shopify-policy__body table {
+  display: block;
+  width: 100%;
+  margin: 1.4em 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.policy-rte th,
+.policy-rte td,
+.shopify-policy__body th,
+.shopify-policy__body td {
+  padding: 10px 12px;
+  border: 1px solid var(--policy-line);
+  text-align: left;
+}
+.policy__empty {
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--policy-bg);
+  color: var(--policy-muted);
+}
+
+/* ==========================================================================
+   5. Questions box
+   ========================================================================== */
+.policy-contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 64px;
+  padding: 36px 40px;
+  border-radius: 24px;
+  background: var(--policy-text);
+  color: var(--policy-bg);
+}
+.policy-contact__title {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 800;
+}
+.policy-contact__text {
+  max-width: 420px;
+  margin: 0;
+  opacity: 0.8;
+}
+.policy-contact__actions {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+}
+/* "Contact us": shared .button in the page's colours */
+.policy-button {
+  --btn-bg: var(--policy-bg);
+  --btn-text: var(--policy-text);
+  --btn-hover-bg: var(--policy-accent);
+  --btn-focus: var(--policy-accent);
+}
+.policy-contact__email {
+  color: inherit;
+  font-size: 14px;
+  opacity: 0.8;
+  text-underline-offset: 3px;
+}
+.policy-contact__email:focus-visible {
+  outline: 2px solid var(--policy-accent);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   6. Reading progress bar + back to top
+   ========================================================================== */
+.policy-progress {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 95;
+  height: 3px;
+  pointer-events: none;
+}
+.policy-progress span {
+  display: block;
+  height: 100%;
+  background: var(--policy-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.policy-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--policy-text);
+  color: var(--policy-bg);
+  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
+}
+.policy-top[hidden] {
+  display: none;
+}
+.policy-top.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.policy-top:hover {
+  background: var(--policy-accent);
+  color: #ffffff;
+}
+.policy-top:focus-visible {
+  outline: 2px solid var(--policy-accent);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   7. Shopify's own policy pages (/policies/…)
+   Markup by Shopify: .shopify-policy__container > __title (h1) + __body .rte.
+   policy.js adds a contents list (.policy-toc) inside the container and the
+   class .has-toc, which switches to the two-column layout.
+   ========================================================================== */
+.shopify-policy__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+}
+/* Title band: the cream background runs to both screen edges (a huge
+   box-shadow, clipped at the top and bottom) without widening the layout */
+.shopify-policy__title {
+  margin: 0 0 56px;
+  padding: 88px 0 64px;
+  background: var(--policy-bg);
+  box-shadow: 0 0 0 100vmax var(--policy-bg);
+  clip-path: inset(0 -100vmax);
+  text-align: left;
+}
+.shopify-policy__title h1 {
+  max-width: 1152px;
+  margin: 0 auto;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(40px, 6.5vw, 84px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  animation: policy-rise 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.shopify-policy__body {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.shopify-policy__container.has-toc {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 760px);
+  justify-content: center;
+  column-gap: 72px;
+}
+.shopify-policy__container.has-toc .shopify-policy__title {
+  grid-column: 1 / -1;
+}
+.shopify-policy__container.has-toc .shopify-policy__body {
+  max-width: none;
+  margin: 0;
+}
+
+/* ==========================================================================
+   8. Tablets / phones
+   ========================================================================== */
+@media (max-width: 989px) {
+  .policy__layout,
+  .shopify-policy__container.has-toc {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  /* Contents list → a dropdown above the text */
+  .policy-toc {
+    position: static;
+    max-height: none;
+  }
+  .policy-toc__box {
+    border: 1.5px solid var(--policy-line);
+    border-radius: 16px;
+  }
+  .policy-toc__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 16px 20px;
+    cursor: pointer;
+  }
+  .policy-toc__title::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 0.25s ease;
+  }
+  .policy-toc__box[open] .policy-toc__title::after {
+    transform: rotate(-135deg) translateY(-2px);
+  }
+  .policy-toc__list {
+    margin: 0 20px 16px;
+  }
+}
+@media (max-width: 749px) {
+  .policy-hero,
+  .shopify-policy__title {
+    padding-top: 56px;
+    padding-bottom: 48px;
+  }
+  .policy-hero::after {
+    width: 260px;
+    height: 260px;
+  }
+  .policy__layout {
+    padding-top: 36px;
+    padding-bottom: 64px;
+  }
+  .policy-rte,
+  .shopify-policy__body .rte {
+    font-size: 16px;
+  }
+  .policy-contact {
+    padding: 28px 24px;
+  }
+  .policy-top {
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .policy-hero__eyebrow,
+  .policy-hero__title,
+  .policy-hero__intro,
+  .shopify-policy__title h1 {
+    animation: none;
+  }
+  .policy-toc__link::before,
+  .policy-top {
+    transition: none;
+  }
+}

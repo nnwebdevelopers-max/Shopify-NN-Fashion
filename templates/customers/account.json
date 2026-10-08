@@ -1,0 +1,27 @@
+/*
+ * ============================================================================
+ * Template: Customer account (customers/account.json) — /account
+ * ----------------------------------------------------------------------------
+ * Account dashboard for signed-in customers.
+ *
+ * Sections:
+ *   main → sections/customer-account.liquid (greeting, stats, order history,
+ *          default address)
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "customer-account",
+      "settings": {
+        "show_stats": true,
+        "orders_per_page": 10,
+        "shop_link": ""
+      }
+    }
+  },
+  "order": ["main"]
+}

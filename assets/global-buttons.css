@@ -1,0 +1,239 @@
+/* ============================================================================
+   global-buttons.css — One button system for the whole site
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid on every page, BEFORE the header / footer /
+              page stylesheets (so a section can recolour its buttons by
+              setting the --btn-* variables below in its own CSS).
+   Motion:    assets/global-buttons.js (GSAP: hover lift, arrow nudge,
+              press feedback, magnetic CTAs)
+
+   Usage (HTML):
+     <a class="button button--primary" href="…">Shop now {% render 'global-icon', name: 'arrow-right' %}</a>
+     <button class="button button--outline button--sm">Edit</button>
+
+   Base:      .button               dark pill (#121212), hover → brand red
+   Variants:  .button--primary      brand red, hover → dark
+              .button--dark         (same as the base; for clarity in markup)
+              .button--outline      transparent + border in the text colour,
+                                    hover → filled dark
+              .button--light        white (for dark / photo backgrounds),
+                                    hover → brand red
+              .button--ghost-light  outline in white (on photos), hover → white
+              .button--link         text button: underline grows on hover
+   Sizes:     .button--sm (40px)  ·  default (48px)  ·  .button--lg (56px)
+   Width:     .button--full (100% wide)
+   Icons:     any <svg> inside; a trailing icon (arrow) nudges forward on hover
+   States:    :hover, :focus-visible (ring), :active (pressed),
+              :disabled / [aria-disabled="true"], .is-loading (spinner)
+
+   Recolouring (in a section's CSS, e.g. from colour settings):
+     .slideshow__button { --btn-bg: var(--slideshow-accent); --btn-text: … }
+   Variables:  --btn-bg, --btn-text, --btn-border,
+               --btn-hover-bg, --btn-hover-text, --btn-hover-border,
+               --btn-height, --btn-pad-x, --btn-font-size, --btn-radius,
+               --btn-focus (ring colour)
+   ============================================================================ */
+
+/* ==========================================================================
+   1. Design tokens (shared by every button)
+   ========================================================================== */
+:root {
+  --btn-brand: #c8102e;           /* site red */
+  --btn-ink: #121212;             /* site black */
+  --btn-radius-default: 999px;    /* pill */
+  --btn-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   2. Base button
+   ========================================================================== */
+.button {
+  --btn-bg: var(--btn-ink);
+  --btn-text: #ffffff;
+  --btn-border: var(--btn-bg);
+  --btn-hover-bg: var(--btn-brand);
+  --btn-hover-text: #ffffff;
+  --btn-hover-border: var(--btn-hover-bg);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--btn-height, 48px);
+  margin: 0;
+  padding: 0 var(--btn-pad-x, 28px);
+  border: 1.5px solid var(--btn-border);
+  border-radius: var(--btn-radius, var(--btn-radius-default));
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-family: inherit;
+  font-size: var(--btn-font-size, 14px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: normal;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.3s var(--btn-ease),
+    color 0.3s var(--btn-ease),
+    border-color 0.3s var(--btn-ease),
+    box-shadow 0.3s var(--btn-ease),
+    opacity 0.3s ease;
+}
+.button:hover {
+  border-color: var(--btn-hover-border);
+  background: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+  box-shadow: 0 12px 24px -14px rgba(18, 18, 18, 0.55);
+}
+.button:focus-visible {
+  outline: 2px solid var(--btn-focus, var(--btn-brand));
+  outline-offset: 3px;
+}
+/* Pressed (without GSAP / on touch the CSS does it; GSAP adds a spring) */
+.button:active {
+  box-shadow: none;
+}
+.button svg {
+  flex: none;
+}
+
+/* Disabled: faded, no hover */
+.button:disabled,
+.button[aria-disabled="true"] {
+  border-color: #e4e4e4;
+  background: #e4e4e4;
+  color: #8a8a8a;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Loading: label hidden, spinner in the middle (e.g. add to cart, sign in) */
+.button.is-loading {
+  color: transparent !important;
+  pointer-events: none;
+}
+.button.is-loading::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 10px);
+  left: calc(50% - 10px);
+  width: 20px;
+  height: 20px;
+  border: 2px solid currentColor;
+  border-color: rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: button-spin 0.7s linear infinite;
+}
+@keyframes button-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   3. Variants
+   ========================================================================== */
+.button--primary {
+  --btn-bg: var(--btn-brand);
+  --btn-hover-bg: var(--btn-ink);
+}
+.button--dark {
+  --btn-bg: var(--btn-ink);
+  --btn-hover-bg: var(--btn-brand);
+}
+/* Outline: border + text in the surrounding text colour */
+.button--outline {
+  --btn-bg: transparent;
+  --btn-text: currentColor;
+  --btn-border: currentColor;
+  --btn-hover-bg: var(--btn-ink);
+  --btn-hover-text: #ffffff;
+  --btn-hover-border: var(--btn-ink);
+}
+.button--light {
+  --btn-bg: #ffffff;
+  --btn-text: var(--btn-ink);
+  --btn-hover-bg: var(--btn-brand);
+  --btn-hover-text: #ffffff;
+}
+.button--ghost-light {
+  --btn-bg: transparent;
+  --btn-text: #ffffff;
+  --btn-border: #ffffff;
+  --btn-hover-bg: #ffffff;
+  --btn-hover-text: var(--btn-ink);
+  --btn-hover-border: #ffffff;
+}
+.button--light.is-loading::after {
+  border-color: rgba(18, 18, 18, 0.25);
+  border-top-color: var(--btn-ink);
+}
+
+/* Text button: same type, no box; underline grows from the left on hover */
+.button--link {
+  --btn-bg: transparent;
+  --btn-border: transparent;
+  --btn-text: currentColor;
+  --btn-hover-bg: transparent;
+  --btn-hover-border: transparent;
+  --btn-hover-text: var(--btn-brand);
+  min-height: 0;
+  padding: 4px 0;
+  border-radius: 0;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1.5px;
+  transition: background-size 0.35s var(--btn-ease), color 0.3s ease;
+}
+.button--link:hover {
+  background-color: transparent;
+  background-size: 100% 1.5px;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   4. Sizes + width
+   ========================================================================== */
+.button--sm {
+  --btn-height: 40px;
+  --btn-pad-x: 20px;
+  --btn-font-size: 12px;
+  gap: 8px;
+}
+.button--lg {
+  --btn-height: 56px;
+  --btn-pad-x: 36px;
+  --btn-font-size: 15px;
+}
+.button--full {
+  display: flex;
+  width: 100%;
+}
+/* Round icon-only button (same height as the size it's used with) */
+.button--icon {
+  width: var(--btn-height, 48px);
+  padding: 0;
+}
+
+/* Phones: large buttons step down a little; all keep a 40px+ touch target */
+@media (max-width: 749px) {
+  .button--lg {
+    --btn-height: 52px;
+    --btn-pad-x: 28px;
+    --btn-font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .button--link {
+    transition: none;
+  }
+}

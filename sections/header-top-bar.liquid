@@ -1,0 +1,277 @@
+{%- comment -%}
+  ============================================================================
+  Section: Header top bar
+  ----------------------------------------------------------------------------
+  Thin dark bar at the very top of every page, three areas:
+  - Left:   small menu (e.g. SHOP MAN / SHOP WOMAN / SHOP KIDS)
+  - Center: announcements (rotate when there are several), optional link,
+            optional close (×) button
+  - Right:  phone number + currency/country and language selectors
+
+  On mobile only the announcement is shown; the menu, phone and selectors
+  move into the mobile menu drawer (snippets/header-drawer.liquid).
+
+  Used in:   sections/header-group.json ("top-bar")
+  CSS:       assets/header.css (classes .top-bar*)
+  JS:        assets/header.js (rotation, close button, selector auto-submit)
+  Editable:  Theme editor > Header > Top bar
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign menu = section.settings.menu
+
+  # Key for the close (×) button. Built from the announcement texts, so if the
+  # merchant changes the announcements they show again for shoppers who closed them.
+  assign dismiss_key = ''
+  for block in section.blocks
+    assign dismiss_key = dismiss_key | append: block.settings.text
+  endfor
+  assign dismiss_key = dismiss_key | md5
+
+  # Currency/country selector: only when the store sells to more than 1 country (Markets)
+  assign show_country = false
+  if section.settings.show_country_selector and localization.available_countries.size > 1
+    assign show_country = true
+  endif
+
+  # Language selector: only when the store has more than 1 language
+  assign show_language = false
+  if section.settings.show_language_selector and localization.available_languages.size > 1
+    assign show_language = true
+  endif
+-%}
+
+{%- comment -%}
+  Wrapper. CSS custom properties carry the color settings.
+  data-* attributes are read by header.js.
+{%- endcomment -%}
+<div
+  class="top-bar"
+  style="--tb-bg: {{ section.settings.background_color }}; --tb-text: {{ section.settings.text_color }}; --tb-muted: {{ section.settings.muted_color }};"
+  data-top-bar
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+  data-dismiss-key="{{ dismiss_key }}"
+>
+  <div class="page-width top-bar__inner">
+    {%- comment -%} ---------- Left: menu (desktop only) ---------- {%- endcomment -%}
+    <nav class="top-bar__nav" aria-label="{{ 'header.top_bar_menu_label' | t }}">
+      {%- if menu != blank and menu.links.size > 0 -%}
+        <ul class="top-bar__menu" role="list">
+          {%- for link in menu.links -%}
+            <li>
+              {%- comment -%} The current page's link is highlighted (bold, full color) {%- endcomment -%}
+              <a
+                href="{{ link.url }}"
+                class="top-bar__link{% if link.active %} top-bar__link--active{% endif %}"
+                {% if link.active %}aria-current="page"{% endif %}
+              >
+                {{- link.title | escape -}}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </nav>
+
+    {%- comment -%} ---------- Center: announcements ---------- {%- endcomment -%}
+    {%- if section.blocks.size > 0 -%}
+      <div class="top-bar__announcements" role="region" aria-label="{{ 'header.announcement_label' | t }}">
+        <div class="top-bar__messages">
+          {%- for block in section.blocks -%}
+            {%- comment -%} Only the .is-active message is visible; header.js rotates the class {%- endcomment -%}
+            <p
+              class="top-bar__message{% if forloop.first %} is-active{% endif %}"
+              {{ block.shopify_attributes }}
+            >
+              <span>{{ block.settings.text | escape }}</span>
+              {%- if block.settings.link_label != blank and block.settings.link != blank -%}
+                <a href="{{ block.settings.link }}" class="top-bar__message-link">{{ block.settings.link_label | escape }}</a>
+              {%- endif -%}
+            </p>
+          {%- endfor -%}
+        </div>
+
+        {%- comment -%} Close (×): hides announcements for this shopper (remembered in their browser) {%- endcomment -%}
+        {%- if section.settings.show_close_button -%}
+          <button type="button" class="top-bar__close" data-top-bar-close aria-label="{{ 'header.close_announcement' | t }}">
+            {% render 'global-icon', name: 'close', size: 14 %}
+          </button>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} ---------- Right: phone + selectors (desktop only) ---------- {%- endcomment -%}
+    <div class="top-bar__utilities">
+      {%- comment -%} Phone comes from Theme settings > Contact (shared with the mobile menu) {%- endcomment -%}
+      {%- if section.settings.show_phone and settings.contact_phone != blank -%}
+        {%- comment -%} tel: link — strip spaces/brackets so phones can dial it {%- endcomment -%}
+        {%- assign phone_digits = settings.contact_phone | remove: ' ' | remove: '(' | remove: ')' | remove: '-' -%}
+        <a href="tel:{{ phone_digits }}" class="top-bar__phone">
+          {% render 'global-icon', name: 'phone', size: 15 %}
+          <span>{{ settings.contact_phone | escape }}</span>
+        </a>
+      {%- endif -%}
+
+      {%- if show_country or show_language -%}
+        {% render 'header-localization-form',
+          form_id: 'TopBarLocalization',
+          show_country: show_country,
+          show_language: show_language
+        %}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.groups: ["header"] → can only be added to the header area.
+  Settings:
+  - Menu:           menu (link list shown on the left)
+  - Announcements:  autoplay + autoplay_speed (rotation), show_close_button
+  - Contact:        show_phone (number itself: Theme settings > Contact)
+  - Selectors:      show_country_selector (currency), show_language_selector
+                    (each only appears when the store has more than one option)
+  - Colors:         background_color, text_color, muted_color (non-active menu links)
+  Blocks:
+  - announcement → text, link_label (e.g. "Discover Now"), link (max 5)
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Top bar",
+  "tag": "section",
+  "class": "section-header-top-bar",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Menu"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "info": "Shown on the left on desktop. Example: Shop men, Shop women, Shop kids."
+    },
+    {
+      "type": "header",
+      "content": "Announcements"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Rotate announcements",
+      "info": "Applies when there is more than one announcement.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Change every",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "show_close_button",
+      "label": "Show close button",
+      "info": "Lets shoppers hide the announcements. They come back when you change the text.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Contact"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "Show phone number",
+      "info": "Set the number in Theme settings > Contact.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Country and language"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country_selector",
+      "label": "Show currency selector",
+      "info": "Appears when you sell to more than one country. Set up in Settings > Markets.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_language_selector",
+      "label": "Show language selector",
+      "info": "Appears when your store has more than one language.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#1c1c1e"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "muted_color",
+      "label": "Menu links (not active)",
+      "default": "#a3a3a3"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "Announcement",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Stay ahead of the style curve with our latest arrivals."
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label",
+          "default": "Discover Now"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Top bar",
+      "blocks": [
+        {
+          "type": "announcement"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

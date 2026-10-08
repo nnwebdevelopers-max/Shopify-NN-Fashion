@@ -1,0 +1,718 @@
+/* ============================================================================
+   collection.css — Collection page styles
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (only when template.name == 'collection')
+
+   Styles for:
+     sections/collection-banner.liquid   → 1. Banner
+     sections/collection-text.liquid     → 2. Text areas
+     sections/collection-main.liquid     → 3. Toolbar & layout
+     snippets/collection-filters.liquid  → 4. Filters (4c. star rating,
+                                              4d. color chips + size pills)
+     snippets/collection-categories.liquid → 4b. Categories list
+                                           5. Mobile filter drawer
+     sections/collection-main.liquid     → 6. Active filters
+                                           7. Product grid & empty state
+                                           8. Pagination
+                                           9. Loading state
+
+   Product card styles are in assets/global-product-card.css.
+
+   State classes (added by assets/collection.js on [data-collection]):
+     .is-js        → JavaScript is running (enables drawer, hides no-JS buttons)
+     .filters-open → mobile filter drawer is open
+     .is-loading   → filtered results are being fetched
+   ============================================================================ */
+
+
+/* ==========================================================================
+   1. Banner
+   ========================================================================== */
+
+/* Wrapper: content vertically centered, height set by size modifier */
+.collection-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--banner-height, 360px);
+  overflow: hidden;
+  background: var(--banner-bg);
+  color: var(--banner-text);
+}
+
+/* Height options (desktop) */
+.collection-banner--small  { --banner-height: 220px; }
+.collection-banner--medium { --banner-height: 360px; }
+.collection-banner--large  { --banner-height: 520px; }
+
+/* Image fills the banner behind the text */
+.collection-banner__media {
+  position: absolute;
+  inset: 0;
+}
+.collection-banner__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark overlay over the image so text stays readable (strength from settings) */
+.collection-banner--has-image .collection-banner__media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000000;
+  opacity: var(--banner-overlay, 0.3);
+}
+
+/* Text sits above image and overlay */
+.collection-banner__content {
+  position: relative;
+  width: 100%;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+.collection-banner--center .collection-banner__content {
+  text-align: center;
+}
+
+.collection-banner__title {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 48px);
+  line-height: 1.1;
+}
+.collection-banner__description {
+  max-width: 640px;
+  margin-top: 12px;
+}
+.collection-banner--center .collection-banner__description {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Shorter banners on mobile */
+@media (max-width: 749px) {
+  .collection-banner--small  { --banner-height: 160px; }
+  .collection-banner--medium { --banner-height: 260px; }
+  .collection-banner--large  { --banner-height: 380px; }
+}
+
+
+/* ==========================================================================
+   2. Text areas (below banner / bottom of page)
+   ========================================================================== */
+
+.collection-text {
+  max-width: 800px;
+  padding: var(--ct-padding-top, 32px) 0 var(--ct-padding-bottom, 32px);
+}
+.collection-text--center {
+  margin: 0 auto;
+  text-align: center;
+}
+.collection-text__heading {
+  margin: 0 0 12px;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+/* Remove outer margins from the rich text paragraphs */
+.collection-text__body > :first-child { margin-top: 0; }
+.collection-text__body > :last-child  { margin-bottom: 0; }
+
+
+/* ==========================================================================
+   3. Toolbar & layout
+   ========================================================================== */
+
+.collection {
+  padding-top: 24px;
+  padding-bottom: 48px;
+}
+.collection__title {
+  margin: 0 0 24px;
+  font-size: 32px;
+}
+
+/* Toolbar row: [Filter button] [count] ........ [Sort by] */
+.collection__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e5e5;
+}
+.collection__count {
+  margin: 0;
+  color: #555555;
+  font-size: 14px;
+}
+
+/* Sort dropdown pushed to the right */
+.collection__sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 14px;
+}
+.collection__sort select {
+  padding: 6px 10px;
+  border: 1px solid #c4c4c4;
+  background: #ffffff;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* "Filter" button: hidden by default, shown on mobile with JS (section 5) */
+.collection__filter-toggle {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid #121212;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* No-JS submit buttons are hidden once JS is running (changes apply live) */
+.is-js .collection__no-js-submit {
+  display: none;
+}
+
+/* Desktop: filters sidebar + results side by side */
+@media (min-width: 990px) {
+  .collection__layout--has-filters {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+  }
+}
+
+
+/* ==========================================================================
+   4. Filters (sidebar content)
+   ========================================================================== */
+
+/* Drawer-only parts are hidden on desktop / without JS */
+.collection-filters__header,
+.collection-filters__done,
+.collection-filters__overlay {
+  display: none;
+}
+.collection-filters__footer {
+  padding-top: 16px;
+}
+
+/* One filter group */
+.filter {
+  border-bottom: 1px solid #e5e5e5;
+}
+.filter:first-child {
+  border-top: 1px solid #e5e5e5;
+}
+
+/* Group header: label (count) ...... chevron */
+.filter__summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+.filter__summary::-webkit-details-marker {
+  display: none; /* hide Safari's default triangle */
+}
+.filter__count {
+  color: #555555;
+  font-weight: 400;
+}
+
+/* Chevron drawn with borders: points down when closed, up when open */
+.filter__icon {
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.2s ease;
+}
+.filter[open] .filter__icon {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+.filter__body {
+  padding-bottom: 16px;
+}
+
+/* Checkbox list: scrolls when a filter has many values */
+.filter__list {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.filter__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.filter__checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #121212;
+  cursor: pointer;
+}
+.filter__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.filter__value-count {
+  color: #777777;
+}
+
+/* Values with no matching products */
+.filter__checkbox:disabled,
+.filter__checkbox:disabled + .filter__label {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Color swatch dot (color filters) */
+.filter__swatch {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  background: var(--swatch);
+}
+
+/* ---------- 4b. Categories (snippets/collection-categories.liquid) ----------
+   Link rows: name ........ count; current collection bold with a red bar. */
+.filter-categories {
+  display: grid;
+  gap: 2px;
+  max-height: 320px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.filter-categories--children {
+  max-height: none;
+  margin: 2px 0 4px 14px;
+  padding-left: 10px;
+  border-left: 1px solid #e5e5e5;
+  overflow: visible;
+}
+.filter-categories__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: #333333;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.filter-categories__link:hover {
+  background: #f4f4f4;
+  color: #121212;
+}
+.filter-categories__link.is-current {
+  background: #f4f4f4;
+  color: #121212;
+  font-weight: 700;
+}
+.filter-categories__link.is-current::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: #c8102e;
+}
+.filter-categories__count {
+  min-width: 26px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #efefef;
+  color: #666666;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.filter-categories__link.is-current .filter-categories__count {
+  background: #121212;
+  color: #ffffff;
+}
+
+/* ---------- 4c. Star rating filter ---------- */
+.filter-rating__stars {
+  display: inline-flex;
+  gap: 1px;
+}
+.filter-rating__star {
+  display: grid;
+  color: #c9c9c9;
+}
+.filter-rating__star.is-filled {
+  color: #f5a623;
+}
+.filter-rating__star.is-filled .icon {
+  fill: currentColor;
+}
+
+/* ---------- 4d. Color chips + size pills ----------
+   The checkbox is visually hidden; the label is the clickable chip/pill.
+   Checked = dark outline (chips) / dark fill (pills). No products = faded,
+   pills crossed out. */
+.filter-chips,
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.filter-chips li,
+.filter-pills li {
+  position: relative; /* keeps the hidden checkbox inside the list */
+}
+.filter-chips__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border: 1.5px solid #e2e2e2;
+  border-radius: 999px;
+  background: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.filter-chips__chip:hover {
+  border-color: #9a9a9a;
+}
+.filter-chips__dot {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  background-position: center;
+  background-size: cover;
+}
+.filter-chips__input:checked + .filter-chips__chip {
+  border-color: #121212;
+  box-shadow: inset 0 0 0 1px #121212;
+  font-weight: 700;
+}
+.filter-pills__pill {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1.5px solid #e2e2e2;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.filter-pills__pill:hover {
+  border-color: #121212;
+}
+.filter-pills__input:checked + .filter-pills__pill {
+  border-color: #121212;
+  background: #121212;
+  color: #ffffff;
+}
+.filter-chips__input:disabled + .filter-chips__chip,
+.filter-pills__input:disabled + .filter-pills__pill {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.filter-pills__input:disabled + .filter-pills__pill {
+  text-decoration: line-through;
+}
+.filter-chips__input:focus-visible + .filter-chips__chip,
+.filter-pills__input:focus-visible + .filter-pills__pill {
+  outline: 2px solid #c8102e;
+  outline-offset: 2px;
+}
+
+/* Price range: [From] – [To] */
+.filter-price {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.filter-price__field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.filter-price__input-wrap {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid #c4c4c4;
+  background: #ffffff;
+}
+.filter-price__input-wrap:focus-within {
+  outline: 2px solid #121212;
+  outline-offset: -1px;
+}
+.filter-price__input-wrap input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  outline: none; /* focus is shown on the wrapper instead */
+}
+.filter-price__separator {
+  padding-bottom: 8px;
+}
+.filter-price__note {
+  margin: 8px 0 0;
+  color: #777777;
+  font-size: 12px;
+}
+
+
+/* ==========================================================================
+   5. Mobile filter drawer (below 990px, JS only)
+   Without JS, filters simply show stacked above the products.
+   ========================================================================== */
+
+@media (max-width: 989px) {
+  /* No JS: filters above results */
+  .collection-filters {
+    margin-bottom: 24px;
+  }
+
+  .is-js .collection__filter-toggle {
+    display: inline-flex;
+  }
+
+  /* Drawer panel: slides in from the left */
+  .is-js .collection-filters {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    width: min(360px, 88vw);
+    margin: 0;
+    background: #ffffff;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.3s ease, visibility 0.3s;
+  }
+  .is-js.filters-open .collection-filters {
+    transform: none;
+    visibility: visible;
+  }
+
+  /* Drawer header: title + close (×) */
+  .is-js .collection-filters__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  .collection-filters__title {
+    margin: 0;
+    font-size: 18px;
+  }
+  .collection-filters__close {
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  /* Scrollable filter list between header and footer */
+  .is-js .collection-filters__body {
+    flex: 1;
+    padding: 0 16px;
+    overflow-y: auto;
+  }
+  .is-js .filter:first-child {
+    border-top: 0;
+  }
+
+  /* Footer: full-width "View results" */
+  .is-js .collection-filters__footer {
+    padding: 16px;
+    border-top: 1px solid #e5e5e5;
+  }
+  /* "View results": shared .button, full width in the drawer */
+  .is-js .collection-filters__done {
+    display: flex;
+    width: 100%;
+  }
+
+  /* Overlay behind the open drawer */
+  .is-js.filters-open .collection-filters__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    display: block;
+    background: rgba(0, 0, 0, 0.4);
+  }
+}
+
+
+/* ==========================================================================
+   6. Active filters (removable pills)
+   ========================================================================== */
+
+.active-filters__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+.active-filters__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #c4c4c4;
+  border-radius: 999px;
+  font-size: 13px;
+  text-decoration: none;
+}
+.active-filters__pill:hover {
+  border-color: #121212;
+}
+.active-filters__clear {
+  padding: 6px 4px;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+
+/* ==========================================================================
+   7. Product grid & empty state
+   Column counts come from section settings (--cols-mobile / --cols-desktop)
+   ========================================================================== */
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols-mobile, 2), minmax(0, 1fr));
+  gap: 32px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 750px) {
+  .product-grid {
+    grid-template-columns: repeat(var(--cols-desktop, 3), minmax(0, 1fr));
+    gap: 40px 24px;
+  }
+}
+
+.collection__empty {
+  padding: 48px 0;
+  text-align: center;
+}
+
+
+/* ==========================================================================
+   8. Pagination
+   ========================================================================== */
+
+.pagination {
+  margin-top: 48px;
+}
+.pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Page numbers: round pills matching the button system (global-buttons.css) */
+.pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid #e1e1e1;
+  border-radius: 999px;
+  color: #121212;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+a.pagination__link:hover {
+  border-color: #121212;
+}
+.pagination__link--current {
+  border-color: #121212;
+  background: #121212;
+  color: #ffffff;
+}
+a.pagination__link:focus-visible {
+  outline: 2px solid #c8102e;
+  outline-offset: 3px;
+}
+
+
+/* ==========================================================================
+   9. Loading state (while collection.js fetches new results)
+   ========================================================================== */
+
+[data-results] {
+  transition: opacity 0.2s ease;
+}
+.is-loading [data-results] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Page scroll lock behind the open drawer: body.overflow-hidden, defined
+   globally in layout/theme.liquid (also used by the header). */

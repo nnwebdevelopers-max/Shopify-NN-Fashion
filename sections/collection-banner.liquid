@@ -1,0 +1,179 @@
+{%- comment -%}
+  ============================================================================
+  Section: Collection banner
+  ----------------------------------------------------------------------------
+  Full-width banner at the top of the collection page.
+  Shows the collection title (and optionally its description) over an image.
+
+  Image priority: custom image from settings → collection image (if enabled)
+                  → plain background color.
+
+  Used in:   templates/collection.json ("banner")
+  CSS:       assets/collection.css → "1. Banner" (classes .collection-banner*)
+  JS:        none
+  Editable:  Theme editor > Collections > Banner
+  ============================================================================
+{%- endcomment -%}
+
+{%- comment -%} "Show banner" off → render nothing {%- endcomment -%}
+{%- if section.settings.show_banner -%}
+  {%- liquid
+    # Pick the banner image: custom image first, then the collection's own image
+    assign banner_image = blank
+    if section.settings.image != blank
+      assign banner_image = section.settings.image
+    elsif section.settings.use_collection_image and collection.image != blank
+      assign banner_image = collection.image
+    endif
+
+    # Overlay strength: setting is 0–80 (%), CSS needs 0–0.8
+    assign overlay_opacity = section.settings.overlay_opacity | divided_by: 100.0
+  -%}
+
+  {%- comment -%}
+    Banner wrapper.
+    - Modifier classes: height (small/medium/large), text alignment, has-image.
+    - Colors and overlay come from settings via CSS custom properties.
+  {%- endcomment -%}
+  <div
+    class="collection-banner collection-banner--{{ section.settings.height }} collection-banner--{{ section.settings.alignment }}{% if banner_image != blank %} collection-banner--has-image{% endif %}"
+    style="--banner-bg: {{ section.settings.background_color }}; --banner-text: {{ section.settings.text_color }}; --banner-overlay: {{ overlay_opacity }};"
+  >
+    {%- comment -%} Background image (loaded eagerly: it's the first thing on the page) {%- endcomment -%}
+    {%- if banner_image != blank -%}
+      <div class="collection-banner__media">
+        {{ banner_image | image_url: width: 2400 | image_tag: loading: 'eager', fetchpriority: 'high', widths: '750, 1100, 1500, 1800, 2400', sizes: '100vw', class: 'collection-banner__image' }}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} Text content sits above the image and overlay {%- endcomment -%}
+    <div class="page-width collection-banner__content">
+      {%- if section.settings.show_title -%}
+        <h1 class="collection-banner__title">{{ collection.title }}</h1>
+      {%- endif -%}
+
+      {%- if section.settings.show_description and collection.description != blank -%}
+        <div class="collection-banner__description">{{ collection.description }}</div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["collection"] → only available on collection pages
+    (it reads the "collection" object).
+  Settings:
+  - show_banner                              → show / hide the whole banner
+  - image, use_collection_image              → banner image source
+  - show_title, show_description             → banner text
+  - height (small/medium/large), alignment (left/center)
+  - overlay_opacity (0–80%), background_color (used when no image), text_color
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Collection banner",
+  "tag": "section",
+  "class": "section-collection-banner",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_banner",
+      "label": "Show banner",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Banner image",
+      "info": "Overrides the collection image."
+    },
+    {
+      "type": "checkbox",
+      "id": "use_collection_image",
+      "label": "Use collection image when no banner image is set",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show collection title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show collection description",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Banner height",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "info": "Shown when there is no image.",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection banner"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,62 @@
+{%- comment -%}
+  ============================================================================
+  Section: Customer login (sign-in page, /account/login)
+  ----------------------------------------------------------------------------
+  Shopify's sign-in page, in the same design as the sign-in popup:
+  the card from snippets/global-account-forms.liquid, starting on "Sign in".
+  The "Create account" tab and "Forgot password?" switch views in place.
+
+      ┌──────────────┬─────────────────────────────────┐
+      │ dark panel   │ [ Sign in | Create account ]    │
+      │              │ Welcome back                    │
+      │              │ Email / Password / [SIGN IN →]  │
+      └──────────────┴─────────────────────────────────┘
+                 Just here to check out? [Continue as guest]   ← only from checkout
+
+  - Failed sign-ins / password resets come back to this page; the card shows
+    Shopify's messages (and opens on "Reset your password" after a reset).
+  - "Continue as guest": only when the shopper came from checkout and the
+    store allows guest checkout (shop.checkout.guest_login).
+
+  Used in:   templates/customers/login.json
+  Snippets:  snippets/global-account-forms.liquid (+ panel, field)
+  CSS:       assets/global-account.css (classes .account-page, .account-card*)
+  JS:        assets/global-account.js (views, password toggle, #recover)
+  Text:      locales → customer.*
+  ============================================================================
+{%- endcomment -%}
+
+<div class="page-width account-page">
+  {% render 'global-account-forms', context: 'page', view: 'login' %}
+
+  {%- comment -%} Guest checkout (Shopify shows this option only when coming from checkout) {%- endcomment -%}
+  {%- if shop.checkout.guest_login -%}
+    <div class="account-guest">
+      <p>{{ 'customer.login.guest_text' | t }}</p>
+      {%- form 'guest_login' -%}
+        <button type="submit" class="button button--outline button--sm account-guest__button">{{ 'customer.login.guest_button' | t }}</button>
+      {%- endform -%}
+    </div>
+  {%- endif -%}
+</div>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  No section settings: the side panel is set in Theme settings > Customer accounts.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Customer login",
+  "tag": "section",
+  "class": "section-customer-login",
+  "enabled_on": {
+    "templates": ["customers/login"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Side panel image, heading, text and perks: Theme settings > Customer accounts."
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,553 @@
+{%- comment -%}
+  ============================================================================
+  Section: Homepage collection tabs (products by collection)
+  ----------------------------------------------------------------------------
+  Heading, a row of tabs (one per collection), the selected collection's
+  products and a "View all" button that opens the selected collection:
+
+                       JACKETS & SWEATERS
+          Formal jackets   [Casual jackets]   Sports   Leather
+      ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+      │ card   │ │ card   │ │ card   │ │ card   │
+      └────────┘ └────────┘ └────────┘ └────────┘
+                          [ VIEW ALL ]
+
+  - Each tab is a block: choose a collection and what to show from it
+    (Featured = collection order, or New arrivals = newest first), plus
+    optional tab label and bottom button text/link (defaults: "View all" →
+    the collection, sorted newest first for New arrivals).
+  - All tabs are rendered on the server; homepage.js only switches which
+    one is visible. Each panel has its own bottom button, so the button
+    always belongs to the selected tab.
+  - One block only → no tab row, just the products.
+
+  Used in:   templates/index.json ("collection-tabs")
+  Snippets:  snippets/global-product-card.liquid (product cards)
+  CSS:       assets/homepage.css → "4. Collection tabs" (classes .collection-tabs*)
+             assets/global-product-card.css (cards)
+  JS:        assets/homepage.js → CollectionTabs (tab switching)
+  Text:      locales → homepage.collection_tabs.*
+  Editable:  Theme editor > Home page > Collection tabs
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Card image aspect ratio for CSS (read by global-product-card.css)
+  case section.settings.image_ratio
+    when 'square'
+      assign card_ratio = '1 / 1'
+    when 'landscape'
+      assign card_ratio = '4 / 3'
+    else
+      assign card_ratio = '3 / 4'
+  endcase
+
+  # Columns: desktop setting; tablets at most 4 (default 4 products stay on one row)
+  assign cols = section.settings.columns_desktop
+  assign mobile_cols = section.settings.columns_mobile
+  assign tablet_cols = cols
+  if tablet_cols > 4
+    assign tablet_cols = 4
+  endif
+
+  # Responsive "sizes" for the product images
+  assign image_sizes = '(min-width: 1200px) calc(1200px / ' | append: cols | append: '), (min-width: 990px) calc(100vw / ' | append: cols | append: '), (min-width: 750px) calc(100vw / ' | append: tablet_cols | append: '), calc(100vw / ' | append: mobile_cols | append: ')'
+
+  # "View all" label: theme editor text if filled in, otherwise translated default
+  if section.settings.view_all_label != blank
+    assign view_all_label = section.settings.view_all_label
+  else
+    assign view_all_label = 'homepage.collection_tabs.view_all' | t
+  endif
+
+  # Screen-reader name for the tab row: the heading, or the translated default
+  if section.settings.heading != blank
+    assign tabs_label = section.settings.heading
+  else
+    assign tabs_label = 'homepage.collection_tabs.label' | t
+  endif
+
+  # Layout: "grid" (extra products wrap onto more rows) or "slider" (one row
+  # that slides). Slider design: sides / dots / progress / peek.
+  assign is_slider = false
+  if section.settings.layout == 'slider'
+    assign is_slider = true
+  endif
+  assign slider_style = section.settings.slider_style | default: 'sides'
+
+  # Show the tab row only when there is something to choose between
+  assign show_tabs = false
+  if section.blocks.size > 1
+    assign show_tabs = true
+  endif
+-%}
+
+{%- if section.blocks.size > 0 -%}
+  {%- comment -%}
+    Wrapper. Colors, columns, card ratio and padding come from settings
+    as CSS custom properties. Modifiers: collection-tabs--pills / --underline
+    ("Tab style"), collection-tabs--boxed (white cards).
+  {%- endcomment -%}
+  <section
+    class="collection-tabs collection-tabs--{{ section.settings.tab_style | default: 'pills' }}{% if section.settings.boxed_cards %} collection-tabs--boxed{% endif %}"
+    style="
+      --tabs-bg: {{ section.settings.background_color }};
+      --tabs-text: {{ section.settings.text_color }};
+      --tabs-accent: {{ section.settings.accent_color }};
+      --tabs-accent-text: {{ section.settings.accent_text_color }};
+      --tabs-columns: {{ cols }};
+      --tabs-columns-tablet: {{ tablet_cols }};
+      --tabs-columns-mobile: {{ mobile_cols }};
+      --tabs-padding-top: {{ section.settings.padding_top }}px;
+      --tabs-padding-bottom: {{ section.settings.padding_bottom }}px;
+      --card-ratio: {{ card_ratio }};
+    "
+    data-collection-tabs
+  >
+    <div class="page-width">
+      {%- comment -%} ---------- Heading ---------- {%- endcomment -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="collection-tabs__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      {%- comment -%}
+        ---------- Tabs ----------
+        role="tablist" pattern: one button per block; homepage.js switches panels.
+        Ids use section.id so two of these sections on one page don't clash.
+      {%- endcomment -%}
+      {%- if show_tabs -%}
+        <div class="collection-tabs__tabs" role="tablist" aria-label="{{ tabs_label | escape }}">
+          {%- for block in section.blocks -%}
+            {%- liquid
+              # Tab label: custom label → collection title → placeholder
+              if block.settings.title != blank
+                assign tab_label = block.settings.title
+              elsif block.settings.collection != blank
+                assign tab_label = block.settings.collection.title
+              else
+                assign tab_label = 'homepage.collection_tabs.placeholder_tab' | t
+              endif
+            -%}
+            <button
+              type="button"
+              class="collection-tabs__tab"
+              role="tab"
+              id="CollectionTab-{{ section.id }}-{{ forloop.index }}"
+              aria-controls="CollectionPanel-{{ section.id }}-{{ forloop.index }}"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              {% unless forloop.first %}tabindex="-1"{% endunless %}
+              data-tab="{{ forloop.index0 }}"
+            >
+              {{- tab_label | escape -}}
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%} ---------- One panel per tab: products + View all ---------- {%- endcomment -%}
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign tab_collection = block.settings.collection
+
+          # Bottom button text: this tab's "Button text" → section "Button label" → translated "View all"
+          if block.settings.button_label != blank
+            assign button_label = block.settings.button_label
+          else
+            assign button_label = view_all_label
+          endif
+
+          # "Products to show":
+          # - featured → the collection's own order (as set in Shopify admin)
+          # - newest   → newest first, by publish date. Liquid sorts the first 50
+          #              products the collection returns.
+          assign product_sort = block.settings.product_sort | default: 'featured'
+          if product_sort == 'newest' and tab_collection != blank
+            assign tab_products = tab_collection.products | sort: 'published_at' | reverse
+          else
+            assign tab_products = tab_collection.products
+          endif
+
+          # Bottom button link: this tab's "Button link" → the tab's collection page
+          # (sorted newest first when the tab shows new arrivals)
+          if block.settings.button_link != blank
+            assign button_url = block.settings.button_link
+          elsif product_sort == 'newest'
+            assign button_url = tab_collection.url | append: '?sort_by=created-descending'
+          else
+            assign button_url = tab_collection.url
+          endif
+        -%}
+        <div
+          class="collection-tabs__panel"
+          {% if show_tabs %}
+            role="tabpanel"
+            id="CollectionPanel-{{ section.id }}-{{ forloop.index }}"
+            aria-labelledby="CollectionTab-{{ section.id }}-{{ forloop.index }}"
+          {% endif %}
+          data-panel="{{ forloop.index0 }}"
+          {% unless forloop.first %}hidden{% endunless %}
+          {{ block.shopify_attributes }}
+        >
+          {%- if tab_collection != blank and tab_collection.products_count > 0 -%}
+            {%- comment -%} The product cards (same for both layouts) {%- endcomment -%}
+            {%- capture product_items -%}
+              {%- for product in tab_products limit: section.settings.products_to_show -%}
+                <li class="collection-tabs__item">
+                  {% render 'global-product-card',
+                    product: product,
+                    image_sizes: image_sizes,
+                    show_secondary_image: section.settings.show_secondary_image,
+                    show_vendor: section.settings.show_vendor,
+                    show_options: true,
+                    centered: true
+                  %}
+                </li>
+              {%- endfor -%}
+            {%- endcapture -%}
+
+            {%- if is_slider -%}
+              {%- comment -%}
+                ---------- Slider layout ----------
+                The track is a native sideways-scrolling list that snaps to each
+                card (swipe and trackpad work without JS). homepage.js →
+                ScrollSlider adds the arrows / dots / progress bar and autoplay,
+                and hides the controls when everything already fits.
+                Modifier: collection-tabs__slider--<style> picks the design.
+              {%- endcomment -%}
+              <div
+                class="collection-tabs__slider collection-tabs__slider--{{ slider_style }}"
+                data-scroll-slider
+                data-dot-class="collection-tabs__dot"
+                data-autoplay="{{ section.settings.slider_autoplay }}"
+                data-speed="{{ section.settings.slider_speed | times: 1000 }}"
+                data-text-go-to="{{ 'homepage.collection_tabs.go_to_page' | t: number: '[number]' }}"
+              >
+                <ul class="collection-tabs__track" role="list" data-slider-track tabindex="0" aria-label="{{ 'homepage.collection_tabs.slider_label' | t: collection: tab_collection.title }}">
+                  {{- product_items -}}
+                </ul>
+
+                {%- comment -%} Arrows: on the sides (sides, peek) or in the controls row (dots, progress) {%- endcomment -%}
+                <div class="collection-tabs__controls">
+                  {%- if slider_style == 'progress' -%}
+                    <div class="collection-tabs__progress" aria-hidden="true">
+                      <span class="collection-tabs__progress-bar" data-slider-progress></span>
+                    </div>
+                  {%- endif -%}
+
+                  <button type="button" class="collection-tabs__arrow collection-tabs__arrow--prev" data-slider-prev aria-label="{{ 'homepage.collection_tabs.previous' | t }}">
+                    {% render 'global-icon', name: 'chevron-left', size: 18 %}
+                  </button>
+
+                  {%- if slider_style == 'dots' -%}
+                    {%- comment -%} Dots are built by homepage.js (one per page of cards) {%- endcomment -%}
+                    <div class="collection-tabs__dots" data-slider-dots></div>
+                  {%- endif -%}
+
+                  <button type="button" class="collection-tabs__arrow collection-tabs__arrow--next" data-slider-next aria-label="{{ 'homepage.collection_tabs.next' | t }}">
+                    {% render 'global-icon', name: 'chevron-right', size: 18 %}
+                  </button>
+                </div>
+              </div>
+            {%- else -%}
+              {%- comment -%} ---------- Grid layout: extra products wrap onto more rows ---------- {%- endcomment -%}
+              <ul class="collection-tabs__grid" role="list">
+                {{- product_items -}}
+              </ul>
+            {%- endif -%}
+
+            {%- comment -%} Bottom button: text and link per tab (fallbacks above) {%- endcomment -%}
+            <div class="collection-tabs__footer">
+              <a href="{{ button_url }}" class="button button--outline collection-tabs__view-all">
+                {{- button_label | escape -}}
+                <span class="visually-hidden">: {{ tab_collection.title | escape }}</span>
+                {% render 'global-icon', name: 'arrow-right', size: 16 %}
+              </a>
+            </div>
+          {%- else -%}
+            {%- comment -%} No collection chosen yet, or it has no products {%- endcomment -%}
+            <p class="collection-tabs__empty">{{ 'homepage.collection_tabs.empty' | t }}</p>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["index"] → home page only.
+  Settings:
+  - Content:   heading, view_all_label (empty → translated "View all"),
+               tab_style (pills = bordered buttons, selected one filled /
+               underline = text, selected one underlined)
+  - Products:  products_to_show (2–10),
+               layout (grid = extra products wrap onto more rows / slider = one row),
+               slider_style (sides / dots / progress / peek), slider_autoplay,
+               slider_speed (3–10 s) — slider settings only show for "Slider",
+               columns_desktop (2–5), columns_mobile (1–2),
+               image_ratio, show_secondary_image, show_vendor, boxed_cards
+  - Colors:    background_color, text_color, accent_color (selected tab fill /
+               underline), accent_text_color (text on the filled pill)
+  - Spacing:   padding_top, padding_bottom
+  Card badges, swatches and sizes follow Theme settings > Product cards.
+  Blocks (max 8):
+  - tab → collection, product_sort (featured = collection order /
+          newest = new arrivals, newest of the first 50 by published_at),
+          title (optional custom tab label),
+          button_label (optional; empty → section view_all_label → "View all"),
+          button_link (optional; empty → the tab's collection page)
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Collection tabs",
+  "tag": "div",
+  "class": "section-homepage-collection-tabs",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Jackets & sweaters"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Default button label",
+      "info": "Used by tabs without their own button text. Leave empty for the translated \"View all\"."
+    },
+    {
+      "type": "select",
+      "id": "tab_style",
+      "label": "Tab style",
+      "options": [
+        { "value": "pills", "label": "Pills (bordered buttons)" },
+        { "value": "underline", "label": "Underline (text only)" }
+      ],
+      "default": "pills"
+    },
+    {
+      "type": "header",
+      "content": "Products"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products per tab",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "info": "How products are shown when there are more than fit in one row.",
+      "options": [
+        { "value": "grid", "label": "Grid (multiple rows)" },
+        { "value": "slider", "label": "Slider (one row)" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "select",
+      "id": "slider_style",
+      "label": "Slider style",
+      "options": [
+        { "value": "sides", "label": "Arrows on the sides" },
+        { "value": "dots", "label": "Arrows and dots below" },
+        { "value": "progress", "label": "Progress bar" },
+        { "value": "peek", "label": "Peek next card" }
+      ],
+      "default": "sides",
+      "visible_if": "{{ section.settings.layout == 'slider' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "slider_autoplay",
+      "label": "Slide automatically",
+      "info": "Pauses while the shopper hovers over the products.",
+      "default": false,
+      "visible_if": "{{ section.settings.layout == 'slider' }}"
+    },
+    {
+      "type": "range",
+      "id": "slider_speed",
+      "label": "Change every",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5,
+      "visible_if": "{{ section.settings.layout == 'slider' and section.settings.slider_autoplay }}"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "portrait", "label": "Portrait (3:4)" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "landscape", "label": "Landscape (4:3)" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second image on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "boxed_cards",
+      "label": "White boxed cards",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#f7f7f7"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Selected tab",
+      "info": "Fill (pills) or underline color of the selected tab.",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "accent_text_color",
+      "label": "Selected tab text",
+      "info": "Text on the filled pill. Pills style only.",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tab",
+      "name": "Collection tab",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "select",
+          "id": "product_sort",
+          "label": "Products to show",
+          "options": [
+            { "value": "featured", "label": "Featured (collection order)" },
+            { "value": "newest", "label": "New arrivals (newest first)" }
+          ],
+          "default": "featured",
+          "info": "New arrivals picks the newest of the collection's first 50 products. For bigger collections, set the collection's sort to \"Newest\" in Shopify admin and use Featured."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Tab label",
+          "info": "Optional. Leave empty to use the collection title."
+        },
+        {
+          "type": "header",
+          "content": "Bottom button"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button text",
+          "info": "Optional. Leave empty to use the section's button label (default \"View all\")."
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link",
+          "info": "Optional. Leave empty to link to this tab's collection."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection tabs",
+      "blocks": [
+        { "type": "tab" },
+        { "type": "tab" },
+        { "type": "tab" },
+        { "type": "tab" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,38 @@
+{%- comment -%}
+  ============================================================================
+  Section: Product card render (helper, not a visible page)
+  ----------------------------------------------------------------------------
+  Outputs ONE product card for the current product, so scripts can fetch
+  the exact same card markup used everywhere else:
+
+      /products/<handle>?view=card   →  templates/product.card.json (no layout)
+                                     →  this section → snippets/global-product-card
+
+  Used by: assets/wishlist.js (wishlist page grid) and assets/compare.js
+  (compare table header). The fetched card keeps its action dock, so
+  wishlist / compare / add to cart work on those pages too.
+
+  Used in:   templates/product.card.json
+  CSS / JS:  same as every product card (global-product-card.css / .js)
+  ============================================================================
+{%- endcomment -%}
+
+{% render 'global-product-card',
+  product: product,
+  image_sizes: '(min-width: 990px) 280px, 45vw',
+  show_secondary_image: true,
+  show_options: true,
+  centered: true
+%}
+
+{%- comment -%}
+  Schema: no settings and no presets → it can't be added to pages in the
+  theme editor; it only exists for templates/product.card.json.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Product card render",
+  "tag": "div",
+  "class": "section-global-product-card-render"
+}
+{% endschema %}

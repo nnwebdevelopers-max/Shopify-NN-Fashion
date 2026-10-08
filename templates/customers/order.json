@@ -1,0 +1,22 @@
+/*
+ * ============================================================================
+ * Template: Customer order (customers/order.json) — /account/orders/<id>
+ * ----------------------------------------------------------------------------
+ * One order: items, shipments, totals and addresses.
+ *
+ * Sections:
+ *   main → sections/customer-order.liquid
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "customer-order",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

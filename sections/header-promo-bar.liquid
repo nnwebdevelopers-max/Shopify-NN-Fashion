@@ -1,0 +1,143 @@
+{%- comment -%}
+  ============================================================================
+  Section: Header promo bar
+  ----------------------------------------------------------------------------
+  Colored bar under the main menu:
+    [ UP TO + 30% OFF OUTLET! ]  It's Mystery - Deal Time   [ SHOP NOW ]
+       highlight text (accent)      normal text              button
+
+  Used in:   sections/header-group.json ("promo-bar")
+  CSS:       assets/header.css (classes .promo-bar*)
+  JS:        none
+  Editable:  Theme editor > Header > Promo bar
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Nothing to show → render nothing (no empty colored strip)
+  assign has_content = false
+  if section.settings.highlight_text != blank or section.settings.text != blank or section.settings.button_label != blank
+    assign has_content = true
+  endif
+-%}
+
+{%- if has_content -%}
+  {%- comment -%} Colors/background come from the settings as CSS custom properties {%- endcomment -%}
+  <div
+    class="promo-bar"
+    style="
+      --promo-bg: {{ section.settings.background }};
+      --promo-text: {{ section.settings.text_color }};
+      --promo-accent: {{ section.settings.highlight_color }};
+      --promo-button-bg: {{ section.settings.button_background }};
+      --promo-button-text: {{ section.settings.button_text_color }};
+    "
+  >
+    <div class="page-width promo-bar__inner">
+      {%- if section.settings.highlight_text != blank -%}
+        <strong class="promo-bar__highlight">{{ section.settings.highlight_text | escape }}</strong>
+      {%- endif -%}
+
+      {%- if section.settings.text != blank -%}
+        <span class="promo-bar__text">{{ section.settings.text | escape }}</span>
+      {%- endif -%}
+
+      {%- comment -%} Button only when it has both a label and a link {%- endcomment -%}
+      {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+        <a href="{{ section.settings.button_link }}" class="button button--sm promo-bar__button">
+          {{- section.settings.button_label | escape -}}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.groups: ["header"] → can only be added to the header area.
+  Settings:
+  - Content:  highlight_text, text, button_label, button_link
+  - Colors:   background (solid or gradient), text_color, highlight_color,
+              button_background, button_text_color
+  Hide the bar: Theme editor > Header > Promo bar > eye icon (or clear all text).
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Promo bar",
+  "tag": "section",
+  "class": "section-header-promo-bar",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "highlight_text",
+      "label": "Highlight text",
+      "default": "UP TO + 30% OFF OUTLET!"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "It's Mystery - Deal Time"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link",
+      "info": "The button is hidden until a link is set."
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color_background",
+      "id": "background",
+      "label": "Background",
+      "info": "Solid color or gradient.",
+      "default": "linear-gradient(90deg, #a51a1a 0%, #7a0b0b 50%, #2b0a0a 100%)"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "highlight_color",
+      "label": "Highlight text",
+      "default": "#ffc43d"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#c8102e"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Promo bar"
+    }
+  ]
+}
+{% endschema %}

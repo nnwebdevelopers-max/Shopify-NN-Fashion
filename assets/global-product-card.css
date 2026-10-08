@@ -1,0 +1,788 @@
+/* ============================================================================
+   global-product-card.css — Product card styles
+   ----------------------------------------------------------------------------
+   Styles for:
+   - snippets/global-product-card.liquid → the card + action dock
+   - snippets/global-quick-add.liquid    → quick-add popup + toast
+   - snippets/global-compare-float.liquid → floating compare button (end of file)
+   Loaded by: layout/theme.liquid on every page (cards appear on the home
+              page, collection pages and in the header search popup).
+
+   Image ratio comes from --card-ratio, set by the parent section
+   (e.g. sections/collection-main.liquid → "Image ratio" setting).
+   Accent color for the cart button / active states: --card-accent
+   (defaults to the theme red; a section can override it).
+   ============================================================================ */
+
+
+/* ---------- Card & links ----------
+   Two links to the product: the image (media link) and the text (info link).
+   The action dock sits beside the image link inside .product-card__media-wrap. */
+.product-card {
+  --card-accent: #c8102e;
+}
+.product-card__media-wrap {
+  position: relative;
+}
+.product-card__media-link,
+.product-card__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* ---------- Media ---------- */
+
+/* Fixed-ratio box; images are cropped to fill it */
+.product-card__media {
+  position: relative;
+  aspect-ratio: var(--card-ratio, 3 / 4);
+  overflow: hidden;
+  background: #f3f3f3;
+}
+.product-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.4s ease, transform 0.6s ease;
+}
+
+/* Placeholder SVG (product without images) */
+.product-card__placeholder {
+  fill: #c4c4c4;
+}
+
+/* Second image: hidden until hover */
+.product-card__image--secondary {
+  opacity: 0;
+}
+
+/* Hover effects only on devices with a real pointer (not touch) */
+@media (hover: hover) {
+  /* Swap to the second image (hovering anywhere on the card) */
+  .product-card:hover .product-card__media--has-secondary .product-card__image--primary {
+    opacity: 0;
+  }
+  .product-card:hover .product-card__image--secondary {
+    opacity: 1;
+  }
+
+  /* Subtle zoom */
+  .product-card:hover .product-card__image {
+    transform: scale(1.03);
+  }
+}
+
+
+/* ---------- Badges (top-left of image) ---------- */
+.product-card__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  padding: 3px 8px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.product-card__badge--sale {
+  background: #c8102e;
+  color: #ffffff;
+}
+.product-card__badge--sold-out {
+  background: #121212;
+  color: #ffffff;
+}
+
+
+/* ---------- Info ---------- */
+.product-card__info {
+  display: grid;
+  gap: 2px;
+  padding-top: 10px;
+}
+.product-card__vendor {
+  color: #777777;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.product-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+.product-card:hover .product-card__title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Price row: [price] [crossed-out compare-at price] */
+.product-card__price {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+}
+.product-card__price--sale {
+  color: #c8102e;
+}
+.product-card__compare-price {
+  color: #777777;
+}
+
+
+/* ---------- Centered variant (search popup: product-card--centered) ---------- */
+.product-card--centered .product-card__info {
+  justify-items: center;
+  text-align: center;
+}
+.product-card--centered .product-card__price {
+  justify-content: center;
+}
+
+
+/* ---------- Options: color swatches + size chips ----------
+   Shown when Theme settings > Product cards > "Show color swatches" /
+   "Show sizes" are on. Extra values collapse into "+N" (.product-card__more). */
+.product-card__swatches,
+.product-card__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 2px;
+  padding: 0;
+  list-style: none;
+}
+
+/* Square color swatch; color/image comes from the inline style */
+.product-card__swatch {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #dddddd;
+  background-position: center;
+  background-size: cover;
+}
+
+/* Size chip, e.g. "M" */
+.product-card__size {
+  min-width: 26px;
+  padding: 3px 6px;
+  background: #f0f0f0;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* "+2" */
+.product-card__more {
+  color: #777777;
+  font-size: 11px;
+}
+
+
+
+/* ==========================================================================
+   Action dock (wishlist · compare · add to cart) — "Design C"
+   ========================================================================== */
+
+/* Rounded white pill floating over the bottom of the image */
+.product-card__actions {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+  transform: translate(-50%, 0);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* Computers: hidden until the card is hovered or a button has keyboard focus */
+@media (hover: hover) {
+  .product-card__actions {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  .product-card:hover .product-card__actions,
+  .product-card__actions:focus-within {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* One round button */
+.product-card__action {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #121212;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.product-card__action:hover:not(:disabled) {
+  background: #121212;
+  color: #ffffff;
+}
+.product-card__action:focus-visible {
+  outline: 2px solid var(--card-accent);
+  outline-offset: 2px;
+}
+
+/* Saved in wishlist / compare: accent color, filled heart */
+.product-card__action[aria-pressed="true"] {
+  color: var(--card-accent);
+}
+.product-card__action[data-card-action="wishlist"][aria-pressed="true"] svg {
+  fill: currentColor;
+}
+.product-card__action[aria-pressed="true"]:hover {
+  background: var(--card-accent);
+  color: #ffffff;
+}
+
+/* Cart button: always accent-colored */
+.product-card__action--cart {
+  background: var(--card-accent);
+  color: #ffffff;
+}
+.product-card__action--cart:hover:not(:disabled) {
+  background: #121212;
+}
+.product-card__action--cart:disabled {
+  background: #d6d6d6;
+  color: #ffffff;
+  cursor: not-allowed;
+}
+
+/* Loading (while adding): icon replaced by a spinning ring */
+.product-card__action.is-loading svg {
+  visibility: hidden;
+}
+.product-card__action.is-loading::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: card-spin 0.7s linear infinite;
+}
+@keyframes card-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Tooltip with the button's label (data-tip), computers only */
+@media (hover: hover) {
+  .product-card__action::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    padding: 4px 9px;
+    border-radius: 3px;
+    background: #121212;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1.3;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, 4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .product-card__action:hover::after,
+  .product-card__action:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Small cards (2 per row on phones): slightly smaller buttons */
+@media (max-width: 749px) {
+  .product-card__actions {
+    bottom: 8px;
+    gap: 2px;
+    padding: 3px;
+  }
+  .product-card__action {
+    width: 32px;
+    height: 32px;
+  }
+  .product-card__action svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+
+/* ==========================================================================
+   Quick-add popup (snippets/global-quick-add.liquid, filled by JS)
+   ========================================================================== */
+
+.quick-add {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.quick-add[hidden] {
+  display: none;
+}
+.quick-add__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Desktop: centered popup */
+.quick-add__dialog {
+  position: relative;
+  width: min(460px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 22px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #121212;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  animation: quick-add-in 0.2s ease;
+}
+.quick-add__dialog:focus {
+  outline: none;
+}
+@keyframes quick-add-in {
+  from { opacity: 0; transform: translateY(12px); }
+}
+
+.quick-add__body {
+  display: grid;
+  gap: 18px;
+}
+.quick-add__loading {
+  margin: 0;
+  padding: 30px 0;
+  color: #777777;
+  text-align: center;
+}
+
+/* Head: [image] [title + price] [×] */
+.quick-add__head {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+.quick-add__media {
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #f3f3f3;
+}
+.quick-add__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.quick-add__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.quick-add__price {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.quick-add__compare {
+  color: #777777;
+  font-weight: 400;
+}
+.quick-add__close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f1f1;
+  color: #121212;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.quick-add__close:hover {
+  background: #121212;
+  color: #ffffff;
+}
+
+/* One option group (Color, Size…) */
+.quick-add__option {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.quick-add__legend {
+  padding: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+.quick-add__legend b {
+  color: #121212;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.quick-add__values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Text values (sizes etc.) */
+.quick-add__value {
+  min-width: 44px;
+  padding: 9px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+  background: #ffffff;
+  color: #121212;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.quick-add__value:hover {
+  border-color: #121212;
+}
+.quick-add__value[aria-pressed="true"] {
+  border-color: #121212;
+  background: #121212;
+  color: #ffffff;
+}
+
+/* Color swatches (--swatch set by JS from the value name) */
+.quick-add__swatch {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: var(--swatch, #cccccc);
+  box-shadow: 0 0 0 1px #d0d0d0;
+  cursor: pointer;
+}
+.quick-add__swatch[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px #121212;
+}
+
+/* No available variant with this value: crossed out (still selectable) */
+.quick-add__value.is-unavailable {
+  color: #a0a0a0;
+  text-decoration: line-through;
+}
+.quick-add__value.is-unavailable[aria-pressed="true"] {
+  background: #a0a0a0;
+  border-color: #a0a0a0;
+  color: #ffffff;
+}
+.quick-add__swatch.is-unavailable::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -2px;
+  right: -2px;
+  height: 2px;
+  background: #a0a0a0;
+  transform: rotate(-45deg);
+}
+
+.quick-add__value:focus-visible,
+.quick-add__swatch:focus-visible,
+.quick-add__close:focus-visible,
+.quick-add__qty button:focus-visible {
+  outline: 2px solid #c8102e;
+  outline-offset: 2px;
+}
+
+/* Quantity stepper */
+.quick-add__qty {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  border: 1px solid #d9d9d9;
+  border-radius: 3px;
+}
+.quick-add__qty button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: none;
+  color: #121212;
+  font-size: 18px;
+  cursor: pointer;
+}
+.quick-add__qty output {
+  min-width: 34px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Error from the cart (e.g. not enough stock) */
+.quick-add__error {
+  margin: -6px 0 0;
+  color: #c8102e;
+  font-size: 14px;
+}
+
+/* Add to cart: the shared .button.button--primary.button--lg
+   (assets/global-buttons.css: hover, disabled and loading spinner included).
+   Classes set in global-product-card.js (popup) and product-main.liquid. */
+
+/* Phones: sheet that slides up from the bottom */
+@media (max-width: 749px) {
+  .quick-add {
+    place-items: end stretch;
+    padding: 0;
+  }
+  .quick-add__dialog {
+    width: 100%;
+    max-height: 88vh;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    border-radius: 14px 14px 0 0;
+    animation-name: quick-add-up;
+  }
+  @keyframes quick-add-up {
+    from { transform: translateY(100%); }
+  }
+}
+
+
+/* ==========================================================================
+   Toast ("Added to cart: …")
+   ========================================================================== */
+
+.card-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px;
+  border-radius: 4px;
+  background: #121212;
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+  transform: translateX(-50%);
+  animation: card-toast-in 0.25s ease;
+}
+.card-toast[hidden] {
+  display: none;
+}
+.card-toast__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2fbf71;
+}
+.card-toast--error .card-toast__icon {
+  background: #c8102e;
+}
+@keyframes card-toast-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+}
+
+/* ---------- Floating compare button (snippets/global-compare-float.liquid) ----------
+   Dark tab on the screen edge, vertically centered. Starts off-screen;
+   global-product-card.js adds .is-visible (slide in) once compare has a
+   product and .is-bumped (pop) when the number changes. Below the drawers
+   and popups (z-index 100+), above the page.
+
+      ┌────┐
+      │ ⇄③ │  ← .compare-float__link (opens the compare page, red on hover)
+      │ C… │
+      ├────┤
+      │ 🗑 │  ← .compare-float__clear (clears the list, red tint on hover)
+      └────┘ */
+.compare-float {
+  position: fixed;
+  top: 50%;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* keeps the hover colors inside the rounded corners */
+  background: #121212;
+  color: #ffffff;
+  box-shadow: 0 14px 34px -12px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+.compare-float__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 10px 16px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.25s ease;
+}
+/* 🗑 Clear compare list */
+.compare-float__clear {
+  display: grid;
+  place-items: center;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  background: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.compare-float__clear:hover {
+  background: rgba(200, 16, 46, 0.25);
+  color: #ffffff;
+}
+.compare-float__clear:focus-visible,
+.compare-float__link:focus-visible {
+  outline: 2px solid #c8102e;
+  outline-offset: -3px;
+}
+.compare-float[hidden] {
+  display: none;
+}
+/* Right edge (default): rounded on the left, starts pushed out to the right */
+.compare-float--right {
+  right: 0;
+  border-radius: 14px 0 0 14px;
+  transform: translate(110%, -50%);
+}
+.compare-float--left {
+  left: 0;
+  border-radius: 0 14px 14px 0;
+  transform: translate(-110%, -50%);
+}
+.compare-float.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, -50%);
+}
+.compare-float__link:hover {
+  background: #c8102e;
+}
+.compare-float--right.is-visible:hover {
+  transform: translate(-4px, -50%);
+}
+.compare-float--left.is-visible:hover {
+  transform: translate(4px, -50%);
+}
+/* Icon with the red number badge on its corner */
+.compare-float__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+}
+.compare-float__count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 2px solid #121212;
+  border-radius: 999px;
+  background: #c8102e;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.25s ease;
+}
+.compare-float__link:hover .compare-float__count {
+  border-color: #c8102e;
+  background: #121212;
+}
+/* "COMPARE" written top-to-bottom */
+.compare-float__text {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+.compare-float--left .compare-float__text {
+  transform: rotate(180deg); /* reads bottom-to-top on the left edge */
+}
+/* Number changed: the badge pops */
+.compare-float.is-bumped .compare-float__count {
+  animation: compare-float-bump 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes compare-float-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+/* Phones: icon + number only */
+@media (max-width: 749px) {
+  .compare-float__link {
+    padding: 10px 8px;
+  }
+  .compare-float__clear {
+    height: 36px;
+  }
+  .compare-float__text {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card__actions,
+  .product-card__action::after,
+  .quick-add__dialog,
+  .card-toast,
+  .compare-float,
+  .compare-float__count {
+    transition: none;
+    animation: none;
+  }
+}

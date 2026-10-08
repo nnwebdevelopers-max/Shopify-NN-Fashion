@@ -1,0 +1,32 @@
+/*
+ * ============================================================================
+ * Template: Default page (page.json) — /pages/<handle>
+ * ----------------------------------------------------------------------------
+ * Used by every page in Online Store > Pages whose theme template is
+ * "Default page" (About us, FAQ, Shipping policy…). Other page templates:
+ * page.wishlist.json, page.compare.json.
+ *
+ * Sections:
+ *   main → sections/page-main.liquid (page title + content from admin)
+ * More sections (e.g. Rich text) can be added in the theme editor.
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "page-main",
+      "settings": {
+        "show_title": true,
+        "content_width": "edge",
+        "text_align": "center",
+        "animate": true,
+        "padding_top": 48,
+        "padding_bottom": 64
+      }
+    }
+  },
+  "order": ["main"]
+}

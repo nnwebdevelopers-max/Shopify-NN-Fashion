@@ -1,0 +1,249 @@
+/* ============================================================================
+   footer.css — Footer styles
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (every page)
+   Styles:    sections/footer.liquid (classes .site-footer*)
+
+   1. Wrapper & columns
+   2. Headings, links, text
+   3. Contact column (address, phone, social icons)
+   4. Newsletter column (email field + arrow button, messages)
+   5. Bottom bar (copyright, payment icons)
+   6. Tablet / phone layout
+
+   Colors come from the section settings as CSS custom properties
+   (--footer-bg, --footer-text, --footer-heading, --footer-accent).
+   ============================================================================ */
+
+
+/* ==========================================================================
+   1. Wrapper & columns
+   ========================================================================== */
+
+.site-footer {
+  padding: var(--footer-padding-top, 48px) 0 24px;
+  background: var(--footer-bg);
+  color: var(--footer-text);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* One column per block (--footer-columns, max 5) */
+.site-footer__blocks {
+  display: grid;
+  grid-template-columns: repeat(var(--footer-columns), minmax(0, 1fr));
+  gap: 32px 28px;
+  margin-bottom: 40px;
+}
+
+
+/* ==========================================================================
+   2. Headings, links, text
+   ========================================================================== */
+
+.site-footer__heading {
+  margin: 0 0 16px;
+  color: var(--footer-heading);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* All footer links: footer text color, white + underline on hover */
+.site-footer a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.site-footer a:hover {
+  color: var(--footer-heading);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Menu links, stacked */
+.site-footer__menu {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.site-footer__menu a[aria-current="page"] {
+  color: var(--footer-heading);
+}
+/* Accent link after a menu, e.g. "View all" */
+.site-footer .site-footer__accent-link {
+  color: var(--footer-accent);
+}
+
+/* Text block (rich text) */
+.site-footer__text p {
+  margin: 0 0 8px;
+}
+
+
+/* ==========================================================================
+   3. Contact column
+   ========================================================================== */
+
+.site-footer__address {
+  margin: 0 0 8px;
+}
+.site-footer__contact-line {
+  margin: 0 0 6px;
+}
+/* Phone stands out (bold, heading color) */
+.site-footer__phone {
+  color: var(--footer-heading) !important;
+  font-weight: 700;
+}
+
+/* Social icons: small round buttons */
+.site-footer__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.site-footer__social-link {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--footer-heading) 10%, transparent);
+  color: var(--footer-text);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.site-footer .site-footer__social-link:hover {
+  background: var(--footer-accent);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+
+/* ==========================================================================
+   4. Newsletter column
+   ========================================================================== */
+
+.site-footer__newsletter-text {
+  margin: 0 0 14px;
+}
+
+/* [email input (→)] — one white pill with a round button inside
+   (same pattern as the search page's search box) */
+.site-footer__newsletter-field {
+  display: flex;
+  align-items: center;
+  max-width: 340px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+.site-footer__newsletter-field:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--footer-accent) 55%, transparent);
+}
+.site-footer__newsletter-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 8px 8px 14px;
+  border: 0;
+  background: transparent;
+  color: #121212;
+  font: inherit;
+  font-size: 14px; /* ≥ 14px avoids zoom on some phones */
+  outline: none;
+}
+/* Button: shared .button.button--sm.button--icon in the footer accent */
+.site-footer__newsletter-button {
+  --btn-bg: var(--footer-accent);
+  --btn-hover-bg: #121212;
+  --btn-focus: #ffffff;
+}
+
+/* Success / error message after submitting */
+.site-footer__newsletter-message {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+.site-footer__newsletter-message--success {
+  color: #6fcf97;
+}
+.site-footer__newsletter-message--error {
+  color: #ff8a8a;
+}
+
+
+/* ==========================================================================
+   5. Bottom bar
+   ========================================================================== */
+
+/* Thin divider line (text color at 15%), copyright left, payments right */
+.site-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-top: 24px;
+  border-top: 1px solid color-mix(in srgb, var(--footer-text) 15%, transparent);
+}
+.site-footer__copyright {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* Payment icons (Shopify's SVGs) */
+.site-footer__payments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.site-footer__payment-icon {
+  display: block;
+  width: 38px;
+  height: 24px;
+}
+
+
+/* ==========================================================================
+   6. Tablet / phone layout
+   ========================================================================== */
+
+/* Tablets: 3 columns; contact + newsletter span wider */
+@media (max-width: 989px) {
+  .site-footer__blocks {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .site-footer__block--newsletter {
+    grid-column: span 2;
+  }
+}
+
+/* Phones: 2 columns for menus; contact and newsletter full width */
+@media (max-width: 749px) {
+  .site-footer__blocks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 20px;
+  }
+  .site-footer__block--contact,
+  .site-footer__block--newsletter,
+  .site-footer__block--text {
+    grid-column: 1 / -1;
+  }
+  .site-footer__newsletter-field {
+    max-width: none;
+  }
+  .site-footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

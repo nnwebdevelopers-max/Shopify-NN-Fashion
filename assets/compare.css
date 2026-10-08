@@ -1,0 +1,231 @@
+/* ============================================================================
+   compare.css — Compare page
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (template "page.compare" only)
+   Styles:    sections/compare-main.liquid + the table built by
+              assets/compare.js (classes .compare*)
+   The product cards in the header row use assets/global-product-card.css.
+   ============================================================================ */
+
+.compare {
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+
+/* ---------- Header: [title] ............ [Clear all] ---------- */
+.compare__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 24px;
+}
+.compare__title {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.compare__clear {
+  padding: 8px 16px;
+  border: 1px solid #121212;
+  border-radius: 2px;
+  background: transparent;
+  color: #121212;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.compare__clear:hover {
+  background: #121212;
+  color: #ffffff;
+}
+.compare__loading {
+  margin: 0;
+  padding: 40px 0;
+  color: #6b6b6b;
+  text-align: center;
+}
+
+/* ---------- Table ----------
+   Scrolls sideways when wider than the screen; the row names stay fixed
+   on the left (position: sticky). */
+.compare__scroll {
+  overflow-x: auto;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+}
+.compare__scroll[hidden] {
+  display: none;
+}
+/* Grows with the number of products (min. full width), so many products scroll */
+.compare__table {
+  width: auto;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+.compare__table th,
+.compare__table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #ededed;
+  font-size: 14px;
+  text-align: left;
+  vertical-align: top;
+}
+.compare__table tr:last-child th,
+.compare__table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Row names (first column), fixed while scrolling */
+.compare__table tbody th,
+.compare__corner {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 150px;
+  min-width: 150px;
+  background: #fafafa;
+  color: #555555;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.compare__corner {
+  border-bottom: 1px solid #ededed;
+}
+
+/* Product columns: fixed width so cards line up */
+.compare__product {
+  position: relative;
+  width: 240px;
+  min-width: 240px;
+  padding-top: 20px !important;
+  font-weight: 400;
+}
+.compare__product .product-card {
+  --card-ratio: 3 / 4;
+}
+
+/* ✕ remove button, top-right of each product column */
+.compare__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  color: #121212;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.compare__remove:hover {
+  background: #c8102e;
+  color: #ffffff;
+}
+.compare__remove:focus-visible {
+  outline: 2px solid #c8102e;
+  outline-offset: 2px;
+}
+
+/* Value cells */
+.compare__price {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-weight: 700;
+}
+.compare__price s {
+  color: #8a8a8a;
+  font-weight: 400;
+}
+.compare__stock {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.compare__stock--in {
+  background: #e6f6ec;
+  color: #1e7a45;
+}
+.compare__stock--out {
+  background: #fbe9eb;
+  color: #a10d25;
+}
+.compare__row--description td {
+  color: #555555;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* ---------- Empty state ---------- */
+.compare__empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 50px 16px;
+  text-align: center;
+}
+.compare__empty[hidden] {
+  display: none;
+}
+.compare__empty-icon {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: #f3f3f3;
+  color: #121212;
+}
+.compare__empty-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+.compare__empty p {
+  max-width: 46ch;
+  margin: 0;
+  color: #6b6b6b;
+}
+.compare__continue {
+  margin-top: 16px;
+}
+
+/* Phones: narrower columns (the table scrolls sideways) */
+@media (max-width: 749px) {
+  .compare {
+    padding-top: 24px;
+  }
+  .compare__table tbody th,
+  .compare__corner {
+    width: 96px;
+    min-width: 96px;
+    padding: 12px 10px;
+    font-size: 11px;
+  }
+  .compare__product {
+    width: 170px;
+    min-width: 170px;
+  }
+  .compare__table td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+}

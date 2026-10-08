@@ -1,0 +1,36 @@
+/*
+ * ============================================================================
+ * Template: All collections (list-collections.json) — /collections
+ * ----------------------------------------------------------------------------
+ * Sections:
+ *   main → sections/list-collections-main.liquid (dark top band with title;
+ *          find + sort tools; mosaic grid of collection photo cards;
+ *          pagination)
+ * Assets (layout/theme.liquid, template "list-collections"):
+ * list-collections.css + list-collections.js, GSAP +
+ * global-scroll-animations.js (initListCollections).
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "list-collections-main",
+      "settings": {
+        "heading": "",
+        "text": "<p>From everyday basics to statement pieces — pick a category and start exploring.</p>",
+        "hide_empty": true,
+        "per_page": 48,
+        "columns_desktop": 4,
+        "mosaic": true,
+        "image_ratio": "portrait",
+        "hero_background": "#121212",
+        "hero_text": "#FFFFFF",
+        "accent_color": "#C8102E"
+      }
+    }
+  },
+  "order": ["main"]
+}

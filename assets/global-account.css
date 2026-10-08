@@ -1,0 +1,764 @@
+/* ============================================================================
+   global-account.css — Sign-in card, sign-in popup, sign-in pages
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid, when the shopper is signed out or on any
+              customer account template (templates/customers/*.json)
+   Styles:
+     snippets/global-account-forms.liquid  → .account-card, .account-tabs, .account-form
+     snippets/global-account-panel.liquid  → .account-panel (dark side panel)
+     snippets/global-account-field.liquid  → .account-field (floating labels)
+     snippets/global-account-popup.liquid  → .account-popup
+     sections/customer-login / register / activate / reset-password → .account-page,
+                                                                       .account-guest
+     sections/customer-addresses (dialog forms) → .account-field--select, .account-form__check
+
+   Look: white card with a dark brand panel (red glow), pill tabs with a
+   sliding indicator, rounded inputs with floating labels, a solid button
+   that turns red on hover. The popup scales in (desktop) or slides up as a
+   sheet (phones).
+
+   Sections of this file:
+     1. Tokens   2. Card   3. Side panel   4. Tabs   5. Forms + fields
+     6. Messages   7. Popup   8. Pages   9. Phones   10. Reduced motion
+   ============================================================================ */
+
+/* ---------- 1. Tokens (shared colors, radius) ---------- */
+.account-card,
+.account-popup {
+  --acc-dark: #121212;
+  --acc-red: #c8102e;
+  --acc-red-soft: rgba(200, 16, 46, 0.12);
+  --acc-line: #dedede;
+  --acc-muted: #6b6b6b;
+  --acc-field: #fafafa;
+  --acc-radius: 22px;
+  --acc-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   2. Card: [side panel | forms]
+   ========================================================================== */
+.account-card {
+  position: relative; /* the popup's ✕ sits in the card's top-right corner */
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  overflow: hidden;
+  border-radius: var(--acc-radius);
+  background: #ffffff;
+  color: var(--acc-dark);
+}
+.account-card__main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 44px 44px 36px;
+}
+
+/* Each view (login / register / recover) fades up when shown */
+.account-card__view:not([hidden]) {
+  animation: account-view-in 0.45s var(--acc-ease) both;
+}
+@keyframes account-view-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Popup close button (✕), rotates on hover */
+.account-card__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: #f2f2f2;
+  color: var(--acc-dark);
+  cursor: pointer;
+  transition: transform 0.3s var(--acc-ease), background 0.2s ease;
+}
+.account-card__close:hover {
+  background: #e6e6e6;
+  transform: rotate(90deg);
+}
+
+/* "Sign in to save products to your wishlist." (why the popup opened) */
+.account-card__notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: #fdecef;
+  color: #a10d25;
+  font-size: 14px;
+  font-weight: 600;
+}
+.account-card__notice[hidden] {
+  display: none;
+}
+.account-card__notice .icon {
+  flex: none;
+  fill: currentColor;
+}
+
+/* ==========================================================================
+   3. Side panel (dark, red glow, optional image)
+   ========================================================================== */
+.account-panel {
+  position: relative;
+  isolation: isolate; /* keeps the glow / overlay layers inside the panel */
+  display: flex;
+  overflow: hidden;
+  padding: 40px;
+  background: var(--acc-dark);
+  color: #ffffff;
+}
+/* Optional image + dimming overlay ("Image dimming" setting) */
+.account-panel__image {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.account-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(180deg, rgba(18, 18, 18, 0) 30%, rgba(18, 18, 18, 0.85) 100%),
+    rgba(18, 18, 18, var(--account-dim, 0.55));
+}
+/* Red glow (top right) and a soft one (bottom left), slowly drifting */
+.account-panel__glow {
+  position: absolute;
+  top: -160px;
+  right: -170px;
+  z-index: -1;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 16, 46, 0.85) 0%, rgba(200, 16, 46, 0) 65%);
+  animation: account-glow 9s ease-in-out infinite alternate;
+}
+.account-panel__glow::before,
+.account-panel__glow::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+}
+/* Thin rings around the glow */
+.account-panel__glow::before {
+  inset: 70px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.account-panel__glow::after {
+  inset: 120px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.account-panel::after {
+  content: "";
+  position: absolute;
+  bottom: -180px;
+  left: -140px;
+  z-index: -1;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 77, 106, 0.28) 0%, rgba(255, 77, 106, 0) 70%);
+}
+@keyframes account-glow {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-30px, 24px) scale(1.08); }
+}
+
+.account-panel__content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.account-panel__brand {
+  margin: 0 0 auto; /* pushes the rest to the bottom of the panel */
+  padding-bottom: 32px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.account-panel__heading {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.account-panel__text {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 15px;
+}
+.account-panel__perks {
+  display: grid;
+  gap: 12px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.account-panel__perk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+/* Glassy icon circles */
+.account-panel__perk-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff4d6a;
+  backdrop-filter: blur(6px);
+}
+
+/* ==========================================================================
+   4. Tabs: [ Sign in | Create account ] with a sliding white pill
+   ========================================================================== */
+.account-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 28px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #f1f1f1;
+}
+/* Room for the popup's ✕ next to the tabs */
+.account-card--popup .account-tabs {
+  margin-right: 52px;
+}
+.account-tabs__pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.4s var(--acc-ease);
+}
+.account-card[data-view="register"] .account-tabs__pill {
+  transform: translateX(100%);
+}
+.account-tabs__tab {
+  position: relative; /* above the pill */
+  padding: 11px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--acc-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+.account-tabs__tab[aria-selected="true"] {
+  color: var(--acc-dark);
+}
+/* Recover view: no tabs (it has its own "Back to sign in" link) */
+.account-card[data-view="recover"] .account-tabs {
+  display: none;
+}
+
+/* ==========================================================================
+   5. Forms + fields
+   ========================================================================== */
+.account-form {
+  display: grid;
+  gap: 14px;
+}
+.account-form__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.account-form__subtitle {
+  margin: -6px 0 8px;
+  color: var(--acc-muted);
+  font-size: 15px;
+}
+/* First + last name side by side */
+.account-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Field: input with the label inside; the label floats up when focused / filled */
+.account-field {
+  position: relative;
+}
+.account-field__input {
+  width: 100%;
+  height: 56px;
+  padding: 22px 16px 6px;
+  border: 1.5px solid var(--acc-line);
+  border-radius: 12px;
+  background: var(--acc-field);
+  color: var(--acc-dark);
+  font: inherit;
+  font-size: 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.account-field__input:hover {
+  border-color: #bdbdbd;
+}
+.account-field__input:focus {
+  outline: none;
+  border-color: var(--acc-red);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px var(--acc-red-soft);
+}
+.account-field__label {
+  position: absolute;
+  top: 50%;
+  left: 17px;
+  max-width: calc(100% - 34px);
+  overflow: hidden;
+  color: #7a7a7a;
+  font-size: 15px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: top 0.2s ease, font-size 0.2s ease, color 0.2s ease, letter-spacing 0.2s ease;
+}
+/* Floated label: focused, has a value, or filled by the browser */
+.account-field__input:focus + .account-field__label,
+.account-field__input:not(:placeholder-shown) + .account-field__label,
+.account-field__input:-webkit-autofill + .account-field__label {
+  top: 16px;
+  color: var(--acc-dark);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.account-field__input:focus + .account-field__label {
+  color: var(--acc-red);
+}
+/* Selects (country / province on the addresses page): label always floated */
+.account-field--select .account-field__label {
+  top: 16px;
+  color: var(--acc-dark);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.account-field--select .account-field__input {
+  padding-top: 20px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #6b6b6b 50%), linear-gradient(135deg, #6b6b6b 50%, transparent 50%);
+  background-position: calc(100% - 22px) 26px, calc(100% - 16px) 26px;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* Password: show/hide button inside the field */
+.account-field--password .account-field__input {
+  padding-right: 52px;
+}
+.account-field__toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--acc-muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.account-field__toggle:hover {
+  background: #ececec;
+  color: var(--acc-dark);
+}
+.account-field__eye,
+.account-field__eye-off {
+  display: grid;
+}
+.account-field__eye-off,
+.account-field__toggle[aria-pressed="true"] .account-field__eye {
+  display: none;
+}
+.account-field__toggle[aria-pressed="true"] .account-field__eye-off {
+  display: grid;
+}
+
+/* "Forgot password?" (right-aligned under the password) */
+.account-form__forgot {
+  justify-self: end;
+  margin-top: -4px;
+  color: var(--acc-dark);
+  font-size: 13px;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.account-form__forgot:hover {
+  color: var(--acc-red);
+}
+
+/* Main button: shared .button.button--lg.button--full (global-buttons.css:
+   dark → red on hover, arrow nudge + press via GSAP, .is-loading spinner
+   while global-account.js sends the form) */
+.account-form__submit {
+  --btn-bg: var(--acc-dark);
+  --btn-hover-bg: var(--acc-red);
+  margin-top: 6px;
+}
+
+/* "New to NN Fashion? Create an account" */
+.account-form__switch {
+  margin: 4px 0 0;
+  color: var(--acc-muted);
+  font-size: 14px;
+  text-align: center;
+}
+.account-form__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--acc-dark);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+.account-form__link:hover {
+  color: var(--acc-red);
+}
+
+/* Custom checkbox (newsletter, default address) */
+.account-form__check {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #444444;
+  font-size: 14px;
+  cursor: pointer;
+}
+.account-form__check input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.account-form__checkmark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid #cfcfcf;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #ffffff;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.account-form__checkmark .icon {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.2s ease, transform 0.2s var(--acc-ease);
+}
+.account-form__check input:checked + .account-form__checkmark {
+  border-color: var(--acc-dark);
+  background: var(--acc-dark);
+}
+.account-form__check input:checked + .account-form__checkmark .icon {
+  opacity: 1;
+  transform: none;
+}
+.account-form__check input:focus-visible + .account-form__checkmark {
+  box-shadow: 0 0 0 4px var(--acc-red-soft);
+}
+
+/* Keyboard focus ring for buttons and links */
+.account-tabs__tab:focus-visible,
+.account-card__close:focus-visible,
+.account-field__toggle:focus-visible,
+.account-form__submit:focus-visible,
+.account-form__forgot:focus-visible,
+.account-form__link:focus-visible {
+  outline: 2px solid var(--acc-red);
+  outline-offset: 2px;
+}
+
+/* New customer accounts: one "Continue to sign in" button */
+.account-form--hosted {
+  justify-items: start;
+}
+.account-form--hosted .account-form__submit {
+  justify-self: stretch;
+}
+.account-form__badge {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f3f3f3;
+  color: var(--acc-red);
+}
+
+/* ==========================================================================
+   6. Messages (errors from Shopify, success)
+   ========================================================================== */
+.account-form__errors {
+  padding: 12px 14px;
+  border: 1px solid #f6c3cc;
+  border-radius: 12px;
+  background: #fdecef;
+  color: #8f0b20;
+  font-size: 14px;
+}
+.account-form__errors p {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.account-form__errors ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.account-form__success {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #c7e8d1;
+  border-radius: 12px;
+  background: #ecf7ef;
+  color: #1d6b35;
+  font-size: 14px;
+  font-weight: 600;
+}
+.account-form__success .icon {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   7. Popup
+   ========================================================================== */
+.account-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.account-popup[hidden] {
+  display: none;
+}
+/* Dark, blurred backdrop */
+.account-popup__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.55);
+  backdrop-filter: blur(6px);
+  animation: account-fade 0.3s ease both;
+}
+.account-popup__dialog {
+  position: relative;
+  width: min(940px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-radius: var(--acc-radius);
+  box-shadow: 0 40px 90px -25px rgba(0, 0, 0, 0.55);
+  outline: none;
+  overscroll-behavior: contain;
+  animation: account-pop 0.5s var(--acc-ease) both;
+}
+.account-popup .account-card {
+  min-height: 600px;
+}
+/* Closing (class set by global-account.js for the length of the animation) */
+.account-popup.is-closing .account-popup__scrim {
+  animation: account-fade 0.25s ease reverse both;
+}
+.account-popup.is-closing .account-popup__dialog {
+  animation: account-pop-out 0.25s ease both;
+}
+@keyframes account-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes account-pop {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes account-pop-out {
+  to { opacity: 0; transform: translateY(16px) scale(0.97); }
+}
+
+/* ==========================================================================
+   8. Pages (login, register, activate, reset password)
+   ========================================================================== */
+.account-page {
+  padding-top: 48px;
+  padding-bottom: 72px;
+}
+.account-page .account-card {
+  max-width: 1000px;
+  min-height: 620px;
+  margin: 0 auto;
+  border: 1px solid #ececec;
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.28);
+}
+/* "Just here to check out? [Continue as guest]" under the login card */
+.account-guest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+  margin-top: 22px;
+  color: #6b6b6b;
+  font-size: 14px;
+}
+.account-guest p,
+.account-guest form {
+  margin: 0;
+}
+/* Guest checkout: shared .button.button--outline.button--sm */
+.account-guest__button {
+  color: #121212;
+}
+
+/* Secondary action (shared .button): "Decline invitation" (.button--link)
+   on the activate page, "Cancel" (.button--outline) in address dialogs */
+.account-form__secondary {
+  color: var(--acc-muted);
+}
+
+/* ==========================================================================
+   9. Tablets / phones
+   ========================================================================== */
+@media (max-width: 849px) {
+  .account-card__main {
+    padding: 36px 28px 30px;
+  }
+  .account-panel {
+    padding: 32px 28px;
+  }
+}
+@media (max-width: 749px) {
+  /* Panel on top as a short banner, forms below */
+  .account-card {
+    grid-template-columns: 1fr;
+  }
+  .account-panel {
+    padding: 28px 22px 24px;
+  }
+  .account-panel__brand {
+    padding-bottom: 14px;
+  }
+  .account-panel__heading {
+    padding-right: 44px; /* room for the ✕ */
+    font-size: 26px;
+  }
+  .account-panel__text {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+  .account-panel__perks {
+    display: none;
+  }
+  .account-card__main {
+    padding: 24px 20px 28px;
+  }
+  .account-card--popup .account-tabs {
+    margin-right: 0;
+  }
+  .account-form__title {
+    font-size: 22px;
+  }
+  /* ✕ sits on the dark banner: light glass button */
+  .account-card__close {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+  }
+  .account-card__close:hover {
+    background: rgba(255, 255, 255, 0.24);
+  }
+
+  /* Popup becomes a sheet from the bottom */
+  .account-popup {
+    align-items: end;
+    padding: 0;
+  }
+  .account-popup__dialog {
+    width: 100%;
+    max-height: 94vh;
+    border-radius: var(--acc-radius) var(--acc-radius) 0 0;
+    animation-name: account-sheet;
+  }
+  .account-popup .account-card {
+    min-height: 0;
+    border-radius: var(--acc-radius) var(--acc-radius) 0 0;
+  }
+  .account-popup.is-closing .account-popup__dialog {
+    animation-name: account-sheet-out;
+  }
+  @keyframes account-sheet {
+    from { transform: translateY(100%); }
+    to { transform: none; }
+  }
+  @keyframes account-sheet-out {
+    to { transform: translateY(100%); }
+  }
+
+  .account-page {
+    padding-top: 20px;
+    padding-bottom: 40px;
+  }
+  .account-page .account-card {
+    min-height: 0;
+  }
+}
+
+/* ==========================================================================
+   10. Reduced motion: no drifting glow, no sliding
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .account-panel__glow,
+  .account-card__view:not([hidden]),
+  .account-popup__scrim,
+  .account-popup__dialog {
+    animation: none !important;
+  }
+  .account-tabs__pill,
+  .account-card__close,
+  .account-form__submit {
+    transition: none;
+  }
+}

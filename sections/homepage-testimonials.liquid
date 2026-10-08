@@ -1,0 +1,339 @@
+{%- comment -%}
+  ============================================================================
+  Section: Homepage testimonials (customer reviews slider)
+  ----------------------------------------------------------------------------
+  Dark section (optional background image) with one review at a time:
+
+                         CUSTOMER REVIEWS
+                  "Fast delivery & spot-on sizing!"     ← title
+      ‹      Package reached California in 2 days…      ›  ← text
+                        ★★★★★ (optional)
+                    DAVID R. — PREMIUM MEMBER           ← name — detail
+                              ● ● ○
+
+  Each review is a block. Reviews fade from one to the next.
+  The slider behaviour is the same script as the hero slideshow
+  (assets/homepage.js → Slideshow): arrows, dots, swipe, keyboard ← →,
+  autoplay that pauses on hover/focus and respects reduced motion.
+  It only needs the data-slideshow* hooks used below.
+
+  Used in:   templates/index.json ("testimonials")
+  CSS:       assets/homepage.css → "8. Testimonials" (classes .testimonials*)
+  JS:        assets/homepage.js → Slideshow
+  Text:      locales → homepage.slideshow.* (arrow/dot labels),
+             homepage.testimonials.* (section label, star rating)
+  Editable:  Theme editor > Home page > Testimonials
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign review_count = section.blocks.size
+  assign overlay = section.settings.overlay_opacity | divided_by: 100.0
+
+  # Autoplay only makes sense with 2+ reviews
+  assign autoplay = false
+  if section.settings.autoplay and review_count > 1
+    assign autoplay = true
+  endif
+
+  # Screen-reader name: the heading, or the translated default
+  if section.settings.heading != blank
+    assign section_label = section.settings.heading
+  else
+    assign section_label = 'homepage.testimonials.label' | t
+  endif
+-%}
+
+{%- if review_count > 0 -%}
+  {%- comment -%}
+    Wrapper = the slider root (data-slideshow → homepage.js Slideshow).
+    Colors and overlay come from settings as CSS custom properties.
+  {%- endcomment -%}
+  <section
+    class="testimonials"
+    style="
+      --reviews-bg: {{ section.settings.background_color }};
+      --reviews-overlay: {{ overlay }};
+      --reviews-text: {{ section.settings.text_color }};
+      --reviews-accent: {{ section.settings.accent_color }};
+      --reviews-padding-top: {{ section.settings.padding_top }}px;
+      --reviews-padding-bottom: {{ section.settings.padding_bottom }}px;
+    "
+    aria-roledescription="carousel"
+    aria-label="{{ section_label | escape }}"
+    data-slideshow
+    data-autoplay="{{ autoplay }}"
+    data-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+  >
+    {%- comment -%} ---------- Optional background image (darkened by the overlay) ---------- {%- endcomment -%}
+    {%- if section.settings.background_image != blank -%}
+      <div class="testimonials__media">
+        {{ section.settings.background_image | image_url: width: 2400 | image_tag: loading: 'lazy', widths: '750, 1100, 1500, 1800, 2400', sizes: '100vw', alt: '', class: 'testimonials__image' }}
+      </div>
+    {%- endif -%}
+
+    <div class="page-width testimonials__inner">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="testimonials__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      <div class="testimonials__viewport">
+        {%- comment -%}
+          Track: all reviews stacked; only .is-active is visible (fade).
+          aria-live: off while autoplaying, polite otherwise (set by the script).
+        {%- endcomment -%}
+        <div class="testimonials__track" data-slideshow-track aria-live="{% if autoplay %}off{% else %}polite{% endif %}">
+          {%- for block in section.blocks -%}
+            <figure
+              class="testimonials__slide{% if forloop.first %} is-active{% endif %}"
+              role="group"
+              aria-roledescription="slide"
+              aria-label="{{ 'homepage.slideshow.slide_label' | t: number: forloop.index, total: review_count }}"
+              data-slide
+              {% unless forloop.first %}inert{% endunless %}
+              {{ block.shopify_attributes }}
+            >
+              <blockquote class="testimonials__quote">
+                {%- if block.settings.title != blank -%}
+                  <p class="testimonials__title">{{ block.settings.title | escape }}</p>
+                {%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <p class="testimonials__text">{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+              </blockquote>
+
+              {%- comment -%} Stars: 0 = hidden. Read out as "5 out of 5 stars". {%- endcomment -%}
+              {%- assign rating = block.settings.rating | plus: 0 -%}
+              {%- if rating > 0 -%}
+                <p class="testimonials__rating" role="img" aria-label="{{ 'homepage.testimonials.rating' | t: rating: rating }}">
+                  {%- for i in (1..5) -%}
+                    <span class="testimonials__star{% if i > rating %} testimonials__star--empty{% endif %}" aria-hidden="true">★</span>
+                  {%- endfor -%}
+                </p>
+              {%- endif -%}
+
+              {%- if block.settings.author != blank -%}
+                <figcaption class="testimonials__author">
+                  {{- block.settings.author | escape -}}
+                  {%- if block.settings.author_detail != blank -%}
+                    <span class="testimonials__author-detail"> — {{ block.settings.author_detail | escape }}</span>
+                  {%- endif -%}
+                </figcaption>
+              {%- endif -%}
+            </figure>
+          {%- endfor -%}
+        </div>
+
+        {%- comment -%} ---------- Arrows (2+ reviews, "Show arrows" on) ---------- {%- endcomment -%}
+        {%- if review_count > 1 and section.settings.show_arrows -%}
+          <button type="button" class="testimonials__arrow testimonials__arrow--prev" data-slideshow-prev aria-label="{{ 'homepage.slideshow.previous' | t }}">
+            {% render 'global-icon', name: 'chevron-left', size: 22 %}
+          </button>
+          <button type="button" class="testimonials__arrow testimonials__arrow--next" data-slideshow-next aria-label="{{ 'homepage.slideshow.next' | t }}">
+            {% render 'global-icon', name: 'chevron-right', size: 22 %}
+          </button>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} ---------- Dots (2+ reviews, "Show dots" on) ---------- {%- endcomment -%}
+      {%- if review_count > 1 and section.settings.show_dots -%}
+        <div class="testimonials__dots">
+          {%- for block in section.blocks -%}
+            <button
+              type="button"
+              class="testimonials__dot"
+              data-slideshow-dot="{{ forloop.index0 }}"
+              aria-label="{{ 'homepage.slideshow.go_to_slide' | t: number: forloop.index }}"
+              {% if forloop.first %}aria-current="true"{% endif %}
+            ></button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["index"] → home page only.
+  Settings:
+  - Content:   heading
+  - Slider:    autoplay, autoplay_speed (3–10 s), show_arrows, show_dots
+  - Background: background_image, overlay_opacity (0–90%), background_color
+  - Colors:    text_color, accent_color (name line, active dot, stars)
+  - Spacing:   padding_top, padding_bottom
+  Blocks (max 12):
+  - review → title, text, rating (0 = hidden … 5), author, author_detail
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Testimonials",
+  "tag": "div",
+  "class": "section-homepage-testimonials",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Customer reviews"
+    },
+    {
+      "type": "header",
+      "content": "Slider"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Change reviews automatically",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Change every",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 6,
+      "visible_if": "{{ section.settings.autoplay }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image",
+      "info": "Optional."
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 80
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#1c1c1e"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "info": "Reviewer name, stars and active dot.",
+      "default": "#c8102e"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "\"Fast delivery & spot-on sizing!\""
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Review",
+          "default": "Package arrived in just 2 days and the fit matched the size chart exactly. My new go-to store for wardrobe essentials."
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Star rating",
+          "info": "0 hides the stars.",
+          "min": 0,
+          "max": 5,
+          "step": 1,
+          "default": 0
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Name",
+          "default": "David R."
+        },
+        {
+          "type": "text",
+          "id": "author_detail",
+          "label": "Name detail",
+          "info": "Shown after the name, e.g. \"Premium member\" or a city.",
+          "default": "Premium member"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonials",
+      "blocks": [
+        { "type": "review" },
+        { "type": "review" },
+        { "type": "review" }
+      ]
+    }
+  ]
+}
+{% endschema %}

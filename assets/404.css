@@ -1,0 +1,104 @@
+/* ============================================================================
+   404.css — "Page not found"
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (404 template only)
+   Styles:    sections/404-main.liquid (classes .not-found*)
+
+   Look: a big outlined "404" with a red shadow, the site's bold uppercase
+   heading, a rounded search bar like the header's, and the site's buttons
+   (solid red + outlined dark, 3px corners, uppercase).
+   ============================================================================ */
+
+.not-found {
+  display: grid;
+  justify-items: center;
+  padding-top: 72px;
+  padding-bottom: 96px;
+  text-align: center;
+}
+/* Big outlined number with a red offset shadow */
+.not-found__code {
+  margin: 0;
+  color: transparent;
+  font-size: clamp(110px, 18vw, 200px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  -webkit-text-stroke: 3px #121212;
+  text-shadow: 8px 8px 0 rgba(200, 16, 46, 0.85);
+}
+.not-found__title {
+  margin: 24px 0 10px;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.not-found__text {
+  max-width: 46ch;
+  margin: 0 0 28px;
+  color: #6b6b6b;
+  font-size: 16px;
+}
+
+/* Search bar: rounded, like the header search */
+.not-found__search {
+  display: flex;
+  width: min(460px, 100%);
+  margin-bottom: 24px;
+  border: 1px solid #d9d9d9;
+  border-radius: 999px;
+  background: #f5f5f5;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.not-found__search:focus-within {
+  border-color: #121212;
+  background: #ffffff;
+}
+.not-found__input {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 20px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+}
+.not-found__search-button {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  border: 0;
+  background: none;
+  color: #121212;
+  cursor: pointer;
+}
+.not-found__search-button:hover {
+  color: #c8102e;
+}
+
+/* Buttons row: solid red (primary) + outlined dark */
+.not-found__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+/* The buttons themselves: shared .button.button--primary / .button--outline
+   (global-buttons.css) */
+.not-found__search-button:focus-visible {
+  outline: 2px solid #c8102e;
+  outline-offset: 2px;
+}
+
+@media (max-width: 749px) {
+  .not-found {
+    padding-top: 48px;
+    padding-bottom: 64px;
+  }
+  .not-found__code {
+    -webkit-text-stroke-width: 2px;
+    text-shadow: 5px 5px 0 rgba(200, 16, 46, 0.85);
+  }
+}

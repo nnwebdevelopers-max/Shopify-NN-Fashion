@@ -1,0 +1,220 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Cart tools (discount code, shipping estimate, order note)
+  ----------------------------------------------------------------------------
+  Three collapsible panels at the top of the cart summary:
+
+      ┌ 🏷 Discount code                        (1) ⌄ ┐
+      │ [ Enter discount code      ] [ APPLY ]        │
+      │ (SUMMER10 ✕) (FREESHIP ✕ not applied)         │  ← applied codes
+      ├ 🚚 Estimate shipping                        ⌄ ┤
+      │ [Country ▾] [State ▾] [ZIP] [ CALCULATE ]     │
+      │ 2 shipping options for your address:          │
+      │   Standard ............ $4.99                 │
+      │   Express ............ $14.99                 │
+      ├ ✎ Add order note                        ✓   ⌄ ┤
+      │ [ Special instructions …                  ]   │
+      └───────────────────────────────────────────────┘
+
+  How each one works (assets/cart.js):
+  - Discount: applies / removes codes with /cart/update.js { discount:
+    "CODE1,CODE2" } and re-renders the cart, so the new prices come from
+    Shopify. A code Shopify can't use for this cart stays listed as
+    "Not applied" with a message. The discount itself is shown in the
+    summary rows (cart-main.liquid) and line items.
+  - Shipping: asks Shopify for rates for country / state / ZIP
+    (/cart/prepare_shipping_rates.json, then /cart/async_shipping_rates.json).
+    State list follows the country (Shopify.CountryProvinceSelector from
+    shopify_common.js, loaded by cart-main.liquid). Starts from the signed-in
+    customer's default address, else the shopper's country.
+  - Note: saved to the cart while typing (cart.note → shown in the order).
+
+  Panels open by themselves when they hold something (codes / a note).
+  Without JavaScript only the note panel shows (it is sent with the cart
+  form); discount and shipping need the script.
+
+  Fields have no "name" (except the note): they must not be sent with the
+  cart form.
+
+  Parameters:
+  - show_discount  {Boolean}
+  - show_shipping  {Boolean}
+  - show_note      {Boolean}
+
+  Used in:  sections/cart-main.liquid (inside the summary, re-rendered after each change)
+  CSS:      assets/cart.css → "Cart tools" (classes .cart-tool*)
+  JS:       assets/cart.js → "Discount codes", "Shipping estimate", "Order note"
+  Text:     locales → cart.discount.*, cart.shipping.*, cart.note.*, cart.note_*,
+            customer.fields.country / province / zip
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Starting address for the estimate: the customer's default address, else
+  # the country the shopper is browsing from (Markets)
+  assign ship_country = customer.default_address.country | default: localization.country.name
+  assign ship_province = customer.default_address.province
+  assign ship_zip = customer.default_address.zip
+-%}
+
+<div class="cart-tools" role="group" aria-label="{{ 'cart.tools_label' | t }}">
+  {%- comment -%} ---------- 1. Discount code ---------- {%- endcomment -%}
+  {%- if show_discount -%}
+    <details class="cart-tool cart-tool--js" data-cart-tool="discount" {% if cart.discount_codes.size > 0 %}open{% endif %}>
+      <summary class="cart-tool__summary">
+        <span class="cart-tool__icon" aria-hidden="true">{% render 'global-icon', name: 'tag', size: 18 %}</span>
+        <span class="cart-tool__title">{{ 'cart.discount.title' | t }}</span>
+        {%- if cart.discount_codes.size > 0 -%}
+          <span class="cart-tool__badge">{{ cart.discount_codes.size }}</span>
+        {%- endif -%}
+        <span class="cart-tool__chevron" aria-hidden="true"></span>
+      </summary>
+
+      <div
+        class="cart-tool__body"
+        data-discount
+        data-text-empty="{{ 'cart.discount.empty' | t }}"
+        data-text-invalid="{{ 'cart.discount.invalid' | t: code: '[code]' }}"
+        data-text-applied="{{ 'cart.discount.applied' | t: code: '[code]' }}"
+        data-text-error="{{ 'cart.discount.error' | t }}"
+      >
+        <div class="cart-tool__inline">
+          <label for="CartDiscountCode" class="visually-hidden">{{ 'cart.discount.label' | t }}</label>
+          <input
+            type="text"
+            id="CartDiscountCode"
+            class="cart-tool__input"
+            placeholder="{{ 'cart.discount.placeholder' | t }}"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            data-discount-input
+          >
+          <button type="button" class="button button--sm cart-tool__button" data-discount-apply>{{ 'cart.discount.apply' | t }}</button>
+        </div>
+
+        {%- comment -%} Codes on the cart; data-discount-code lets cart.js build the new list {%- endcomment -%}
+        {%- if cart.discount_codes.size > 0 -%}
+          <ul class="cart-tool__codes" role="list">
+            {%- for discount_code in cart.discount_codes -%}
+              <li
+                class="cart-tool__code{% unless discount_code.applicable %} is-invalid{% endunless %}"
+                data-discount-code="{{ discount_code.code | escape }}"
+              >
+                {% render 'global-icon', name: 'tag', size: 14 %}
+                <span>{{ discount_code.code | escape }}</span>
+                {%- unless discount_code.applicable -%}
+                  <span class="cart-tool__code-note">{{ 'cart.discount.not_applicable' | t }}</span>
+                {%- endunless -%}
+                <button
+                  type="button"
+                  class="cart-tool__code-remove"
+                  aria-label="{{ 'cart.discount.remove' | t: code: discount_code.code }}"
+                  data-discount-remove="{{ discount_code.code | escape }}"
+                >
+                  {% render 'global-icon', name: 'close', size: 14 %}
+                </button>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        <p class="cart-tool__message" role="status" data-discount-message hidden></p>
+      </div>
+    </details>
+  {%- endif -%}
+
+  {%- comment -%} ---------- 2. Shipping estimate ---------- {%- endcomment -%}
+  {%- if show_shipping -%}
+    <details class="cart-tool cart-tool--js" data-cart-tool="shipping">
+      <summary class="cart-tool__summary">
+        <span class="cart-tool__icon" aria-hidden="true">{% render 'global-icon', name: 'truck', size: 18 %}</span>
+        <span class="cart-tool__title">{{ 'cart.shipping.title' | t }}</span>
+        <span class="cart-tool__chevron" aria-hidden="true"></span>
+      </summary>
+
+      <div
+        class="cart-tool__body"
+        data-shipping
+        data-prepare-url="{{ routes.cart_url }}/prepare_shipping_rates.json"
+        data-rates-url="{{ routes.cart_url }}/async_shipping_rates.json"
+        data-text-calculating="{{ 'cart.shipping.calculating' | t }}"
+        data-text-results-one="{{ 'cart.shipping.results_one' | t }}"
+        data-text-results-other="{{ 'cart.shipping.results_other' | t: number: '[number]' }}"
+        data-text-none="{{ 'cart.shipping.none' | t }}"
+        data-text-free="{{ 'cart.shipping.free' | t }}"
+        data-text-error="{{ 'cart.shipping.error' | t }}"
+      >
+        <div class="cart-tool__field">
+          <label for="CartShippingCountry">{{ 'customer.fields.country' | t }}</label>
+          <select
+            id="CartShippingCountry"
+            class="cart-tool__input"
+            autocomplete="country"
+            data-shipping-country
+            data-default="{{ ship_country | escape }}"
+          >
+            {{ all_country_option_tags }}
+          </select>
+        </div>
+        <div class="cart-tool__field" id="CartShippingProvinceWrap">
+          <label for="CartShippingProvince">{{ 'customer.fields.province' | t }}</label>
+          <select
+            id="CartShippingProvince"
+            class="cart-tool__input"
+            autocomplete="address-level1"
+            data-shipping-province
+            data-default="{{ ship_province | escape }}"
+          ></select>
+        </div>
+        <div class="cart-tool__inline">
+          <div class="cart-tool__field cart-tool__field--grow">
+            <label for="CartShippingZip">{{ 'customer.fields.zip' | t }}</label>
+            <input
+              type="text"
+              id="CartShippingZip"
+              class="cart-tool__input"
+              value="{{ ship_zip | escape }}"
+              autocomplete="postal-code"
+              data-shipping-zip
+            >
+          </div>
+          <button type="button" class="button button--sm cart-tool__button" data-shipping-calculate>{{ 'cart.shipping.calculate' | t }}</button>
+        </div>
+
+        {%- comment -%} Filled by cart.js with the rates (or a message) {%- endcomment -%}
+        <div class="cart-tool__results" aria-live="polite" data-shipping-results hidden></div>
+        <p class="cart-tool__hint">{{ 'cart.shipping.note' | t }}</p>
+      </div>
+    </details>
+  {%- endif -%}
+
+  {%- comment -%} ---------- 3. Order note (works without JS: sent with the cart form) ---------- {%- endcomment -%}
+  {%- if show_note -%}
+    <details class="cart-tool" data-cart-tool="note" {% if cart.note != blank %}open{% endif %}>
+      <summary class="cart-tool__summary">
+        <span class="cart-tool__icon" aria-hidden="true">{% render 'global-icon', name: 'edit', size: 18 %}</span>
+        <span class="cart-tool__title">
+          {%- if cart.note != blank -%}{{ 'cart.note.title_added' | t }}{%- else -%}{{ 'cart.note.title' | t }}{%- endif -%}
+        </span>
+        {%- if cart.note != blank -%}
+          <span class="cart-tool__check" aria-hidden="true">{% render 'global-icon', name: 'check', size: 14 %}</span>
+        {%- endif -%}
+        <span class="cart-tool__chevron" aria-hidden="true"></span>
+      </summary>
+
+      <div class="cart-tool__body">
+        <label for="CartNote" class="visually-hidden">{{ 'cart.note_label' | t }}</label>
+        <textarea
+          id="CartNote"
+          class="cart-tool__input cart-tool__textarea"
+          name="note"
+          rows="3"
+          placeholder="{{ 'cart.note_placeholder' | t }}"
+          data-cart-note
+        >{{ cart.note }}</textarea>
+        <p class="cart-tool__hint" role="status" data-note-status data-text-saved="{{ 'cart.note.saved' | t }}"></p>
+      </div>
+    </details>
+  {%- endif -%}
+</div>

@@ -1,0 +1,58 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: All collections card (one collection)
+  ----------------------------------------------------------------------------
+      ┌──────────────────┐
+      │  photo           │   photo zooms on hover
+      │ (50 products)    │   ← count pill
+      │ ACTIVEWEAR       │   ← title
+      │ Shop now →       │   ← slides in on hover (always shown on phones)
+      └──────────────────┘
+  data-title / data-count / data-index: used by assets/list-collections.js
+  to find (filter) and sort the cards; data-lc-media: GSAP photo unveil.
+
+  Parameters:
+  - collection   {Collection}  required
+  - index        {Number}      position on the page (for "Featured" order)
+  - image_sizes  {String}      "sizes" attribute for the photo
+  - hide_empty   {Boolean}     skip collections without products
+
+  Used in:  sections/list-collections-main.liquid
+  CSS:      assets/list-collections.css (.lc-card*)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign skip = false
+  if hide_empty and collection.products_count == 0
+    assign skip = true
+  endif
+  assign card_image = collection.featured_image
+-%}
+
+{%- unless skip -%}
+<li
+  class="lc-card"
+  data-lc-card
+  data-title="{{ collection.title | downcase | escape }}"
+  data-count="{{ collection.products_count }}"
+  data-index="{{ index }}"
+>
+  <a class="lc-card__link" href="{{ collection.url }}">
+    <span class="lc-card__media" data-lc-media>
+      {%- if card_image -%}
+        {{ card_image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '300, 450, 600, 800, 1000, 1200', sizes: image_sizes, alt: collection.title, class: 'lc-card__image' }}
+      {%- else -%}
+        {{ 'collection-1' | placeholder_svg_tag: 'lc-card__image lc-card__placeholder' }}
+      {%- endif -%}
+    </span>
+    <span class="lc-card__info">
+      <span class="lc-card__count">{{ 'collections.product_count' | t: count: collection.products_count }}</span>
+      <span class="lc-card__title">{{ collection.title | escape }}</span>
+      <span class="lc-card__cta">
+        {{- 'list_collections.shop_now' | t }} {% render 'global-icon', name: 'arrow-right', size: 16 -%}
+      </span>
+    </span>
+  </a>
+</li>
+{%- endunless -%}

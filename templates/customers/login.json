@@ -1,0 +1,22 @@
+/*
+ * ============================================================================
+ * Template: Customer login (customers/login.json) — /account/login
+ * ----------------------------------------------------------------------------
+ * Sign-in page (legacy customer accounts), same design as the sign-in popup.
+ *
+ * Sections:
+ *   main → sections/customer-login.liquid (sign-in / create account / reset card)
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "customer-login",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

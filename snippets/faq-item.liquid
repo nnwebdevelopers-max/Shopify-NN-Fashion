@@ -1,0 +1,30 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: FAQ item (one question with its answer)
+  ----------------------------------------------------------------------------
+      How long does shipping take?                         (+)   ← summary
+        Orders ship within 1–2 business days…                    ← answer (open)
+  A <details> element: opens without JavaScript; GSAP (initFaqMain) makes
+  the opening smooth. assets/faq.js builds the same markup from the page's
+  own text (keep both in sync).
+
+  Parameters:
+  - id          {String}  unique id (a link ending in #faq-<id> opens it)
+  - question    {String}  plain text
+  - answer      {String}  rich text (HTML)
+  - attributes  {String}  block.shopify_attributes (theme editor)
+
+  Used in:  sections/faq-main.liquid
+  CSS:      assets/faq.css → "3. Topics + questions" (.faq-item*)
+  ============================================================================
+{%- endcomment -%}
+
+<details class="faq-item" id="faq-{{ id }}" data-faq {{ attributes }}>
+  <summary class="faq-item__question">
+    <span>{{ question | escape }}</span>
+    <span class="faq-item__icon" aria-hidden="true"></span>
+  </summary>
+  <div class="faq-item__answer" data-faq-answer>
+    <div class="faq-item__answer-inner">{{ answer }}</div>
+  </div>
+</details>

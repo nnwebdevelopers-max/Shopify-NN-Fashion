@@ -1,0 +1,143 @@
+{%- comment -%}
+  ============================================================================
+  Section: Collection text
+  ----------------------------------------------------------------------------
+  Heading + text area for the collection page. Used twice:
+  - below the banner ("text-top")  → defaults to the collection description
+  - below the products ("text-bottom") → defaults to custom text (e.g. SEO copy)
+
+  Content source:
+  - "Collection description" → text from Shopify admin > Products > Collections
+  - "Custom text"            → text typed in the theme editor
+
+  Used in:   templates/collection.json ("text-top", "text-bottom")
+  CSS:       assets/collection.css → "2. Text areas" (classes .collection-text*)
+  JS:        none
+  Editable:  Theme editor > Collections > Text below banner / Text at bottom
+  ============================================================================
+{%- endcomment -%}
+
+{%- comment -%} "Show text area" off → render nothing {%- endcomment -%}
+{%- if section.settings.show_section -%}
+  {%- liquid
+    # Choose where the body text comes from
+    if section.settings.content_source == 'collection_description'
+      assign body = collection.description
+    else
+      assign body = section.settings.text
+    endif
+  -%}
+
+  {%- comment -%} Skip empty output (e.g. collection has no description and no heading is set) {%- endcomment -%}
+  {%- if section.settings.heading != blank or body != blank -%}
+    <div class="page-width">
+      <div
+        class="collection-text collection-text--{{ section.settings.alignment }}"
+        style="--ct-padding-top: {{ section.settings.padding_top }}px; --ct-padding-bottom: {{ section.settings.padding_bottom }}px;"
+      >
+        {%- if section.settings.heading != blank -%}
+          <h2 class="collection-text__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- comment -%} Both sources are HTML (already wrapped in <p> tags) {%- endcomment -%}
+        {%- if body != blank -%}
+          <div class="collection-text__body">{{ body }}</div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["collection"] → only available on collection pages.
+  - presets → can be added again from "Add section" (any number of times).
+  Settings:
+  - show_section                  → show / hide this text area
+  - content_source                → collection_description | custom
+  - heading, text                 → content (text only used for "custom")
+  - alignment, padding_top, padding_bottom
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Collection text",
+  "tag": "section",
+  "class": "section-collection-text",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_section",
+      "label": "Show text area",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "select",
+      "id": "content_source",
+      "label": "Text source",
+      "options": [
+        { "value": "collection_description", "label": "Collection description" },
+        { "value": "custom", "label": "Custom text" }
+      ],
+      "default": "custom",
+      "info": "Collection description is edited in Shopify admin > Products > Collections."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Custom text",
+      "info": "Used when text source is \"Custom text\"."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection text"
+    }
+  ]
+}
+{% endschema %}

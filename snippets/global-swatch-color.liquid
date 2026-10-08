@@ -1,0 +1,107 @@
+{%- comment -%}
+  ============================================================================
+  Snippet: Global swatch color (color name → CSS color for a swatch)
+  ----------------------------------------------------------------------------
+  Turns a color option value ("Charcoal", "Black Floral", "Sand") into a
+  CSS background for a swatch. Browsers only know basic color names, so
+  fashion names like Cream, Sand or Charcoal need this list.
+
+  Lookup order for a value:
+  1. Theme settings > Product cards > "Custom swatch colors" (the
+     merchant's own "Name: color" lines — they win over the list below)
+  2. The built-in list below (fashion colors + basic colors)
+  3. The first word, then the last word ("Black Floral" → black,
+     "Dusty Rose" → rose), in both lists
+  4. The value itself as a CSS color name ("navy" → navy); an unknown
+     name is ignored by the browser and the swatch shows its grey default
+  Shopify's own swatches (Admin > product > option > swatch) are used by
+  the callers before this snippet.
+
+  Two modes:
+  - value: 'Charcoal'   → outputs the color, e.g. #36454f (capture it)
+  - json: true          → outputs every entry as a JSON object, for
+                          assets/global-product-card.js (quick-add popup)
+
+  Usage:
+  {% capture swatch_color %}{% render 'global-swatch-color', value: value.name %}{% endcapture %}
+  style="background: #cccccc; background: {{ swatch_color }};"
+
+  Used in:  snippets/global-product-card.liquid, sections/product-main.liquid,
+            snippets/collection-filters.liquid, snippets/global-quick-add.liquid (json)
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Built-in list: "name:color" entries separated by "|"
+  assign builtin = 'black:#111111|white:#ffffff|off white:#f5f2ea|ivory:#fffff0|cream:#f3ead8|ecru:#e9e1cc|beige:#e8dcc4|sand:#d8c3a0|stone:#bfb6a8|oatmeal:#d9cdb8|taupe:#8b7d6b|khaki:#c3b091|camel:#c19a6b|tan:#d2b48c|cognac:#9a463d|brown:#6f4e37|chocolate:#5a3825|mocha:#6f5446|coffee:#6f4e37|rust:#b7410e|grey:#9e9e9e|gray:#9e9e9e|light grey:#d3d3d3|heather grey:#b6b6b4|heather:#b6b6b4|charcoal:#36454f|graphite:#4b4f54|silver:#c0c0c0|gold:#d4af37|rose gold:#b76e79|champagne:#f1e3c6|navy:#1f2a44|blue:#2f5bd3|light blue:#a7c7e7|sky:#87ceeb|denim:#1560bd|indigo:#3f3d99|cobalt:#0047ab|teal:#008080|turquoise:#40e0d0|green:#2e7d32|olive:#708238|forest:#228b22|emerald:#50c878|sage:#9caf88|mint:#98e2c6|red:#c62828|burgundy:#800020|wine:#722f37|maroon:#800000|plum:#8e4585|purple:#6a1b9a|lilac:#c8a2c8|lavender:#b57edc|pink:#f4a6c0|rose:#e8a0a8|blush:#f4c2c2|coral:#ff7f50|orange:#f57c00|mustard:#e1ad01|yellow:#f6d743|tortoise:linear-gradient(135deg, #3b2414 0%, #8b5a2b 35%, #c68e3a 55%, #5a3a1a 80%, #3b2414 100%)|leopard:linear-gradient(135deg, #c8a165 0%, #3b2a1a 30%, #c8a165 55%, #3b2a1a 80%, #c8a165 100%)|multi:conic-gradient(#e53935, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935)|multicolor:conic-gradient(#e53935, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935)|floral:conic-gradient(#f4a6c0, #ffffff, #9caf88, #f4a6c0)' | split: '|'
+
+  # Merchant's lines first, so they win
+  assign custom = settings.swatch_colors | newline_to_br | split: '<br />'
+  assign entries = custom | concat: builtin
+-%}
+
+{%- if json -%}
+  {%- comment -%} JSON object {"cream":"#f3ead8",…}; the first entry for a name wins (merchant's) {%- endcomment -%}
+  {%- liquid
+    assign seen = '|'
+    assign out = ''
+    for entry in entries
+      assign entry_name = entry | split: ':' | first | downcase | strip
+      assign name_size = entry | split: ':' | first | size | plus: 1
+      assign entry_color = entry | slice: name_size, 500 | strip
+      if entry_name == blank or entry_color == blank
+        continue
+      endif
+      assign marker = '|' | append: entry_name | append: '|'
+      if seen contains marker
+        continue
+      endif
+      assign seen = seen | append: entry_name | append: '|'
+      assign name_json = entry_name | json
+      assign color_json = entry_color | json
+      if out != ''
+        assign out = out | append: ','
+      endif
+      assign out = out | append: name_json | append: ':' | append: color_json
+    endfor
+    echo '{' | append: out | append: '}'
+  -%}
+{%- else -%}
+  {%- liquid
+    assign key = value | append: '' | downcase | strip
+    assign words = key | split: ' '
+    assign first_word = words | first
+    assign last_word = words | last
+    assign found_full = ''
+    assign found_first = ''
+    assign found_last = ''
+    for entry in entries
+      assign entry_name = entry | split: ':' | first | downcase | strip
+      assign name_size = entry | split: ':' | first | size | plus: 1
+      # Everything after the first ":" (gradients contain more text, no ":")
+      assign entry_color = entry | slice: name_size, 500 | strip
+      if entry_name == blank or entry_color == blank
+        continue
+      endif
+      if found_full == blank and entry_name == key
+        assign found_full = entry_color
+      endif
+      if found_first == blank and entry_name == first_word
+        assign found_first = entry_color
+      endif
+      if found_last == blank and entry_name == last_word
+        assign found_last = entry_color
+      endif
+    endfor
+
+    if found_full != blank
+      echo found_full
+    elsif found_first != blank
+      echo found_first
+    elsif found_last != blank
+      echo found_last
+    else
+      echo key | remove: ' '
+    endif
+  -%}
+{%- endif -%}

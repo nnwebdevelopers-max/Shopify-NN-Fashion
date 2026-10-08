@@ -1,0 +1,642 @@
+/* ============================================================================
+   contact.css — Contact page sections (template page.contact)
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (page template "contact" only)
+   Styles:
+     sections/contact-hero.liquid  → 2. Hero
+     sections/contact-main.liquid  → 3. Contact form (layout from the Athora theme)
+     sections/contact-map.liquid   → 4. Map
+     sections/contact-faq.liquid   → 5. FAQ
+   JS: assets/global-scroll-animations.js (GSAP + ScrollTrigger), shared
+       with the About page.
+
+   The default layout here is static and complete; the GSAP effects only
+   move things (they don't need extra layout), so without JavaScript or
+   with "reduce motion" the page simply shows.
+   Colors per section (settings): --contact-bg, --contact-text,
+   --contact-accent. Heading font: .contact--serif (Georgia) or the theme's.
+   Same palette and type style as the About page (assets/about.css).
+   ============================================================================ */
+
+/* ==========================================================================
+   1. Shared
+   ========================================================================== */
+.contact {
+  --contact-bg: #f6f3ec;
+  --contact-text: #2f3a2f;
+  --contact-accent: #b8734f;
+  --contact-muted: color-mix(in srgb, var(--contact-text) 70%, transparent);
+  --contact-line: color-mix(in srgb, var(--contact-text) 18%, transparent);
+  position: relative;
+  background: var(--contact-bg);
+  color: var(--contact-text);
+}
+.contact__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.contact__eyebrow {
+  margin: 0 0 16px;
+  color: var(--contact-accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.contact__heading {
+  margin: 0;
+  font-size: clamp(32px, 4.4vw, 56px);
+  font-weight: 800;
+  line-height: 1.08;
+}
+.contact--serif .contact__heading,
+.contact--serif .contact-hero__title,
+.contact--serif .contact-map__title,
+.contact--serif .contact-form__success-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+.contact__text {
+  color: var(--contact-muted);
+  font-size: 17px;
+  line-height: 1.7;
+}
+.contact__text p {
+  margin: 0 0 1em;
+}
+.contact__text > :last-child {
+  margin-bottom: 0;
+}
+.contact__placeholder {
+  background: color-mix(in srgb, var(--contact-text) 10%, transparent);
+  fill: color-mix(in srgb, var(--contact-text) 35%, transparent);
+}
+/* Split words (global-scroll-animations.js): mask + moving inner span */
+.contact .word {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  vertical-align: top;
+}
+.contact .word__inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ==========================================================================
+   2. Hero
+   ========================================================================== */
+.contact-hero {
+  padding: 80px 0 0;
+  overflow: hidden;
+}
+.contact-hero__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 48px;
+  padding-bottom: 56px;
+}
+.contact-hero__title {
+  margin: 0;
+  font-size: clamp(64px, 11vw, 168px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+.contact-hero__side {
+  display: grid;
+  gap: 24px;
+  padding-bottom: 12px;
+}
+.contact-hero__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.contact-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 1.5px solid var(--contact-line);
+  border-radius: 999px;
+  color: var(--contact-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+.contact-chip:hover {
+  border-color: var(--contact-text);
+  background: var(--contact-text);
+  color: var(--contact-bg);
+}
+.contact-chip:focus-visible {
+  outline: 2px solid var(--contact-accent);
+  outline-offset: 3px;
+}
+/* Wide photo; GSAP grows it from an inset rounded card (clip-path) */
+.contact-hero__media {
+  height: min(70vh, 640px);
+  overflow: hidden;
+}
+.contact-hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   3. Contact form (Athora layout: [info | form])
+   ========================================================================== */
+.contact-main {
+  padding: 120px 0;
+}
+.contact-main__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: start;
+  gap: 72px;
+}
+.contact-main__info .contact__text {
+  max-width: 480px;
+  margin-top: 24px;
+}
+
+/* Info rows: (icon) Title / value */
+.contact-main__items {
+  display: grid;
+  gap: 26px;
+  margin: 44px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.contact-main__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.contact-main__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1.5px solid var(--contact-line);
+  border-radius: 50%;
+  color: var(--contact-accent);
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.contact-main__item:hover .contact-main__icon {
+  border-color: var(--contact-accent);
+  background: var(--contact-accent);
+  color: #ffffff;
+}
+.contact-main__item-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.contact-main__item-value {
+  margin: 0;
+  color: var(--contact-muted);
+  font-size: 16px;
+  line-height: 1.55;
+}
+.contact-main__item-value p {
+  margin: 0;
+}
+/* Email / phone: underline grows from the left on hover */
+.contact-main__link {
+  background: linear-gradient(currentColor, currentColor) left bottom / 0 1.5px no-repeat;
+  text-decoration: none;
+  transition: background-size 0.35s ease, color 0.3s ease;
+}
+.contact-main__link:hover {
+  background-size: 100% 1.5px;
+  color: var(--contact-text);
+}
+.contact-main__socials {
+  margin-top: 44px;
+}
+.contact-main__social-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.contact-main__social {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid var(--contact-line);
+  border-radius: 50%;
+  color: var(--contact-text);
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+.contact-main__social:hover {
+  background: var(--contact-text);
+  color: var(--contact-bg);
+  transform: translateY(-3px);
+}
+
+/* Form card */
+.contact-main__card {
+  padding: 48px;
+  border-radius: 28px;
+  background: color-mix(in srgb, #ffffff 70%, var(--contact-bg));
+  box-shadow: 0 40px 80px -50px rgba(0, 0, 0, 0.35);
+}
+.contact-form {
+  display: grid;
+  gap: 22px;
+}
+.contact-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+/* Field: underline + floating label; the accent line draws on focus */
+.contact-field {
+  position: relative;
+}
+.contact-field::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--contact-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-field:focus-within::after {
+  transform: scaleX(1);
+}
+.contact-field__input {
+  width: 100%;
+  padding: 26px 0 10px;
+  border: 0;
+  border-bottom: 1.5px solid var(--contact-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--contact-text);
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+}
+textarea.contact-field__input {
+  min-height: 150px;
+  resize: vertical;
+}
+.contact-field--select .contact-field__input {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 12px) 34px, calc(100% - 6px) 34px;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.contact-field__label {
+  position: absolute;
+  top: 26px;
+  left: 0;
+  color: var(--contact-muted);
+  font-size: 16px;
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+}
+/* Floated: focused, filled, or a select (always shows a value) */
+.contact-field__input:focus + .contact-field__label,
+.contact-field__input:not(:placeholder-shown) + .contact-field__label,
+.contact-field--select .contact-field__label {
+  color: var(--contact-accent);
+  transform: translateY(-22px) scale(0.78);
+}
+
+/* Send button: shared .button.button--lg.button--full (global-buttons.css),
+   dark pill; on hover a circle of accent colour grows from the mouse
+   (instead of the plain background change) */
+.contact-send {
+  --btn-bg: var(--contact-text);
+  --btn-text: var(--contact-bg);
+  --btn-hover-bg: var(--contact-text);
+  --btn-hover-text: #ffffff;
+  --btn-focus: var(--contact-accent);
+  margin-top: 8px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.contact-send__fill {
+  position: absolute;
+  top: var(--y, 50%);
+  left: var(--x, 50%);
+  z-index: -1;
+  width: 140%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--contact-accent);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-send:hover .contact-send__fill,
+.contact-send:focus-visible .contact-send__fill {
+  transform: translate(-50%, -50%) scale(1);
+}
+.contact-send.is-sending {
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+/* Messages */
+.contact-form__errors {
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #fdecef;
+  color: #8f0b20;
+  font-size: 14px;
+}
+.contact-form__errors p {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.contact-form__errors ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.contact-form__success {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  text-align: center;
+  outline: none;
+}
+.contact-form__check {
+  width: 84px;
+  height: 84px;
+  color: var(--contact-accent);
+}
+.contact-form__success-title {
+  margin: 8px 0 0;
+  font-size: 30px;
+  font-weight: 800;
+}
+.contact-form__success p {
+  max-width: 360px;
+  margin: 0;
+  color: var(--contact-muted);
+}
+
+/* ==========================================================================
+   4. Map
+   ========================================================================== */
+.contact-map {
+  padding: 0 0 120px;
+}
+.contact-map__wrap {
+  position: relative;
+}
+.contact-map__frame {
+  height: min(70vh, 620px);
+  overflow: hidden;
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--contact-text) 8%, transparent);
+}
+.contact-map__iframe,
+.contact-map__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+  filter: grayscale(0.85) contrast(1.05);
+  transition: filter 0.6s ease;
+}
+.contact-map__frame:hover .contact-map__iframe {
+  filter: none;
+}
+/* Store card on the right of the map */
+/* Centered vertically without transform (GSAP animates its transform) */
+.contact-map__card {
+  position: absolute;
+  top: 0;
+  right: 64px;
+  bottom: 0;
+  width: min(360px, calc(100% - 48px));
+  height: max-content;
+  margin: auto 0;
+  padding: 36px;
+  border-radius: 24px;
+  background: var(--contact-bg);
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.45);
+}
+.contact-map__title {
+  margin: 0 0 14px;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.contact-map__address,
+.contact-map__hours {
+  margin: 0 0 14px;
+  color: var(--contact-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.contact-map__hours p {
+  margin: 0;
+}
+.contact-map__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--contact-accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+.contact-map__link .icon {
+  transition: transform 0.35s ease;
+}
+.contact-map__link:hover .icon {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   5. FAQ
+   ========================================================================== */
+.contact-faq {
+  padding: 120px 0;
+}
+.contact-faq__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: 72px;
+}
+.contact-faq__intro {
+  position: sticky;
+  top: 14vh;
+}
+.contact-faq__intro .contact__text {
+  margin-top: 20px;
+}
+.contact-faq__item {
+  border-bottom: 1.5px solid var(--contact-line);
+}
+.contact-faq__item:first-child {
+  border-top: 1.5px solid var(--contact-line);
+}
+.contact-faq__question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 26px 0;
+  font-size: clamp(18px, 1.6vw, 22px);
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.contact-faq__question::-webkit-details-marker {
+  display: none;
+}
+.contact-faq__question:hover {
+  color: var(--contact-accent);
+}
+.contact-faq__question:focus-visible {
+  outline: 2px solid var(--contact-accent);
+  outline-offset: 4px;
+}
+/* + turns into − */
+.contact-faq__icon {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--contact-line);
+  border-radius: 50%;
+  transition: background 0.3s ease, border-color 0.3s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-faq__icon::before,
+.contact-faq__icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 2px;
+  margin: -1px 0 0 -7px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-faq__icon::after {
+  transform: rotate(90deg);
+}
+.contact-faq__item[open] .contact-faq__icon {
+  border-color: var(--contact-accent);
+  background: var(--contact-accent);
+  color: #ffffff;
+  transform: rotate(180deg);
+}
+.contact-faq__item[open] .contact-faq__icon::after {
+  transform: rotate(0deg);
+}
+.contact-faq__answer {
+  overflow: hidden;
+}
+.contact-faq__answer-inner {
+  padding: 0 64px 26px 0;
+  color: var(--contact-muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.contact-faq__answer-inner p {
+  margin: 0 0 0.8em;
+}
+.contact-faq__answer-inner > :last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Tablets / phones
+   ========================================================================== */
+@media (max-width: 989px) {
+  .contact-main__grid,
+  .contact-faq__grid {
+    gap: 48px;
+  }
+  .contact-main__card {
+    padding: 36px;
+  }
+}
+@media (max-width: 749px) {
+  .contact-hero {
+    padding-top: 48px;
+  }
+  .contact-hero__top,
+  .contact-main__grid,
+  .contact-faq__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .contact-hero__top {
+    gap: 24px;
+    padding-bottom: 36px;
+  }
+  .contact-hero__media {
+    height: 46vh;
+  }
+  .contact-main,
+  .contact-faq {
+    padding: 72px 0;
+  }
+  .contact-main__card {
+    padding: 28px 22px;
+    border-radius: 22px;
+  }
+  .contact-form__row {
+    grid-template-columns: 1fr;
+  }
+  .contact-map {
+    padding-bottom: 72px;
+  }
+  /* Phones: the store card sits under the map */
+  .contact-map__frame {
+    height: 52vh;
+  }
+  .contact-map__card {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    margin: -60px 16px 0;
+  }
+  .contact-faq__intro {
+    position: static;
+  }
+  .contact-faq__answer-inner {
+    padding-right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-field::after,
+  .contact-field__label,
+  .contact-send__fill,
+  .contact-faq__icon,
+  .contact-faq__icon::before,
+  .contact-faq__icon::after {
+    transition: none;
+  }
+}

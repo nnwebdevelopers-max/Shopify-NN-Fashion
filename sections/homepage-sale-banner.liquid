@@ -1,0 +1,222 @@
+{%- comment -%}
+  ============================================================================
+  Section: Homepage sale banner
+  ----------------------------------------------------------------------------
+  Full-width image with a dark overlay and big centered text:
+
+                          30% - 60%            ← line 1 (text color)
+                     O F F   A L L   S A L E    ← line 2 (accent color, wide spacing)
+                         optional text
+                         [ optional button ]
+
+  Optional separate mobile image. The image's focal point (Shopify admin >
+  Content > Files) keeps the subject in view when cropped.
+
+  Used in:   templates/index.json ("sale-banner")
+  CSS:       assets/homepage.css → "6. Sale banner" (classes .sale-banner*)
+  JS:        none
+  Editable:  Theme editor > Home page > Sale banner
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign image = section.settings.image
+  assign mobile_image = section.settings.mobile_image
+  assign overlay = section.settings.overlay_opacity | divided_by: 100.0
+  assign focal_point = image.presentation.focal_point | default: 'center'
+  assign image_style = 'object-position: ' | append: focal_point
+-%}
+
+{%- comment -%}
+  Wrapper. Height (small/medium/large) and text alignment are modifier
+  classes; colors and overlay come from settings as CSS custom properties.
+{%- endcomment -%}
+<div
+  class="sale-banner sale-banner--{{ section.settings.height }} sale-banner--{{ section.settings.alignment }}"
+  style="
+    --sale-overlay: {{ overlay }};
+    --sale-bg: {{ section.settings.background_color }};
+    --sale-text: {{ section.settings.text_color }};
+    --sale-accent: {{ section.settings.accent_color }};
+  "
+>
+  {%- comment -%} ---------- Background image (separate mobile image optional) ---------- {%- endcomment -%}
+  <div class="sale-banner__media">
+    {%- if image != blank -%}
+      <picture>
+        {%- if mobile_image != blank -%}
+          <source
+            media="(max-width: 749px)"
+            srcset="{{ mobile_image | image_url: width: 375 }} 375w, {{ mobile_image | image_url: width: 750 }} 750w, {{ mobile_image | image_url: width: 1100 }} 1100w"
+            sizes="100vw"
+          >
+        {%- endif -%}
+        {{ image | image_url: width: 2400 | image_tag: loading: 'lazy', widths: '750, 1100, 1500, 1800, 2400', sizes: '100vw', alt: '', class: 'sale-banner__image', style: image_style }}
+      </picture>
+    {%- else -%}
+      {{ 'lifestyle-2' | placeholder_svg_tag: 'sale-banner__image sale-banner__placeholder' }}
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} ---------- Text (each line hidden when empty) ---------- {%- endcomment -%}
+  <div class="page-width sale-banner__content">
+    {%- if section.settings.heading != blank or section.settings.heading_accent != blank -%}
+      <h2 class="sale-banner__heading">
+        {%- if section.settings.heading != blank -%}
+          <span class="sale-banner__line">{{ section.settings.heading | escape }}</span>
+        {%- endif -%}
+        {%- if section.settings.heading_accent != blank -%}
+          <span class="sale-banner__line sale-banner__line--accent">{{ section.settings.heading_accent | escape }}</span>
+        {%- endif -%}
+      </h2>
+    {%- endif -%}
+
+    {%- if section.settings.text != blank -%}
+      <p class="sale-banner__text">{{ section.settings.text | escape }}</p>
+    {%- endif -%}
+
+    {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+      <a href="{{ section.settings.button_link }}" class="button sale-banner__button" data-magnetic>
+        {{- section.settings.button_label | escape -}}
+        {% render 'global-icon', name: 'arrow-right', size: 16 %}
+      </a>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["index"] → home page only.
+  Settings:
+  - Image:   image, mobile_image, overlay_opacity (0–80%)
+  - Text:    heading (line 1), heading_accent (line 2, accent color, wide
+             spacing), text, button_label, button_link
+  - Layout:  height (small / medium / large), alignment (left / center)
+  - Colors:  background_color (shown when there is no image), text_color, accent_color
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Sale banner",
+  "tag": "section",
+  "class": "section-homepage-sale-banner",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "Recommended: 2400 × 800 px or larger."
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "info": "Optional."
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay",
+      "info": "Darkens the image so the text is easier to read.",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading line 1",
+      "default": "30% - 60%"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Heading line 2 (accent color)",
+      "default": "Off all sale"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "info": "Optional."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link",
+      "info": "The button is hidden until a label and link are set."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Height",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "info": "Shown when there is no image.",
+      "default": "#1c1c1e"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "info": "Heading line 2 and button.",
+      "default": "#c8102e"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sale banner"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,151 @@
+{%- comment -%}
+  ============================================================================
+  Section: Page main (default page: About us, FAQ, Contact info…)
+  ----------------------------------------------------------------------------
+                           ABOUT US              ← page title (optional)
+                           ────
+            Text, images and tables written in Shopify admin
+            (Online Store > Pages > the page > Content).
+
+  Shows the page's title and content. The content is styled for reading:
+  headings, paragraphs, lists, links, images, tables, quotes and embedded
+  videos.
+
+  Any page that uses the "Default page" template shows this section. More
+  sections (e.g. Rich text) can be added below it in the theme editor.
+
+  Used in:   templates/page.json ("main")
+  Animations ("Animate content on scroll"): assets/page.js finds the
+  content's parts (hero, images, rows of cards, quote…) and fades / lifts
+  them in as they scroll into view; the title's red rule draws in on load.
+
+  CSS:       assets/page.css (classes .page-main*, .page-rte, .reveal*)
+  JS:        assets/page.js (scroll animations)
+  Text:      the page title and content come from Shopify admin
+  Editable:  Theme editor > Pages > Default page
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Content width:
+  # - narrow / medium: comfortable line length for plain text pages
+  # - full: the site's normal width (1200px, like the other sections)
+  # - edge: the whole screen width, no side margins (designed pages)
+  assign width_class = 'page-width'
+  case section.settings.content_width
+    when 'narrow'
+      assign max_width = '760px'
+    when 'medium'
+      assign max_width = '960px'
+    when 'edge'
+      assign max_width = 'none'
+      assign width_class = 'page-main--edge'
+    else
+      assign max_width = '1200px'
+  endcase
+-%}
+
+{%- comment -%} data-page-animate: assets/page.js animates the content's parts on scroll {%- endcomment -%}
+<section
+  class="{{ width_class }} page-main page-main--{{ section.settings.text_align }}"
+  {% if section.settings.animate %}data-page-animate{% endif %}
+  style="
+    --page-max-width: {{ max_width }};
+    --page-padding-top: {{ section.settings.padding_top }}px;
+    --page-padding-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-main__inner">
+    {%- if section.settings.show_title -%}
+      <h1 class="page-main__title">{{ page.title | escape }}</h1>
+    {%- endif -%}
+
+    {%- comment -%} Content written in Shopify admin (HTML from the editor) {%- endcomment -%}
+    {%- if page.content != blank -%}
+      <div class="page-rte">{{ page.content }}</div>
+    {%- endif -%}
+  </div>
+</section>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["page"] → page templates only.
+  Settings: show_title, content_width (edge = whole screen, default; the
+            content's own outer max-width is lifted too, see page.css /
+            full = site width 1200px / medium 960px / narrow 760px),
+            animate (scroll animations, assets/page.js),
+            text_align (left / center), padding_top, padding_bottom
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Page content",
+  "tag": "div",
+  "class": "section-page-main",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show page title",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "edge", "label": "Edge to edge (whole screen)" },
+        { "value": "full", "label": "Site width (1200px, like other sections)" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "narrow", "label": "Narrow (best for long text)" }
+      ],
+      "default": "edge",
+      "info": "Edge to edge: the content and its background fill the whole screen (best for designed pages like About us). Narrow suits long plain text."
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Title alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "animate",
+      "label": "Animate content on scroll",
+      "info": "Sections fade and rise in as they scroll into view; cards and images come in one after another. Off for shoppers who turned off animations on their device.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page content"
+    }
+  ]
+}
+{% endschema %}

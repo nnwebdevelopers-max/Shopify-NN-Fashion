@@ -1,0 +1,368 @@
+{%- comment -%}
+  ============================================================================
+  Section: Homepage slideshow (hero banner with slider)
+  ----------------------------------------------------------------------------
+  Full-width image slider at the top of the home page. Each slide is a block:
+
+    ┌────────────────────────────────────────────────────────────────────┐
+    │ ‹       HEADING LINE 1                                           › │
+    │         HEADING LINE 2  (accent color)                             │
+    │         SUBHEADING                                                 │
+    │         [ BUTTON ]                                                 │
+    │                              ● ● ●                                 │
+    └────────────────────────────────────────────────────────────────────┘
+
+  - Arrows (‹ ›), dots, autoplay, swipe on touch screens, keyboard arrows.
+  - Autoplay pauses on hover/focus and is off for shoppers who prefer
+    reduced motion (operating-system setting).
+  - Optional separate image for mobile; the image's focal point (set in
+    Shopify admin > Files) keeps the subject in view when cropped.
+
+  Used in:   templates/index.json ("slideshow")
+  CSS:       assets/homepage.css → "1. Slideshow" (classes .slideshow*)
+  JS:        assets/homepage.js (slider behaviour)
+  Text:      locales → homepage.slideshow.* (arrow/dot/slide labels)
+  Editable:  Theme editor > Home page > Slideshow
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign slide_count = section.blocks.size
+
+  # Autoplay only makes sense with 2+ slides
+  assign autoplay = false
+  if section.settings.autoplay and slide_count > 1
+    assign autoplay = true
+  endif
+
+  # Dark layer over the images: setting is 0–80 (%), CSS needs 0–0.8
+  assign overlay = section.settings.overlay_opacity | divided_by: 100.0
+-%}
+
+{%- if slide_count > 0 -%}
+  {%- comment -%}
+    Wrapper.
+    - Modifier classes: height (small/medium/large/full) and transition (fade/slide).
+    - data-* settings are read by homepage.js.
+    - aria-roledescription="carousel" tells screen readers what this is.
+  {%- endcomment -%}
+  <section
+    class="slideshow slideshow--{{ section.settings.height }} slideshow--{{ section.settings.transition }}"
+    style="
+      --slideshow-overlay: {{ overlay }};
+      --slideshow-text: {{ section.settings.text_color }};
+      --slideshow-accent: {{ section.settings.accent_color }};
+      --slideshow-button-text: {{ section.settings.button_text_color }};
+    "
+    aria-roledescription="carousel"
+    aria-label="{{ 'homepage.slideshow.label' | t }}"
+    data-slideshow
+    data-autoplay="{{ autoplay }}"
+    data-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+  >
+    <div class="slideshow__viewport">
+      {%- comment -%}
+        Track: holds every slide. homepage.js sets --slide-index on it
+        ("slide" transition moves it sideways; "fade" stacks the slides).
+        aria-live: off while autoplaying (no constant announcements), polite otherwise.
+      {%- endcomment -%}
+      <div class="slideshow__track" data-slideshow-track aria-live="{% if autoplay %}off{% else %}polite{% endif %}">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign image = block.settings.image
+            assign mobile_image = block.settings.mobile_image
+
+            # Keep the image's focal point (set in Shopify admin) in view when cropped
+            assign focal_point = image.presentation.focal_point | default: 'center'
+            assign image_style = 'object-position: ' | append: focal_point
+
+            # First slide is what shoppers see first → load it straight away
+            if forloop.first
+              assign loading = 'eager'
+              assign priority = 'high'
+            else
+              assign loading = 'lazy'
+              assign priority = 'auto'
+            endif
+          -%}
+          <div
+            class="slideshow__slide{% if forloop.first %} is-active{% endif %}"
+            role="group"
+            aria-roledescription="slide"
+            aria-label="{{ 'homepage.slideshow.slide_label' | t: number: forloop.index, total: slide_count }}"
+            data-slide
+            {% unless forloop.first %}inert{% endunless %}
+            {{ block.shopify_attributes }}
+          >
+            {%- comment -%} ---------- Image (separate mobile image optional) ---------- {%- endcomment -%}
+            <div class="slideshow__media">
+              {%- if image != blank -%}
+                <picture>
+                  {%- if mobile_image != blank -%}
+                    <source
+                      media="(max-width: 749px)"
+                      srcset="{{ mobile_image | image_url: width: 375 }} 375w, {{ mobile_image | image_url: width: 750 }} 750w, {{ mobile_image | image_url: width: 1100 }} 1100w"
+                      sizes="100vw"
+                    >
+                  {%- endif -%}
+                  {{ image | image_url: width: 3000 | image_tag: loading: loading, fetchpriority: priority, widths: '750, 1100, 1500, 1800, 2400, 3000', sizes: '100vw', class: 'slideshow__image', style: image_style }}
+                </picture>
+              {%- else -%}
+                {%- comment -%} No image yet → Shopify placeholder (theme editor preview) {%- endcomment -%}
+                {{ 'lifestyle-2' | placeholder_svg_tag: 'slideshow__image slideshow__placeholder' }}
+              {%- endif -%}
+            </div>
+
+            {%- comment -%} ---------- Text content ---------- {%- endcomment -%}
+            <div class="page-width slideshow__content slideshow__content--{{ block.settings.alignment }}">
+              <div class="slideshow__text">
+                {%- if block.settings.heading != blank or block.settings.heading_highlight != blank -%}
+                  {%- comment -%} h2, not h1: on the home page the header logo is the h1 {%- endcomment -%}
+                  <h2 class="slideshow__heading">
+                    {%- if block.settings.heading != blank -%}
+                      <span class="slideshow__heading-line">{{ block.settings.heading | escape }}</span>
+                    {%- endif -%}
+                    {%- if block.settings.heading_highlight != blank -%}
+                      <span class="slideshow__heading-line slideshow__heading-line--accent">{{ block.settings.heading_highlight | escape }}</span>
+                    {%- endif -%}
+                  </h2>
+                {%- endif -%}
+
+                {%- if block.settings.subheading != blank -%}
+                  <p class="slideshow__subheading">{{ block.settings.subheading | escape }}</p>
+                {%- endif -%}
+
+                {%- if block.settings.button_label != blank and block.settings.button_link != blank -%}
+                  <a href="{{ block.settings.button_link }}" class="button button--lg slideshow__button" data-magnetic>
+                    {{- block.settings.button_label | escape -}}
+                    {% render 'global-icon', name: 'arrow-right', size: 18 %}
+                  </a>
+                {%- endif -%}
+              </div>
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- comment -%} ---------- Arrows (2+ slides, "Show arrows" on) ---------- {%- endcomment -%}
+      {%- if slide_count > 1 and section.settings.show_arrows -%}
+        <button type="button" class="slideshow__arrow slideshow__arrow--prev" data-slideshow-prev aria-label="{{ 'homepage.slideshow.previous' | t }}">
+          {% render 'global-icon', name: 'chevron-left', size: 18 %}
+        </button>
+        <button type="button" class="slideshow__arrow slideshow__arrow--next" data-slideshow-next aria-label="{{ 'homepage.slideshow.next' | t }}">
+          {% render 'global-icon', name: 'chevron-right', size: 18 %}
+        </button>
+      {%- endif -%}
+
+      {%- comment -%} ---------- Dots (2+ slides, "Show dots" on); current dot has aria-current ---------- {%- endcomment -%}
+      {%- if slide_count > 1 and section.settings.show_dots -%}
+        <div class="slideshow__dots">
+          {%- for block in section.blocks -%}
+            <button
+              type="button"
+              class="slideshow__dot"
+              data-slideshow-dot="{{ forloop.index0 }}"
+              aria-label="{{ 'homepage.slideshow.go_to_slide' | t: number: forloop.index }}"
+              {% if forloop.first %}aria-current="true"{% endif %}
+            ></button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["index"] → home page only (homepage- prefix).
+  Settings:
+  - Layout:     height (small / medium / large / full screen), transition (fade / slide)
+  - Autoplay:   autoplay, autoplay_speed (3–10 s)
+  - Controls:   show_arrows, show_dots
+  - Colors:     overlay_opacity (0–80%), text_color, accent_color (2nd heading line,
+                button, active dot), button_text_color
+  Blocks (max 6):
+  - slide → image, mobile_image, heading, heading_highlight (accent line),
+            subheading, button_label, button_link, alignment (left / center / right)
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Slideshow",
+  "tag": "div",
+  "class": "section-homepage-slideshow",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Height",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "full", "label": "Full screen" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "transition",
+      "label": "Transition",
+      "options": [
+        { "value": "fade", "label": "Fade" },
+        { "value": "slide", "label": "Slide" }
+      ],
+      "default": "fade"
+    },
+    {
+      "type": "header",
+      "content": "Autoplay"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Change slides automatically",
+      "info": "Pauses while the shopper hovers over the slideshow.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Change every",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Controls"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay",
+      "info": "Darkens the images so the text is easier to read.",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 45
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "info": "Second heading line, button and active dot.",
+      "default": "#c8102e"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "Recommended: 2400 × 1000 px or larger."
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image",
+          "info": "Optional. Recommended: 750 × 1000 px."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Timeless cuts"
+        },
+        {
+          "type": "text",
+          "id": "heading_highlight",
+          "label": "Heading (second line, accent color)",
+          "default": "New arrivals"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "Discover the finest in autumn workwear"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "Explore collection"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link",
+          "info": "The button is hidden until a link is set."
+        },
+        {
+          "type": "select",
+          "id": "alignment",
+          "label": "Text position",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "left"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slideshow",
+      "blocks": [
+        { "type": "slide" },
+        { "type": "slide" },
+        { "type": "slide" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,250 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "NN Fashion",
+    "theme_version": "1.0.0",
+    "theme_author": "NN Fashion",
+    "theme_documentation_url": "https://example.com/docs",
+    "theme_support_url": "https://example.com/support"
+  },
+  {
+    "name": "Contact",
+    "settings": [
+      {
+        "type": "text",
+        "id": "contact_phone",
+        "label": "Store phone number",
+        "info": "Shown in the header top bar and the mobile menu.",
+        "default": "+1(800) 123 4567"
+      }
+    ]
+  },
+  {
+    "name": "Social media",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Shown as icons in the footer. An icon only appears when its link is filled in."
+      },
+      {
+        "type": "text",
+        "id": "social_facebook",
+        "label": "Facebook",
+        "info": "https://facebook.com/yourstore"
+      },
+      {
+        "type": "text",
+        "id": "social_instagram",
+        "label": "Instagram",
+        "info": "https://instagram.com/yourstore"
+      },
+      {
+        "type": "text",
+        "id": "social_pinterest",
+        "label": "Pinterest",
+        "info": "https://pinterest.com/yourstore"
+      },
+      {
+        "type": "text",
+        "id": "social_youtube",
+        "label": "YouTube",
+        "info": "https://youtube.com/@yourstore"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok",
+        "label": "TikTok",
+        "info": "https://tiktok.com/@yourstore"
+      },
+      {
+        "type": "text",
+        "id": "social_x",
+        "label": "X (Twitter)",
+        "info": "https://x.com/yourstore"
+      }
+    ]
+  },
+  {
+    "name": "Product cards",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Applies to product cards everywhere: home page, collection pages and search results."
+      },
+      {
+        "type": "select",
+        "id": "card_sale_badge",
+        "label": "Sale badge",
+        "options": [
+          { "value": "percent", "label": "Discount percent (-30%)" },
+          { "value": "text", "label": "\"Sale\" text" },
+          { "value": "none", "label": "Hidden" }
+        ],
+        "default": "percent"
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_swatches",
+        "label": "Show color swatches",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "card_color_option_names",
+        "label": "Color option names",
+        "info": "Product option names treated as colors. Separate with commas.",
+        "default": "Color, Colour"
+      },
+      {
+        "type": "textarea",
+        "id": "swatch_colors",
+        "label": "Custom swatch colors",
+        "info": "One per line, \"Name: color\", e.g. \"Sand: #d8c3a0\". Adds to or overrides the built-in list (Cream, Charcoal, Camel, Sage…). Patterns like \"Black Floral\" use their first color word."
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_sizes",
+        "label": "Show sizes",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "card_size_option_names",
+        "label": "Size option names",
+        "info": "Product option names treated as sizes. Separate with commas.",
+        "default": "Size"
+      },
+      {
+        "type": "range",
+        "id": "card_max_values",
+        "label": "Swatches/sizes before \"+N\"",
+        "min": 2,
+        "max": 10,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "header",
+        "content": "Quick actions"
+      },
+      {
+        "type": "checkbox",
+        "id": "card_quick_actions",
+        "label": "Show quick actions on cards",
+        "info": "Floating buttons on the product image: on hover on computers, always on touch screens.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_wishlist",
+        "label": "Wishlist button",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_compare",
+        "label": "Compare button",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "card_show_add_to_cart",
+        "label": "Add to cart button",
+        "info": "Products with options (size, color…) open a quick-add popup to choose them first.",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "card_compare_limit",
+        "label": "Products to compare at most",
+        "min": 2,
+        "max": 6,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "checkbox",
+        "id": "compare_float_enable",
+        "label": "Floating compare button",
+        "info": "Shown at the side of the screen once a product is added to compare. Opens the compare page (/pages/compare) in a new tab.",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "compare_float_position",
+        "label": "Floating compare button position",
+        "options": [
+          { "value": "right", "label": "Right edge" },
+          { "value": "left", "label": "Left edge" }
+        ],
+        "default": "right"
+      }
+    ]
+  },
+  {
+    "name": "Customer accounts",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "The theme's sign-in / sign-up forms and account pages only work with legacy customer accounts (Shopify admin > Settings > Customer accounts). New customer accounts always use Shopify's own sign-in page."
+      },
+      {
+        "type": "select",
+        "id": "account_forms",
+        "label": "Sign-in method",
+        "options": [
+          { "value": "shopify", "label": "Shopify sign-in page (new customer accounts)" },
+          { "value": "theme", "label": "Theme forms (legacy customer accounts)" }
+        ],
+        "default": "shopify",
+        "info": "Must match Settings > Customer accounts. Shopify page: the popup shows a \"Continue to sign in\" button. Theme forms: sign-in and sign-up happen inside the popup."
+      },
+      {
+        "type": "checkbox",
+        "id": "wishlist_require_login",
+        "label": "Wishlist for signed-in customers only",
+        "info": "Signed-out shoppers who tap ♡ or open the wishlist see the sign-in popup.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Sign-in popup and pages"
+      },
+      {
+        "type": "image_picker",
+        "id": "account_image",
+        "label": "Side panel image",
+        "info": "Optional. Shown behind the dark side panel. 900 × 1200 px recommended."
+      },
+      {
+        "type": "range",
+        "id": "account_image_opacity",
+        "label": "Image dimming",
+        "min": 0,
+        "max": 90,
+        "step": 5,
+        "unit": "%",
+        "default": 55
+      },
+      {
+        "type": "text",
+        "id": "account_heading",
+        "label": "Side panel heading",
+        "info": "Leave empty to use the translated default (\"Your style, saved.\")."
+      },
+      {
+        "type": "textarea",
+        "id": "account_text",
+        "label": "Side panel text",
+        "info": "Leave empty to use the translated default."
+      },
+      {
+        "type": "checkbox",
+        "id": "account_show_perks",
+        "label": "Show member perks",
+        "info": "Wishlist, faster checkout and order tracking.",
+        "default": true
+      }
+    ]
+  }
+]

@@ -1,0 +1,608 @@
+{%- comment -%}
+  ============================================================================
+  Section: Product main (product page: gallery + product info)
+  ----------------------------------------------------------------------------
+      ┌──┐ ┌──────────────────────┐   [New arrival]
+      │▣ │ │                      │   Essential Oversized Hoodie
+      │▢ │ │     main image       │   ★★★★★ 4.8 (128 reviews)
+      │▢ │ │   (swipe / arrows)   │   $59.99  $89.99  [33% OFF]
+      │▢ │ │                  (🔍)│   Short description…
+      │⌄ │ └──────────────────────┘   ─────────────────────────
+      └──┘                             COLOR: Charcoal   (●)(●)(●)
+                                       SIZE: M     📏 Size guide
+                                       [S] [M] [L] [XL] [XXL]
+                                       [   ADD TO CART   ] [♡]
+                                       🚚 Free shipping  ↺ Returns  🔒 Secure
+
+  Gallery: thumbnails on the left (a row under the image on phones); the
+  main image is a swipeable slider; ⌄ shows the next image; 🔍 opens a
+  full-size view. Choosing a variant shows that variant's image.
+  Variants: color options (Theme settings > Product cards > Color option
+  names) are swatches, other options are buttons — the same look as the
+  quick-add popup (classes quick-add__swatch / quick-add__value from
+  global-product-card.css). Values with no available variant are crossed
+  out. Price, discount badge, button state, image and the URL (?variant=)
+  follow the selection (assets/product.js).
+  Add to cart: Shopify product form; with JS it adds without leaving the
+  page (toast + header cart refresh), without JS it goes to the cart.
+  ♡: same wishlist as the product cards (signed out → sign-in popup);
+  the info column is marked data-product-card for global-product-card.js.
+
+  Data sources:
+  - Badge: metafield custom.badge (text), else "New arrival" when the
+    product is tagged "new" / "new-arrival"
+  - Rating: metafields reviews.rating + reviews.rating_count (set by review apps)
+  - Short description: metafield custom.short_description, else the start
+    of the product description
+  - Size guide: the page chosen in the section settings (opens in a popup)
+
+  Used in:   templates/product.json ("main")
+  CSS:       assets/product.css (classes .product*, .product-gallery*)
+             assets/global-product-card.css (swatch / size / add button look)
+  JS:        assets/product.js (+ window.NNCards from global-product-card.js)
+  Text:      locales → products.product.*, products.card_actions.*
+  Editable:  Theme editor > Products > Default product
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign form_id = 'ProductForm-' | append: section.id
+
+  # Option names treated as colors / sizes (same settings as product cards)
+  assign color_names = settings.card_color_option_names | downcase | split: ','
+  assign size_names = settings.card_size_option_names | downcase | split: ','
+
+  # Sale: price, crossed-out price and "33% off"
+  assign on_sale = false
+  if current_variant.compare_at_price > current_variant.price
+    assign on_sale = true
+    assign percent_off = current_variant.compare_at_price | minus: current_variant.price | times: 100.0 | divided_by: current_variant.compare_at_price | round
+  endif
+
+  # Badge: metafield, else "New arrival" for products tagged new / new-arrival
+  assign badge = product.metafields.custom.badge.value
+  if badge == blank
+    for tag in product.tags
+      assign tag_handle = tag | handle
+      if tag_handle == 'new' or tag_handle == 'new-arrival'
+        assign badge = 'products.product.new_arrival' | t
+      endif
+    endfor
+  endif
+
+  # Rating from a reviews app (standard metafields)
+  assign rating = product.metafields.reviews.rating.value
+  assign rating_count = product.metafields.reviews.rating_count.value | default: 0
+
+  # Short description
+  assign short_description = product.metafields.custom.short_description.value
+  if short_description == blank
+    assign short_description = product.description | strip_html | truncatewords: section.settings.short_description_words
+  endif
+
+  # Image ratio
+  case section.settings.image_ratio
+    when 'square'
+      assign gallery_ratio = '1 / 1'
+    when 'portrait'
+      assign gallery_ratio = '4 / 5'
+    else
+      assign gallery_ratio = 'auto'
+  endcase
+
+  # Index of the media to show first (the selected variant's image)
+  assign start_media_id = current_variant.featured_media.id | default: product.featured_media.id
+-%}
+
+<section
+  class="page-width product"
+  data-product
+  data-scroll-fx="product-main"
+  data-section-id="{{ section.id }}"
+  data-product-url="{{ product.url }}"
+  style="--gallery-ratio: {{ gallery_ratio }};"
+>
+  {%- comment -%} ======================= Gallery ======================= {%- endcomment -%}
+  <div
+    class="product-gallery"
+    data-gallery
+    data-text-counter="{{ 'products.product.image_counter' | t: number: '[number]', total: '[total]' }}"
+    aria-label="{{ 'products.product.gallery_label' | t }}"
+    role="region"
+  >
+    {%- comment -%}
+      Main image slider (scroll-snap; swipe on phones). Rounded frame with
+      ‹ › glass arrows (on hover, desktop), "1 / 5" pill, progress bars and,
+      with "Zoom on hover", a lens that follows the mouse (click = full zoom).
+    {%- endcomment -%}
+    <div class="product-gallery__main{% if section.settings.hover_zoom and section.settings.enable_zoom %} product-gallery__main--hover-zoom{% endif %}" data-gallery-main>
+      <ul class="product-gallery__slides" data-gallery-slides role="list">
+        {%- for media in product.media -%}
+          <li
+            class="product-gallery__slide"
+            data-media-id="{{ media.id }}"
+            {% if media.media_type == 'image' %}data-zoom-src="{{ media | image_url: width: 2000 }}"{% endif %}
+          >
+            {%- if media.media_type == 'image' -%}
+              {%- liquid
+                assign image_loading = 'lazy'
+                if forloop.first
+                  assign image_loading = 'eager'
+                endif
+              -%}
+              {{
+                media
+                | image_url: width: 1400
+                | image_tag:
+                  class: 'product-gallery__image',
+                  widths: '400, 600, 800, 1000, 1200, 1400',
+                  sizes: '(min-width: 990px) 46vw, 100vw',
+                  loading: image_loading,
+                  alt: media.alt
+              }}
+            {%- else -%}
+              {%- comment -%} Video / 3D model: Shopify's player {%- endcomment -%}
+              <div class="product-gallery__media">{{ media | media_tag: image_size: '1400x' }}</div>
+            {%- endif -%}
+          </li>
+        {%- else -%}
+          <li class="product-gallery__slide">
+            {{ 'product-apparel-1' | placeholder_svg_tag: 'product-gallery__image product-gallery__placeholder' }}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if section.settings.enable_zoom and product.media.size > 0 -%}
+        <button type="button" class="product-gallery__zoom" data-gallery-zoom aria-label="{{ 'products.product.zoom' | t }}">
+          {% render 'global-icon', name: 'zoom', size: 20 %}
+        </button>
+      {%- endif -%}
+
+      {%- if product.media.size > 1 -%}
+        {%- comment -%} "2 / 5" counter pill {%- endcomment -%}
+        <span class="product-gallery__counter" data-gallery-counter aria-hidden="true">1 / {{ product.media.size }}</span>
+
+        {%- comment -%} ‹ › arrows {%- endcomment -%}
+        <button type="button" class="product-gallery__arrow product-gallery__arrow--prev" data-gallery-prev aria-label="{{ 'products.product.previous_image' | t }}">
+          {% render 'global-icon', name: 'chevron-left', size: 20 %}
+        </button>
+        <button type="button" class="product-gallery__arrow product-gallery__arrow--next" data-gallery-next aria-label="{{ 'products.product.next_image' | t }}">
+          {% render 'global-icon', name: 'chevron-right', size: 20 %}
+        </button>
+
+        {%- comment -%} Progress bars: one per image, the current one filled {%- endcomment -%}
+        <div class="product-gallery__bars" aria-hidden="true">
+          {%- for media in product.media -%}
+            <span class="product-gallery__bar{% if forloop.first %} is-active{% endif %}" data-gallery-bar></span>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} Thumbnails (left rail on desktop, row below on phones) {%- endcomment -%}
+    {%- if product.media.size > 1 -%}
+      <div class="product-gallery__side">
+        <ul class="product-gallery__thumbs" data-gallery-thumbs role="list">
+          {%- for media in product.media -%}
+            <li>
+              <button
+                type="button"
+                class="product-gallery__thumb"
+                data-gallery-thumb="{{ forloop.index0 }}"
+                aria-label="{{ 'products.product.show_image' | t: number: forloop.index }}"
+                aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+              >
+                {{ media.preview_image | image_url: width: 180 | image_tag: loading: 'lazy', alt: '', class: 'product-gallery__thumb-image' }}
+              </button>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%}
+    ======================= Info =======================
+    data-product-card + data-product-handle: lets global-product-card.js run
+    the ♡ button (wishlist) exactly like on product cards.
+  {%- endcomment -%}
+  <div
+    class="product__info{% if section.settings.sticky_info %} product__info--sticky{% endif %}"
+    data-product-card
+    data-product-handle="{{ product.handle }}"
+    data-product-url="{{ product.url }}"
+  >
+    {%- if section.settings.show_badge and badge != blank -%}
+      <span class="product__badge">{{ badge | escape }}</span>
+    {%- endif -%}
+
+    <h1 class="product__title" data-product-title>{{ product.title | escape }}</h1>
+
+    {%- comment -%} ★★★★★ 4.8 (128 reviews) {%- endcomment -%}
+    {%- if section.settings.show_rating and rating != blank -%}
+      {%- liquid
+        assign rating_value = rating.rating
+        assign rating_stars = rating_value | round
+        assign rating_text = rating_value | round: 1
+      -%}
+      <div class="product__rating">
+        <span class="product__stars" aria-hidden="true">
+          {%- for i in (1..5) -%}
+            <span class="product__star{% if i <= rating_stars %} is-filled{% endif %}">{% render 'global-icon', name: 'star', size: 16 %}</span>
+          {%- endfor -%}
+        </span>
+        <span class="visually-hidden">{{ 'products.product.rating' | t: rating: rating_text }}</span>
+        <span class="product__rating-text" aria-hidden="true">{{ 'products.product.reviews' | t: rating: rating_text, number: rating_count }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} Price · crossed-out price · "33% off" (updated by product.js) {%- endcomment -%}
+    <div class="product__price-row" data-price-row data-text-discount="{{ 'products.product.discount_off' | t: percent: '[percent]' }}">
+      <span class="product__price{% if on_sale %} product__price--sale{% endif %}" data-price>{{ current_variant.price | money }}</span>
+      <s class="product__compare" data-compare-price {% unless on_sale %}hidden{% endunless %}>
+        <span class="visually-hidden">{{ 'products.regular_price' | t }}</span>
+        <span data-compare-amount>{{ current_variant.compare_at_price | money }}</span>
+      </s>
+      <span class="product__discount" data-discount {% unless on_sale %}hidden{% endunless %}>
+        {%- if on_sale -%}{{ 'products.product.discount_off' | t: percent: percent_off }}{%- endif -%}
+      </span>
+    </div>
+
+    {%- if section.settings.show_short_description and short_description != blank -%}
+      <p class="product__short">{{ short_description }}</p>
+    {%- endif -%}
+
+    <hr class="product__divider">
+
+    {%- comment -%} ======================= Options ======================= {%- endcomment -%}
+    {%- unless product.has_only_default_variant -%}
+      <div class="product__options" data-options>
+        {%- for option in product.options_with_values -%}
+          {%- liquid
+            assign option_index = forloop.index0
+            assign option_down = option.name | downcase | strip
+            assign is_color = false
+            assign is_size = false
+            for name in color_names
+              assign clean_name = name | strip
+              if clean_name == option_down
+                assign is_color = true
+              endif
+            endfor
+            for name in size_names
+              assign clean_name = name | strip
+              if clean_name == option_down
+                assign is_size = true
+              endif
+            endfor
+          -%}
+          <fieldset class="product-option" data-option="{{ option_index }}">
+            <div class="product-option__head">
+              <legend class="product-option__legend">
+                {{ option.name | escape }}: <b data-option-selected>{{ option.selected_value | escape }}</b>
+              </legend>
+              {%- if is_size and section.settings.size_guide_page != blank -%}
+                <button type="button" class="product-option__guide" data-size-guide-open>
+                  {% render 'global-icon', name: 'ruler', size: 16 %}
+                  {{ 'products.product.size_guide' | t }}
+                </button>
+              {%- endif -%}
+            </div>
+
+            <div class="quick-add__values product-option__values">
+              {%- for value in option.values -%}
+                {%- if is_color -%}
+                  {%- comment -%}
+                    Swatch color: Shopify's swatch (color or image), else the color
+                    list in snippets/global-swatch-color.liquid (Cream, Charcoal,
+                    "Black Floral" → black, …). The grey comes first, in case the
+                    browser doesn't understand the color.
+                  {%- endcomment -%}
+                  {%- liquid
+                    capture css_color
+                      render 'global-swatch-color', value: value.name
+                    endcapture
+                    if value.swatch.image
+                      assign swatch_url = value.swatch.image | image_url: width: 80
+                      assign swatch_style = 'background: #cccccc url(' | append: swatch_url | append: ') center / cover;'
+                    elsif value.swatch.color
+                      assign swatch_style = 'background: ' | append: value.swatch.color | append: ';'
+                    else
+                      assign swatch_style = 'background: #cccccc; background: ' | append: css_color | append: ';'
+                    endif
+                  -%}
+                  <button
+                    type="button"
+                    class="quick-add__swatch product-option__swatch"
+                    style="{{ swatch_style }}"
+                    data-option-index="{{ option_index }}"
+                    data-option-value="{{ value | escape }}"
+                    aria-pressed="{% if value.selected %}true{% else %}false{% endif %}"
+                    aria-label="{{ value | escape }}"
+                    title="{{ value | escape }}"
+                  ></button>
+                {%- else -%}
+                  <button
+                    type="button"
+                    class="quick-add__value product-option__value"
+                    data-option-index="{{ option_index }}"
+                    data-option-value="{{ value | escape }}"
+                    aria-pressed="{% if value.selected %}true{% else %}false{% endif %}"
+                  >
+                    {{- value | escape -}}
+                  </button>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </fieldset>
+        {%- endfor -%}
+      </div>
+    {%- endunless -%}
+
+    {%- comment -%} ======================= Buy ======================= {%- endcomment -%}
+    {%- form 'product', product, id: form_id, class: 'product__form', novalidate: 'novalidate', data-product-form: 'true' -%}
+      <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-input>
+
+      {%- comment -%} Without JS: a plain variant list instead of the buttons above {%- endcomment -%}
+      <noscript>
+        <label class="product__noscript">
+          {{ 'products.product.variant_label' | t }}
+          <select name="id">
+            {%- for variant in product.variants -%}
+              <option value="{{ variant.id }}" {% if variant == current_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
+                {{ variant.title | escape }} – {{ variant.price | money }}
+              </option>
+            {%- endfor -%}
+          </select>
+        </label>
+      </noscript>
+
+      <div class="product__buy">
+        <button
+          type="submit"
+          name="add"
+          class="button button--primary button--lg quick-add__submit product__add"
+          data-magnetic
+          data-add-button
+          data-text-add="{{ 'products.product.add_to_cart' | t }}"
+          data-text-sold-out="{{ 'products.product.sold_out' | t }}"
+          data-text-unavailable="{{ 'products.product.unavailable' | t }}"
+          {% unless current_variant.available %}disabled{% endunless %}
+        >
+          {% render 'global-icon', name: 'cart', size: 20 %}
+          <span data-add-label>
+            {%- if current_variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}
+          </span>
+        </button>
+
+        {%- comment -%} ♡ Wishlist (global-product-card.js; aria-pressed/label kept in sync there) {%- endcomment -%}
+        {%- if settings.card_show_wishlist -%}
+          <button
+            type="button"
+            class="button button--outline button--lg button--icon product__wishlist"
+            data-card-action="wishlist"
+            aria-pressed="false"
+            aria-label="{{ 'products.card_actions.wishlist' | t }}"
+          >
+            {% render 'global-icon', name: 'heart', size: 22 %}
+          </button>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} Shop Pay / PayPal "Buy it now" buttons {%- endcomment -%}
+      {%- if section.settings.show_dynamic_checkout -%}
+        <div class="product__dynamic">{{ form | payment_button }}</div>
+      {%- endif -%}
+
+      <p class="product__error" role="alert" data-product-error hidden></p>
+    {%- endform -%}
+
+    {%- comment -%} ======================= Trust row (blocks) ======================= {%- endcomment -%}
+    {%- if section.blocks.size > 0 -%}
+      <ul class="product__trust" role="list">
+        {%- for block in section.blocks -%}
+          <li class="product__trust-item" {{ block.shopify_attributes }}>
+            <span class="product__trust-icon" aria-hidden="true">{% render 'global-icon', name: block.settings.icon, size: 20 %}</span>
+            <span>
+              <b>{{ block.settings.title | escape }}</b>
+              {%- if block.settings.text != blank -%}<small>{{ block.settings.text | escape }}</small>{%- endif -%}
+            </span>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} Variant data for product.js (JSON, not executed) {%- endcomment -%}
+  <script type="application/json" data-product-json>
+    {
+      "startMediaId": {{ start_media_id | json }},
+      "variants": [
+        {%- for variant in product.variants -%}
+          {
+            "id": {{ variant.id }},
+            "options": {{ variant.options | json }},
+            "available": {{ variant.available | json }},
+            "price": {{ variant.price | json }},
+            "compareAtPrice": {{ variant.compare_at_price | default: 0 | json }},
+            "priceFormatted": {{ variant.price | money | json }},
+            "compareFormatted": {{ variant.compare_at_price | money | json }},
+            "mediaId": {{ variant.featured_media.id | json }}
+          }{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ]
+    }
+  </script>
+
+  {%- comment -%} ======================= Popups ======================= {%- endcomment -%}
+  {%- comment -%} Full-size image (🔍) {%- endcomment -%}
+  {%- if section.settings.enable_zoom -%}
+    <dialog class="product-dialog product-dialog--zoom" data-zoom-dialog aria-label="{{ 'products.product.zoom' | t }}">
+      <button type="button" class="product-dialog__close" data-dialog-close aria-label="{{ 'products.product.close' | t }}">
+        {% render 'global-icon', name: 'close', size: 22 %}
+      </button>
+      {%- comment -%} src set by product.js to the current image's 2000px version {%- endcomment -%}
+      <img class="product-dialog__image" alt="" width="2000" height="2000" data-zoom-image>
+    </dialog>
+  {%- endif -%}
+
+  {%- comment -%} Size guide (content of the chosen page) {%- endcomment -%}
+  {%- if section.settings.size_guide_page != blank -%}
+    <dialog class="product-dialog product-dialog--guide" data-size-guide aria-labelledby="SizeGuideTitle-{{ section.id }}">
+      <div class="product-dialog__head">
+        <h2 class="product-dialog__title" id="SizeGuideTitle-{{ section.id }}">{{ section.settings.size_guide_page.title | escape }}</h2>
+        <button type="button" class="product-dialog__close" data-dialog-close aria-label="{{ 'products.product.close' | t }}">
+          {% render 'global-icon', name: 'close', size: 22 %}
+        </button>
+      </div>
+      <div class="product-dialog__content">{{ section.settings.size_guide_page.content }}</div>
+    </dialog>
+  {%- endif -%}
+</section>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["product"] → only on product pages.
+  Settings: image_ratio (original / portrait 4:5 / square), enable_zoom,
+            hover_zoom (desktop lens that follows the mouse),
+            sticky_info (info column stays in view while scrolling), show_badge,
+            show_rating, show_short_description + short_description_words,
+            size_guide_page, show_dynamic_checkout
+  Blocks:   trust (icon, title, text) — the small row under the buttons, max 4
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Product information",
+  "tag": "div",
+  "class": "section-product-main",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Gallery"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "original", "label": "Original" },
+        { "value": "portrait", "label": "Portrait (4:5)" },
+        { "value": "square", "label": "Square (1:1)" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_zoom",
+      "label": "Enable image zoom",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hover_zoom",
+      "label": "Zoom on hover",
+      "info": "Desktop: the photo enlarges and follows the mouse; a click opens the full-size zoom. Needs image zoom.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Product info"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_info",
+      "label": "Keep info in view while scrolling",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "Show badge",
+      "info": "Product metafield custom.badge, or \"New arrival\" for products tagged \"new\".",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show star rating",
+      "info": "Needs a reviews app that fills the reviews.rating metafield.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_short_description",
+      "label": "Show short description",
+      "info": "Product metafield custom.short_description, or the start of the description.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "short_description_words",
+      "label": "Short description length (words)",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "default": 30
+    },
+    {
+      "type": "page",
+      "id": "size_guide_page",
+      "label": "Size guide page",
+      "info": "Shows a \"Size guide\" link next to the size option, opening this page in a popup."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dynamic_checkout",
+      "label": "Show \"Buy it now\" buttons",
+      "info": "Shop Pay, PayPal… when enabled in Settings > Payments.",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust",
+      "name": "Trust badge",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "shield", "label": "Shield" },
+            { "value": "box", "label": "Box" },
+            { "value": "chat", "label": "Chat" },
+            { "value": "gift", "label": "Gift" },
+            { "value": "star", "label": "Star" }
+          ],
+          "default": "truck"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Free shipping"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "On orders over $99"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product information"
+    }
+  ]
+}
+{% endschema %}

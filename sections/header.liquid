@@ -1,0 +1,678 @@
+{%- comment -%}
+  ============================================================================
+  Section: Header (main header)
+  ----------------------------------------------------------------------------
+  Desktop:
+    Row 1: [ Search bar ]        [ LOGO ]        [ Account ][ Gifts ][ Cart ]
+    Row 2:            main menu with mega menus (centered)
+  Mobile:
+    Row 1: [ ☰ ]                 [ LOGO ]                 [ Account ][ Cart ]
+    Row 2: [ Search bar (full width) ]
+    The ☰ button opens the menu drawer (snippets/header-drawer.liquid).
+
+  Search popup (live results after N characters) → snippets/header-search.liquid
+  Mega menus (columns + promo card)               → snippets/header-mega-menu.liquid
+
+  Used in:   sections/header-group.json ("header")
+  Snippets:  header-search, header-mega-menu, header-drawer, global-icon
+  CSS:       assets/header.css (classes .site-header*, .main-menu*, .mega-menu*)
+             assets/header-search.css (search popup)
+  JS:        assets/header.js (menu drawer)
+             assets/header-search.js (search popup)
+  Editable:  Theme editor > Header > Header
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign menu = section.settings.menu
+  assign logo_text = section.settings.logo_text | default: shop.name
+
+  # Logo is an h1 on the home page only (other pages have their own h1)
+  if template.name == 'index'
+    assign logo_tag = 'h1'
+  else
+    assign logo_tag = 'div'
+  endif
+
+  # Icon labels: the theme editor text if filled in, otherwise the
+  # translated default from locales (header.account / account_logged_in / gifts)
+  if section.settings.account_label != blank
+    assign account_label = section.settings.account_label
+  else
+    assign account_label = 'header.account' | t
+  endif
+  if section.settings.account_label_logged_in != blank
+    assign account_label_logged_in = section.settings.account_label_logged_in
+  else
+    assign account_label_logged_in = 'header.account_logged_in' | t
+  endif
+  if section.settings.gift_label != blank
+    assign gift_label = section.settings.gift_label
+  else
+    assign gift_label = 'header.gifts' | t
+  endif
+
+  # Wishlist / compare icon links: the page chosen in the settings, else the
+  # store's page with the handle "wishlist" / "compare" (/pages/wishlist…)
+  assign wishlist_url = section.settings.wishlist_page.url | default: pages.wishlist.url
+  assign compare_url = section.settings.compare_page.url | default: pages.compare.url
+
+  # Menu items to highlight (e.g. "On sale"), compared as handles so
+  # "On Sale", "on sale" and "ON SALE" all match
+  assign highlight_handles = section.settings.highlight_links | split: ','
+  assign highlighted = ''
+  for item in highlight_handles
+    assign handle = item | strip | handleize
+    assign highlighted = highlighted | append: '|' | append: handle | append: '|'
+  endfor
+-%}
+
+{%- comment -%}
+  Wrapper. Color/size settings are passed to CSS as custom properties.
+  Modifier classes:
+  - site-header--sticky         → header stays at the top while scrolling
+  - site-header--labels-<pos>   → icon labels beside / below / hidden
+{%- endcomment -%}
+<header
+  class="site-header site-header--labels-{{ section.settings.icon_labels }}{% if section.settings.sticky %} site-header--sticky{% endif %}"
+  style="
+    --header-bg: {{ section.settings.background_color }};
+    --header-text: {{ section.settings.text_color }};
+    --header-border: {{ section.settings.border_color }};
+    --header-highlight: {{ section.settings.highlight_color }};
+    --cart-bg: {{ section.settings.cart_background }};
+    --cart-text: {{ section.settings.cart_text_color }};
+    --logo-width: {{ section.settings.logo_width }}px;
+    --logo-width-mobile: {{ section.settings.logo_width_mobile }}px;
+  "
+  data-header
+>
+  <div class="page-width">
+    <div class="site-header__main">
+      {%- comment -%} ---------- Mobile: menu (☰) button ---------- {%- endcomment -%}
+      <button
+        type="button"
+        class="site-header__icon site-header__menu-toggle"
+        data-drawer-open
+        aria-controls="HeaderDrawer"
+        aria-expanded="false"
+        aria-label="{{ 'header.open_menu' | t }}"
+      >
+        {% render 'global-icon', name: 'menu', size: 24 %}
+      </button>
+
+      {%- comment -%} ---------- Search bar + results popup ---------- {%- endcomment -%}
+      {%- if section.settings.show_search -%}
+        <div class="site-header__search">
+          {% render 'header-search',
+            placeholder: section.settings.search_placeholder,
+            min_chars: section.settings.search_min_chars,
+            product_limit: section.settings.search_product_limit,
+            show_collections: section.settings.search_show_collections,
+            show_popular: section.settings.search_show_popular,
+            popular_searches: section.settings.search_popular_terms,
+            show_history: section.settings.search_show_history
+          %}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%} ---------- Logo: image, or text + optional tagline ---------- {%- endcomment -%}
+      <{{ logo_tag }} class="site-header__logo">
+        <a href="{{ routes.root_url }}" class="site-header__logo-link">
+          {%- if section.settings.logo != blank -%}
+            {%- assign logo_sizes = section.settings.logo_width | append: 'px' -%}
+            {{ section.settings.logo | image_url: width: 600 | image_tag: alt: logo_text, class: 'site-header__logo-image', widths: '150, 300, 450, 600', sizes: logo_sizes, loading: 'eager' }}
+          {%- else -%}
+            <span class="site-header__logo-text">{{ logo_text | escape }}</span>
+          {%- endif -%}
+
+          {%- if section.settings.tagline != blank -%}
+            <span class="site-header__tagline">{{ section.settings.tagline | escape }}</span>
+          {%- endif -%}
+        </a>
+      </{{ logo_tag }}>
+
+      {%- comment -%} ---------- Right: Account / Gifts / Cart ---------- {%- endcomment -%}
+      <div class="site-header__icons">
+        {%- comment -%}
+          Account: only when customer accounts are turned on in Shopify admin.
+          Signed out → data-account-open makes the link open the sign-in popup
+          (snippets/global-account-popup.liquid) instead of the login page.
+        {%- endcomment -%}
+        {%- if section.settings.show_account and shop.customer_accounts_enabled -%}
+          <a
+            href="{{ routes.account_url }}"
+            class="site-header__icon site-header__icon--account"
+            {% if customer == nil %}data-account-open="login"{% endif %}
+          >
+            {% render 'global-icon', name: 'account', size: 20 %}
+            <span class="site-header__icon-label">
+              {%- if customer -%}{{ account_label_logged_in | escape }}{%- else -%}{{ account_label | escape }}{%- endif -%}
+            </span>
+          </a>
+        {%- endif -%}
+
+        {%- comment -%} Gifts: custom link (e.g. gift cards collection); hidden on mobile {%- endcomment -%}
+        {%- if section.settings.show_gift_link and section.settings.gift_link != blank -%}
+          <a href="{{ section.settings.gift_link }}" class="site-header__icon site-header__icon--gift">
+            {% render 'global-icon', name: 'gift', size: 20 %}
+            <span class="site-header__icon-label">{{ gift_label | escape }}</span>
+          </a>
+        {%- endif -%}
+
+        {%- comment -%}
+          Wishlist / compare: shown when switched on (settings) and the page
+          exists — the chosen page, else the page with the handle "wishlist" /
+          "compare". The count badges ([data-wishlist-count], [data-compare-count])
+          are filled by global-product-card.js from the shopper's saved lists
+          and stay hidden at 0.
+          Wishlist while signed out and "Wishlist for signed-in customers only"
+          is on (Theme settings > Customer accounts): the link opens the
+          sign-in popup, and after signing in the shopper lands on the wishlist.
+        {%- endcomment -%}
+        {%- if section.settings.show_wishlist and wishlist_url != blank -%}
+          <a
+            href="{{ wishlist_url }}"
+            class="site-header__icon site-header__icon--wishlist"
+            aria-label="{{ 'wishlist.header_label' | t }}"
+            {%- if customer == nil and settings.wishlist_require_login and shop.customer_accounts_enabled %}
+              data-account-open="login"
+              data-account-return="{{ wishlist_url }}"
+              data-account-message="{{ 'products.card_actions.login_for_wishlist' | t }}"
+            {%- endif %}
+          >
+            <span class="site-header__icon-wrap">
+              {% render 'global-icon', name: 'heart', size: 20 %}
+              <span class="site-header__count" data-wishlist-count hidden>0</span>
+            </span>
+            <span class="site-header__icon-label">{{ 'wishlist.header_label' | t }}</span>
+          </a>
+        {%- endif -%}
+        {%- if section.settings.show_compare and compare_url != blank -%}
+          <a href="{{ compare_url }}" class="site-header__icon site-header__icon--compare" aria-label="{{ 'compare.header_label' | t }}">
+            <span class="site-header__icon-wrap">
+              {% render 'global-icon', name: 'compare', size: 20 %}
+              <span class="site-header__count" data-compare-count hidden>0</span>
+            </span>
+            <span class="site-header__icon-label">{{ 'compare.header_label' | t }}</span>
+          </a>
+        {%- endif -%}
+
+        {%- comment -%}
+          Cart button: bag icon + item count badge + cart total.
+          data-cart-count / data-cart-total let a future cart drawer update them.
+        {%- endcomment -%}
+        <a href="{{ routes.cart_url }}" class="button site-header__cart" aria-label="{{ 'header.cart_label' | t: count: cart.item_count }}">
+          <span class="site-header__cart-icon">
+            {% render 'global-icon', name: 'cart', size: 20 %}
+            <span class="site-header__cart-count" data-cart-count>{{ cart.item_count }}</span>
+          </span>
+          {%- if section.settings.show_cart_total -%}
+            <span class="site-header__cart-total" data-cart-total>{{ cart.total_price | money }}</span>
+          {%- endif -%}
+        </a>
+      </div>
+    </div>
+
+    {%- comment -%} ---------- Row 2: main menu (desktop only) ---------- {%- endcomment -%}
+    {%- if menu != blank and menu.links.size > 0 -%}
+      <nav class="main-menu" aria-label="{{ 'header.main_menu_label' | t }}">
+        <ul class="main-menu__list" role="list">
+          {%- for link in menu.links -%}
+            {%- liquid
+              assign link_handle = link.title | handleize
+              assign search_handle = '|' | append: link_handle | append: '|'
+              assign is_highlighted = false
+              if highlighted contains search_handle
+                assign is_highlighted = true
+              endif
+
+              # Promo card for this item: the "Mega menu promo" block whose
+              # "Menu item" setting matches this link's title
+              assign promo = false
+              for block in section.blocks
+                if block.type == 'mega_promo'
+                  assign promo_handle = block.settings.menu_item | handleize
+                  if promo_handle == link_handle
+                    assign promo = block
+                  endif
+                endif
+              endfor
+
+              # Mega menu when the item has child links or a promo card
+              assign has_mega = false
+              if link.links.size > 0 or promo
+                assign has_mega = true
+              endif
+            -%}
+            <li class="main-menu__item{% if has_mega %} main-menu__item--has-mega{% endif %}">
+              <a
+                href="{{ link.url }}"
+                class="main-menu__link{% if is_highlighted %} main-menu__link--highlight{% endif %}{% if link.active or link.child_active %} main-menu__link--active{% endif %}"
+                {% if link.active %}aria-current="page"{% endif %}
+              >
+                {{- link.title | escape -}}
+                {%- if has_mega -%}
+                  {% render 'global-icon', name: 'chevron-down', size: 14 %}
+                {%- endif -%}
+              </a>
+
+              {%- comment -%}
+                Mega menu: full-width panel with link columns + optional promo card.
+                Opens on hover and on keyboard focus (CSS :focus-within).
+              {%- endcomment -%}
+              {%- if has_mega -%}
+                {% render 'header-mega-menu', link: link, promo: promo %}
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} ---------- Mobile menu drawer ---------- {%- endcomment -%}
+  {% render 'header-drawer',
+    menu: menu,
+    secondary_menu: section.settings.drawer_secondary_menu,
+    highlighted: highlighted,
+    show_account: section.settings.show_account,
+    show_phone: section.settings.drawer_show_phone,
+    show_localization: section.settings.drawer_show_localization
+  %}
+</header>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.groups: ["header"] → can only be added to the header area.
+  Settings:
+  - Logo:          logo (image), logo_text, tagline, logo_width, logo_width_mobile
+  - Search:        show_search, search_placeholder, search_min_chars (characters
+                   typed before results load), search_product_limit,
+                   search_show_collections ("Categories" tab),
+                   search_show_popular + search_popular_terms, search_show_history
+  - Menu:          menu, highlight_links (comma-separated titles), highlight_color
+  - Icons:         icon_labels (beside / below / hidden), show_account,
+                   account_label, account_label_logged_in, show_gift_link,
+                   gift_label, gift_link, show_wishlist + wishlist_page,
+                   show_compare + compare_page (icons with a live count; empty
+                   page picker → the page with the handle wishlist / compare)
+  - Text labels (search_placeholder, account_label*, gift_label) have no default:
+    empty → translated text from locales/<language>.json (header.*, search.*).
+  - Cart:          show_cart_total, cart_background, cart_text_color
+  - Mobile menu:   drawer_secondary_menu, drawer_show_phone (uses the store
+                   phone from Theme settings), drawer_show_localization
+  - Behaviour:     sticky
+  - Colors:        background_color, text_color, border_color
+  Blocks:
+  - mega_promo → promo card inside a mega menu. Fields: menu_item (title of the
+                 top-level menu item it belongs to), image, badge, title, text,
+                 button_label, button_link, background/text/badge colors.
+                 One block per menu item.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Header",
+  "tag": "section",
+  "class": "section-header",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image",
+      "info": "Replaces the logo text when set."
+    },
+    {
+      "type": "text",
+      "id": "logo_text",
+      "label": "Logo text",
+      "info": "Leave empty to use the store name."
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline",
+      "info": "Small text under the logo, e.g. \"Men fashion\". Leave empty to hide."
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo image width (desktop)",
+      "min": 60,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "logo_width_mobile",
+      "label": "Logo image width (mobile)",
+      "min": 60,
+      "max": 250,
+      "step": 10,
+      "unit": "px",
+      "default": 130
+    },
+    {
+      "type": "header",
+      "content": "Search"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show search bar",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Placeholder text",
+      "info": "Leave empty to use the translated default (\"Search products...\")."
+    },
+    {
+      "type": "range",
+      "id": "search_min_chars",
+      "label": "Start searching after",
+      "info": "Number of characters the shopper types before results appear.",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "unit": "chr",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "search_product_limit",
+      "label": "Products in popup",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "search_show_collections",
+      "label": "Show \"Categories\" tab",
+      "info": "Lists matching collections.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "search_show_popular",
+      "label": "Show popular searches",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_popular_terms",
+      "label": "Popular searches",
+      "info": "Separate with commas.",
+      "default": "t-shirt, jeans, shoes, dress, jacket, watch, bag, hat, glasses"
+    },
+    {
+      "type": "checkbox",
+      "id": "search_show_history",
+      "label": "Show shopper's search history",
+      "info": "Saved in the shopper's own browser.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "default": "main-menu",
+      "info": "Items with sub-links open a mega menu. 3rd-level links become columns. Add promo cards with \"Mega menu promo\" blocks."
+    },
+    {
+      "type": "text",
+      "id": "highlight_links",
+      "label": "Highlighted menu items",
+      "info": "Menu item titles to show in the highlight color. Separate with commas.",
+      "default": "On sale"
+    },
+    {
+      "type": "color",
+      "id": "highlight_color",
+      "label": "Highlight color",
+      "default": "#c8102e"
+    },
+    {
+      "type": "header",
+      "content": "Icons"
+    },
+    {
+      "type": "select",
+      "id": "icon_labels",
+      "label": "Icon labels",
+      "options": [
+        { "value": "beside", "label": "Beside icon" },
+        { "value": "below", "label": "Below icon" },
+        { "value": "hidden", "label": "Hidden" }
+      ],
+      "default": "beside"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Show account",
+      "info": "Requires customer accounts to be turned on in Settings > Customer accounts.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "account_label",
+      "label": "Account label",
+      "info": "Leave empty to use the translated default (\"Account\")."
+    },
+    {
+      "type": "text",
+      "id": "account_label_logged_in",
+      "label": "Account label (logged in)",
+      "info": "Leave empty to use the translated default (\"My account\")."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_gift_link",
+      "label": "Show gifts link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "gift_label",
+      "label": "Gifts label",
+      "info": "Leave empty to use the translated default (\"Gifts\")."
+    },
+    {
+      "type": "url",
+      "id": "gift_link",
+      "label": "Gifts link",
+      "info": "Hidden until a link is set."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wishlist",
+      "label": "Show wishlist icon",
+      "info": "♡ icon with the number of saved products.",
+      "default": true
+    },
+    {
+      "type": "page",
+      "id": "wishlist_page",
+      "label": "Wishlist page",
+      "info": "Leave empty to use the page with the address /pages/wishlist (template \"wishlist\")."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare",
+      "label": "Show compare icon",
+      "info": "Off by default: compare is reached with the floating compare button on the right edge (Theme settings > Product cards).",
+      "default": false
+    },
+    {
+      "type": "page",
+      "id": "compare_page",
+      "label": "Compare page",
+      "info": "Leave empty to use the page with the address /pages/compare (template \"compare\")."
+    },
+    {
+      "type": "header",
+      "content": "Cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart_total",
+      "label": "Show cart total",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "cart_background",
+      "label": "Cart button background",
+      "default": "#c8102e"
+    },
+    {
+      "type": "color",
+      "id": "cart_text_color",
+      "label": "Cart button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Mobile menu"
+    },
+    {
+      "type": "link_list",
+      "id": "drawer_secondary_menu",
+      "label": "Secondary menu",
+      "info": "Shown under the main menu in the mobile drawer, e.g. Shop men / women / kids."
+    },
+    {
+      "type": "checkbox",
+      "id": "drawer_show_phone",
+      "label": "Show phone number",
+      "info": "Uses the phone number from Theme settings > Contact.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "drawer_show_localization",
+      "label": "Show currency and language selectors",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Behaviour"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Sticky header",
+      "info": "Header stays at the top while scrolling.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Divider line",
+      "default": "#ececec"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mega_promo",
+      "name": "Mega menu promo",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item",
+          "label": "Menu item",
+          "info": "Title of the top-level menu item this card appears in, e.g. \"All product\".",
+          "default": "All product"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Background image",
+          "info": "Optional. Shown behind the text with a dark layer."
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Badge",
+          "default": "Limited drop"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Streetwear essentials 2024"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Get up to 30% discount on first bundle orders."
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "Shop collection"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link",
+          "info": "The button is hidden until a link is set."
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Card background",
+          "default": "#1c1c1e"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Card text",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color",
+          "id": "badge_color",
+          "label": "Badge background",
+          "default": "#c8102e"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

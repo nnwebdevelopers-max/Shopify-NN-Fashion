@@ -1,0 +1,33 @@
+/*
+ * ============================================================================
+ * Template: Policy page (page.policy.json) — Privacy policy, Refund policy…
+ * ----------------------------------------------------------------------------
+ * Assign it in Shopify admin: Online Store > Pages > Privacy policy > Theme
+ * template: "policy". (Preview without assigning: /pages/privacy-policy?view=policy)
+ * With an empty page text it shows the matching policy from Settings >
+ * Policies (by the page address), so one template serves every policy page.
+ *
+ * Sections:
+ *   main → sections/policy-main.liquid (title, contents list, text, questions box)
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "policy-main",
+      "settings": {
+        "source": "auto",
+        "intro": "<p>How we collect, use and protect your personal information when you shop with us.</p>",
+        "show_contact": true,
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    }
+  },
+  "order": ["main"]
+}

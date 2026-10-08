@@ -1,0 +1,97 @@
+{%- comment -%}
+  ============================================================================
+  Section: Customer activate (activate account, from the invitation email)
+  ----------------------------------------------------------------------------
+  Opened from the "Activate your account" email a store sends to a customer
+  created in Shopify admin. The customer chooses a password, or declines.
+
+      ┌──────────────┬─────────────────────────────────┐
+      │ dark panel   │ Activate your account           │
+      │              │ ┌ Password ────────────────👁┐  │
+      │              │ ┌ Confirm password ────────👁┐  │
+      │              │ [ ACTIVATE ACCOUNT        → ]   │
+      │              │       Decline invitation        │
+      └──────────────┴─────────────────────────────────┘
+
+  Form: Shopify "activate_customer_password". The "Decline invitation"
+  button sends name="decline", which Shopify treats as a decline.
+
+  Used in:   templates/customers/activate_account.json
+  Snippets:  snippets/global-account-panel.liquid, snippets/global-account-field.liquid
+  CSS:       assets/global-account.css (classes .account-page, .account-card*, .account-form*)
+  JS:        assets/global-account.js (password show/hide, button spinner)
+  Text:      locales → customer.activate.*, customer.fields.*
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign label_password = 'customer.fields.password' | t
+  assign label_confirm = 'customer.fields.password_confirm' | t
+-%}
+
+<div class="page-width account-page">
+  <div class="account-card account-card--page" data-account-card>
+    {% render 'global-account-panel' %}
+
+    <div class="account-card__main">
+      {%- form 'activate_customer_password', class: 'account-form', novalidate: 'novalidate' -%}
+        <span class="account-form__badge" aria-hidden="true">{% render 'global-icon', name: 'lock', size: 26 %}</span>
+        <h1 class="account-form__title">{{ 'customer.activate.title' | t }}</h1>
+        <p class="account-form__subtitle">{{ 'customer.activate.subtitle' | t }}</p>
+
+        {%- if form.errors -%}
+          <div class="account-form__errors" role="alert">
+            <p>{{ 'customer.errors_title' | t }}</p>
+            {{ form.errors | default_errors }}
+          </div>
+        {%- endif -%}
+
+        {% render 'global-account-field',
+          id: 'ActivatePassword',
+          name: 'customer[password]',
+          type: 'password',
+          label: label_password,
+          autocomplete: 'new-password',
+          required: true
+        %}
+        {% render 'global-account-field',
+          id: 'ActivatePasswordConfirm',
+          name: 'customer[password_confirmation]',
+          type: 'password',
+          label: label_confirm,
+          autocomplete: 'new-password',
+          required: true
+        %}
+
+        <button type="submit" class="button button--lg button--full account-form__submit">
+          <span>{{ 'customer.activate.submit' | t }}</span>
+          {% render 'global-icon', name: 'arrow-right', size: 18 %}
+        </button>
+        <button type="submit" name="decline" value="{{ 'customer.activate.decline' | t }}" class="button button--link account-form__secondary" formnovalidate>
+          {{- 'customer.activate.decline' | t -}}
+        </button>
+      {%- endform -%}
+    </div>
+  </div>
+</div>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  No section settings: the side panel is set in Theme settings > Customer accounts.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Activate account",
+  "tag": "section",
+  "class": "section-customer-activate",
+  "enabled_on": {
+    "templates": ["customers/activate_account"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Side panel image, heading, text and perks: Theme settings > Customer accounts."
+    }
+  ]
+}
+{% endschema %}

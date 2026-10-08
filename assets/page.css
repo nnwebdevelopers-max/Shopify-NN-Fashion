@@ -1,0 +1,306 @@
+/* ============================================================================
+   page.css — Default page (About us, FAQ, policies…)
+   ----------------------------------------------------------------------------
+   Loaded by: layout/theme.liquid (page templates)
+   Styles:    sections/page-main.liquid (classes .page-main*, .page-rte)
+
+   Look: site heading style (bold uppercase title with a short red rule
+   under it), comfortable reading text, and styled content from the Shopify
+   page editor (.page-rte: headings, lists, links, images, tables, quotes,
+   embedded videos).
+   Settings → CSS custom properties: --page-max-width (1200px full /
+   none edge to edge / 960px medium / 760px narrow), --page-padding-top,
+   --page-padding-bottom. Edge to edge drops .page-width (.page-main--edge).
+   Scroll animations are at the end (reveal, word-by-word headings, image
+   zoom, grow panels, scroll-filled quote, title rule); JS: assets/page.js.
+   ============================================================================ */
+
+.page-main {
+  padding-top: var(--page-padding-top, 48px);
+  padding-bottom: var(--page-padding-bottom, 64px);
+}
+.page-main__inner {
+  max-width: var(--page-max-width, 1200px);
+  margin: 0 auto;
+}
+/* "Edge to edge": no page gutter, the content spans the whole screen.
+   The title keeps a small side margin so it doesn't touch the edges. */
+.page-main--edge .page-main__title {
+  margin-right: 16px;
+  margin-left: 16px;
+}
+/* Designed content often wraps everything in one box with its own
+   max-width (e.g. <div style="max-width:1200px;margin:0 auto">). In edge
+   to edge mode that outer box is stretched to the full screen too, so its
+   background reaches both edges. Its inner parts keep their own widths. */
+/* …and side padding leaves a centered 1200px column inside it, so the
+   parts inside (hero, images, rows of cards…) are laid out exactly as in
+   the original 1200px design — text lines and photos don't stretch across
+   a very wide screen — while the background reaches both screen edges.
+   On screens up to 1200px wide the padding is 0 (nothing changes). */
+.page-main--edge .page-rte > [style*="max-width"] {
+  max-width: none !important;
+  padding-right: max(0px, calc((100% - 1200px) / 2)) !important;
+  padding-left: max(0px, calc((100% - 1200px) / 2)) !important;
+}
+/* Designed content (own layout, inline styles) controls its own spacing:
+   no extra margin around its images */
+.page-rte [style] img,
+.page-rte img[style] {
+  margin: 0;
+}
+
+/* Title with a short red rule under it */
+.page-main__title {
+  margin: 0 0 32px;
+  padding-bottom: 16px;
+  position: relative;
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+.page-main__title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 56px;
+  height: 3px;
+  background: #c8102e;
+}
+.page-main--center .page-main__title {
+  text-align: center;
+}
+.page-main--center .page-main__title::after {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ---------- Page content from the Shopify editor ---------- */
+.page-rte {
+  color: #333333;
+  font-size: 16px;
+  line-height: 1.75;
+}
+.page-rte > :first-child {
+  margin-top: 0;
+}
+.page-rte > :last-child {
+  margin-bottom: 0;
+}
+.page-rte h2,
+.page-rte h3,
+.page-rte h4 {
+  margin: 1.8em 0 0.6em;
+  color: #121212;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.page-rte h2 {
+  font-size: 24px;
+}
+.page-rte h3 {
+  font-size: 20px;
+}
+.page-rte h4 {
+  font-size: 17px;
+}
+.page-rte p {
+  margin: 0 0 1.1em;
+}
+.page-rte ul,
+.page-rte ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.4em;
+}
+.page-rte li {
+  margin-bottom: 0.4em;
+}
+.page-rte li::marker {
+  color: #c8102e;
+}
+.page-rte a {
+  color: #121212;
+  font-weight: 600;
+  text-decoration-color: #c8102e;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.page-rte a:hover {
+  color: #c8102e;
+}
+.page-rte img {
+  height: auto;
+  margin: 1.5em 0;
+}
+.page-rte blockquote {
+  margin: 1.5em 0;
+  padding: 4px 0 4px 20px;
+  border-left: 3px solid #c8102e;
+  color: #121212;
+  font-size: 18px;
+  font-style: italic;
+}
+.page-rte hr {
+  margin: 2em 0;
+  border: 0;
+  border-top: 1px solid #e5e5e5;
+}
+/* Tables scroll sideways on phones instead of breaking the layout */
+.page-rte table {
+  display: block;
+  width: 100%;
+  margin: 1.5em 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.page-rte th,
+.page-rte td {
+  padding: 10px 12px;
+  border: 1px solid #e5e5e5;
+  text-align: left;
+}
+.page-rte th {
+  background: #f6f6f6;
+  font-weight: 700;
+}
+/* Embedded videos (YouTube / Vimeo iframes) keep a 16:9 shape */
+.page-rte iframe {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
+/* ==========================================================================
+   Scroll animations (assets/page.js, "Animate content on scroll")
+   All classes are added by page.js; without JS (or with reduced motion)
+   none of them exist, so the content simply shows.
+   ========================================================================== */
+
+/* ---------- 1. Reveal on scroll (.is-visible when it comes into view) ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s ease var(--reveal-delay, 0ms),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+/* Image blocks rise a little further */
+.reveal--image {
+  transform: translateY(40px);
+}
+/* Cards rise from lower and slightly smaller */
+.reveal--card {
+  transform: translateY(48px) scale(0.97);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+/* A word-by-word heading animates its words instead of the whole block */
+.reveal.split-words {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- 2. Word-by-word headings ----------
+   Each word is a small mask; its inner span slides up from below it. */
+.split-words .word {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.1em; /* room for descenders (g, y, p) */
+  margin-bottom: -0.1em;
+  vertical-align: top;
+}
+.split-words .word__inner {
+  display: inline-block;
+  transform: translateY(110%);
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--word-index, 0) * 45ms);
+}
+.split-words.is-visible .word__inner {
+  transform: none;
+}
+
+/* ---------- 3. Image zoom (scroll-linked) ----------
+   The frame clips; the image inside scales from 1.15 to 1 (--zoom). */
+.zoom-media {
+  display: block;
+  overflow: hidden;
+}
+.zoom-media img {
+  transform: scale(var(--zoom, 1));
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* ---------- 4. Grow panels (scroll-linked, desktop) ----------
+   --grow 0 → 1: the panel opens from 6% narrower on each side with
+   rounder corners to its full size. */
+.page-rte.is-animated .grow-panel {
+  clip-path: inset(
+    0 calc((1 - var(--grow, 1)) * 6%)
+    round calc(var(--panel-radius, 24px) + (1 - var(--grow, 1)) * 48px)
+  );
+  will-change: clip-path;
+}
+
+/* ---------- 5. Scroll-filled quote ----------
+   Words start faint and turn solid (.is-lit) as the quote scrolls up. */
+.fill-words .word {
+  opacity: 0.18;
+  transition: opacity 0.35s ease;
+}
+.fill-words .word.is-lit {
+  opacity: 1;
+}
+/* ---------- 6. After the entrance: quick transitions, hover lift on cards ---------- */
+.reveal.is-done {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  will-change: auto;
+}
+.reveal--card.is-done:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 36px -18px rgba(0, 0, 0, 0.35);
+}
+
+/* Page title: fades down, then its red rule draws in from the middle/left */
+[data-page-animate] .page-main__title {
+  animation: page-title-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+[data-page-animate] .page-main__title::after {
+  animation: page-rule-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+@keyframes page-title-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes page-rule-in {
+  from { width: 0; }
+  to { width: 56px; }
+}
+
+/* Reduced motion: page.js doesn't run; the title shows without moving */
+@media (prefers-reduced-motion: reduce) {
+  [data-page-animate] .page-main__title,
+  [data-page-animate] .page-main__title::after {
+    animation: none;
+  }
+}
+
+@media (max-width: 749px) {
+  .page-main {
+    padding-top: calc(var(--page-padding-top, 48px) * 0.6);
+    padding-bottom: calc(var(--page-padding-bottom, 64px) * 0.6);
+  }
+  .page-main__title {
+    margin-bottom: 24px;
+  }
+  .page-rte {
+    font-size: 15px;
+  }
+}

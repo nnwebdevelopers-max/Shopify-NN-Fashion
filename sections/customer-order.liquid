@@ -1,0 +1,218 @@
+{%- comment -%}
+  ============================================================================
+  Section: Customer order (one order, /account/orders/<id>)
+  ----------------------------------------------------------------------------
+      ← Back to account
+      ORDER #1004                       [Paid] [Fulfilled]
+      Placed on March 3, 2026
+      ┌────────────┐ ┌────────────────────────────┐ ┌──────────────┐
+      │ Dashboard  │ │ ITEMS                      │ │ SUMMARY      │
+      │ Addresses  │ │ ▢ Linen Shirt   $54 × 1 $54│ │ Subtotal …   │
+      │ Wishlist   │ │   Size: M · SKU …          │ │ Shipping …   │
+      │ Log out    │ │   Shipped on … [Track →]   │ │ Total  $79   │
+      └────────────┘ └────────────────────────────┘ │ SHIPPING TO  │
+                                                    │ BILLING      │
+                                                    └──────────────┘
+  - Cancelled orders show a red note with the date and reason.
+  - Each item shows its shipment (date, tracking number, tracking link)
+    once fulfilled.
+  - Status labels and discount titles come translated from Shopify.
+
+  Used in:   templates/customers/order.json
+  CSS:       assets/customer.css (classes .customer*, .customer-order*)
+  Text:      locales → customer.order.*
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign placed_date = order.created_at | date: format: 'month_day_year'
+  assign fulfillment = order.fulfillment_status | default: 'unfulfilled'
+-%}
+
+<section class="page-width customer customer-order">
+  <a href="{{ routes.account_url }}" class="customer-back">
+    {% render 'global-icon', name: 'arrow-left', size: 16 %}
+    {{ 'customer.order.back' | t }}
+  </a>
+
+  {%- comment -%} ---------- Title + status badges ---------- {%- endcomment -%}
+  <header class="customer-order__head">
+    <div>
+      <h1 class="customer-order__title">{{ 'customer.order.title' | t: name: order.name }}</h1>
+      <p class="customer-muted">{{ 'customer.order.placed_on' | t: date: placed_date }}</p>
+    </div>
+    <div class="customer-order__badges">
+      <span class="customer-badge customer-badge--{{ order.financial_status | handle }}">
+        {{- order.financial_status_label -}}
+      </span>
+      <span class="customer-badge customer-badge--{{ fulfillment | handle }}">
+        {{- order.fulfillment_status_label -}}
+      </span>
+    </div>
+  </header>
+
+  {%- if order.cancelled -%}
+    {%- assign cancelled_date = order.cancelled_at | date: format: 'month_day_year' -%}
+    <p class="customer-alert" role="status">
+      {{ 'customer.order.cancelled' | t: date: cancelled_date }}
+      {%- if order.cancel_reason_label != blank %}
+        · {{ 'customer.order.cancel_reason' | t: reason: order.cancel_reason_label }}
+      {%- endif -%}
+    </p>
+  {%- endif -%}
+
+  <div class="customer__layout">
+    {% render 'customer-nav', current: 'dashboard' %}
+
+    <div class="customer-order__grid">
+      {%- comment -%} ---------- Items ---------- {%- endcomment -%}
+      <div class="customer-box">
+        <h2 class="customer-box__title">{{ 'customer.order.items' | t }}</h2>
+        <ul class="customer-items" role="list">
+          {%- for line_item in order.line_items -%}
+            <li class="customer-item">
+              <div class="customer-item__media">
+                {%- if line_item.image -%}
+                  {{ line_item.image | image_url: width: 200 | image_tag: loading: 'lazy', alt: line_item.title, class: 'customer-item__image' }}
+                {%- else -%}
+                  {{ 'product-apparel-1' | placeholder_svg_tag: 'customer-item__image customer-item__placeholder' }}
+                {%- endif -%}
+                <span class="customer-item__qty" aria-hidden="true">{{ line_item.quantity }}</span>
+              </div>
+
+              <div class="customer-item__info">
+                {%- if line_item.url != blank -%}
+                  <a href="{{ line_item.url }}" class="customer-item__title">{{ line_item.product.title | default: line_item.title }}</a>
+                {%- else -%}
+                  <p class="customer-item__title">{{ line_item.title }}</p>
+                {%- endif -%}
+
+                {%- comment -%} Options (e.g. "Size: M") and product properties {%- endcomment -%}
+                {%- unless line_item.product.has_only_default_variant -%}
+                  {%- for option in line_item.options_with_values -%}
+                    <p class="customer-item__meta">{{ option.name }}: {{ option.value }}</p>
+                  {%- endfor -%}
+                {%- endunless -%}
+                {%- for property in line_item.properties -%}
+                  {%- assign first_char = property.first | slice: 0 -%}
+                  {%- if property.last != blank and first_char != '_' -%}
+                    <p class="customer-item__meta">{{ property.first }}: {{ property.last }}</p>
+                  {%- endif -%}
+                {%- endfor -%}
+                {%- if line_item.sku != blank -%}
+                  <p class="customer-item__meta">{{ 'customer.order.sku' | t: sku: line_item.sku }}</p>
+                {%- endif -%}
+
+                {%- comment -%} Price × quantity, with line discounts {%- endcomment -%}
+                <p class="customer-item__price">
+                  {%- if line_item.original_price != line_item.final_price -%}
+                    <s>{{ line_item.original_price | money }}</s>
+                  {%- endif -%}
+                  {{ line_item.final_price | money }}
+                  <span class="customer-muted">· {{ 'customer.order.quantity_short' | t: quantity: line_item.quantity }}</span>
+                </p>
+                {%- for discount in line_item.line_level_discount_allocations -%}
+                  <p class="customer-item__discount">{{ discount.discount_application.title }} (−{{ discount.amount | money }})</p>
+                {%- endfor -%}
+
+                {%- comment -%} Shipment: date, tracking number, tracking link {%- endcomment -%}
+                {%- if line_item.fulfillment -%}
+                  {%- assign shipped_date = line_item.fulfillment.created_at | date: format: 'month_day_year' -%}
+                  <div class="customer-item__shipment">
+                    {% render 'global-icon', name: 'truck', size: 16 %}
+                    <span>{{ 'customer.order.shipped_on' | t: date: shipped_date }}</span>
+                    {%- if line_item.fulfillment.tracking_number != blank -%}
+                      <span class="customer-muted">{{ 'customer.order.tracking' | t: number: line_item.fulfillment.tracking_number }}</span>
+                    {%- endif -%}
+                    {%- if line_item.fulfillment.tracking_url != blank -%}
+                      <a href="{{ line_item.fulfillment.tracking_url }}" class="customer-box__link" target="_blank" rel="noopener">
+                        {{- 'customer.order.track' | t -}}
+                      </a>
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+              </div>
+
+              <p class="customer-item__total">{{ line_item.final_line_price | money }}</p>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+
+      <div class="customer-order__side">
+        {%- comment -%} ---------- Summary: subtotal, discounts, shipping, tax, total ---------- {%- endcomment -%}
+        <div class="customer-box">
+          <h2 class="customer-box__title">{{ 'customer.order.summary' | t }}</h2>
+          <dl class="customer-summary">
+            <div class="customer-summary__row">
+              <dt>{{ 'customer.order.subtotal' | t }}</dt>
+              <dd>{{ order.line_items_subtotal_price | money }}</dd>
+            </div>
+            {%- for discount_application in order.cart_level_discount_applications -%}
+              <div class="customer-summary__row customer-summary__row--discount">
+                <dt>{{ 'customer.order.discount' | t }} ({{ discount_application.title }})</dt>
+                <dd>−{{ discount_application.total_allocated_amount | money }}</dd>
+              </div>
+            {%- endfor -%}
+            {%- for shipping_method in order.shipping_methods -%}
+              <div class="customer-summary__row">
+                <dt>{{ 'customer.order.shipping' | t }} ({{ shipping_method.title }})</dt>
+                <dd>{{ shipping_method.price | money }}</dd>
+              </div>
+            {%- endfor -%}
+            {%- for tax_line in order.tax_lines -%}
+              <div class="customer-summary__row">
+                <dt>{{ 'customer.order.tax' | t }} ({{ tax_line.title }} {{ tax_line.rate_percentage }}%)</dt>
+                <dd>{{ tax_line.price | money }}</dd>
+              </div>
+            {%- endfor -%}
+            {%- if order.total_refunded_amount > 0 -%}
+              <div class="customer-summary__row customer-summary__row--discount">
+                <dt>{{ 'customer.order.refunded' | t }}</dt>
+                <dd>−{{ order.total_refunded_amount | money }}</dd>
+              </div>
+            {%- endif -%}
+            <div class="customer-summary__row customer-summary__row--total">
+              <dt>{{ 'customer.order.grand_total' | t }}</dt>
+              <dd>{{ order.total_net_amount | default: order.total_price | money_with_currency }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        {%- comment -%} ---------- Addresses ---------- {%- endcomment -%}
+        <div class="customer-box">
+          <h2 class="customer-box__title">{{ 'customer.order.shipping_address' | t }}</h2>
+          {%- if order.shipping_address -%}
+            <address class="customer-address">{{ order.shipping_address | format_address }}</address>
+          {%- else -%}
+            <p class="customer-muted">{{ 'customer.order.no_address' | t }}</p>
+          {%- endif -%}
+        </div>
+        <div class="customer-box">
+          <h2 class="customer-box__title">{{ 'customer.order.billing_address' | t }}</h2>
+          {%- if order.billing_address -%}
+            <address class="customer-address">{{ order.billing_address | format_address }}</address>
+          {%- else -%}
+            <p class="customer-muted">{{ 'customer.order.no_address' | t }}</p>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  No settings: the content is the order itself.
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Customer order",
+  "tag": "div",
+  "class": "section-customer-order",
+  "enabled_on": {
+    "templates": ["customers/order"]
+  },
+  "settings": []
+}
+{% endschema %}

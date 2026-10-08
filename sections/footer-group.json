@@ -1,0 +1,74 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Footer group",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "contact": {
+          "type": "contact",
+          "settings": {
+            "heading": "Contact us",
+            "address": "198 Galley Street, 1740-street, 12040 NY",
+            "phone": "",
+            "email": "",
+            "show_social": true
+          }
+        },
+        "navigate": {
+          "type": "menu",
+          "settings": {
+            "heading": "Navigate",
+            "menu": "footer",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "brands": {
+          "type": "menu",
+          "settings": {
+            "heading": "Top brands",
+            "menu": "main-menu",
+            "link_label": "View all",
+            "link": "shopify://collections/all"
+          }
+        },
+        "newsletter": {
+          "type": "newsletter",
+          "settings": {
+            "heading": "Subscribe our newsletters",
+            "text": "Sign up to be the first to hear about new products, restocks, and more!"
+          }
+        }
+      },
+      "block_order": [
+        "contact",
+        "navigate",
+        "brands",
+        "newsletter"
+      ],
+      "settings": {
+        "copyright_text": "",
+        "show_powered_by": true,
+        "show_payment_icons": true,
+        "background_color": "#121212",
+        "text_color": "#bdbdbd",
+        "heading_color": "#ffffff",
+        "accent_color": "#c8102e",
+        "padding_top": 48
+      }
+    }
+  },
+  "order": [
+    "footer"
+  ]
+}

@@ -1,0 +1,139 @@
+{%- comment -%}
+  ============================================================================
+  Section: Rich text
+  ----------------------------------------------------------------------------
+  General-purpose content section: heading, text and a button, in any order.
+  Each element is a block, so merchants can add, remove and reorder them.
+
+  Used in:   templates/index.json (home page "intro" section)
+  Editable:  Theme editor > any page > Add section > Rich text
+  ============================================================================
+{%- endcomment -%}
+
+{%- comment -%}
+  page-width keeps content aligned with the header/footer.
+  Alignment (left/center) is a modifier class; padding comes from a setting.
+{%- endcomment -%}
+<div class="page-width">
+  <div
+    class="rich-text rich-text--{{ section.settings.alignment }}"
+    style="--rt-padding: {{ section.settings.padding }}px;"
+  >
+    {%- comment -%} Blocks render in the order set in the theme editor {%- endcomment -%}
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'heading' -%}
+          <h2 class="rich-text__heading" {{ block.shopify_attributes }}>{{ block.settings.heading }}</h2>
+
+        {%- when 'text' -%}
+          {%- comment -%} Rich text output already includes <p> tags {%- endcomment -%}
+          <div class="rich-text__text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+
+        {%- when 'button' -%}
+          {%- comment -%} Button is hidden when it has no label; links to "All products" if no link is set {%- endcomment -%}
+          {%- if block.settings.label != blank -%}
+            <a
+              class="button rich-text__button"
+              href="{{ block.settings.link | default: routes.all_products_collection_url }}"
+              {{ block.shopify_attributes }}
+            >
+              {{- block.settings.label -}}
+            </a>
+          {%- endif -%}
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  /* ---------- Wrapper ---------- */
+  /* Narrow readable column (720px), centered by default */
+  .rich-text {
+    padding: var(--rt-padding) 0;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* Alignment variants */
+  .rich-text--left { text-align: left; margin-left: 0; }
+  .rich-text--center { text-align: center; }
+
+  /* ---------- Blocks ---------- */
+  .rich-text__heading {
+    margin: 0 0 16px;
+    font-size: 32px;
+    line-height: 1.2;
+  }
+  .rich-text__text { margin-bottom: 24px; }
+  /* Look: the shared .button (assets/global-buttons.css) */
+{% endstylesheet %}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - No enabled_on → can be added to any page template.
+  - presets → makes it available under "Add section", pre-filled with all 3 blocks.
+  Settings: alignment (left/center), padding (vertical, px)
+  Blocks:
+  - heading → heading
+  - text    → text (rich text)
+  - button  → label, link
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Rich text",
+  "tag": "section",
+  "class": "section-global-rich-text",
+  "settings": [
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Vertical padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "Heading",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Welcome to our store" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Discover the latest styles.</p>" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "Button",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label", "default": "Shop now" },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rich text",
+      "blocks": [{ "type": "heading" }, { "type": "text" }, { "type": "button" }]
+    }
+  ]
+}
+{% endschema %}

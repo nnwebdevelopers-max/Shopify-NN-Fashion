@@ -1,0 +1,251 @@
+{%- comment -%}
+  ============================================================================
+  Section: Product details (tabs + image, product page)
+  ----------------------------------------------------------------------------
+      ┌──────────────────────────────────────┐ ┌──────────────────────┐
+      │ DETAILS  Materials  Size & Fit  Ship… │ │                      │
+      │ ──────                               │ │     close-up image   │
+      │ Crafted from high-quality cotton…    │ │                      │
+      │ ✓ Oversized fit                       │ │                      │
+      │ ✓ Soft & heavyweight fabric           │ │                      │
+      └──────────────────────────────────────┘ └──────────────────────┘
+
+  One tab per block (Theme editor > Products > Default product > Product
+  details > Add tab), in block order:
+  - "Description" tab: the product description, plus an optional ✓ list
+    ("Highlights", one line per item)
+  - "Text" tab: rich text typed in the editor (e.g. materials, care)
+  - "Page" tab: the content of a chosen page (e.g. Shipping & returns,
+    shared by every product)
+  Tabs switch without reloading (assets/product.js → "Tabs"); ←/→ keys
+  move between tabs. Without JS every panel is shown, one under another.
+
+  Above the tabs: a big scrolling band with the product name (setting).
+
+  Image: the chosen image, else the product's last image (a close-up
+  usually), hidden when the product has a single image and none is chosen.
+  Phones: image under the tabs; the tab row scrolls sideways.
+
+  Used in:   templates/product.json ("details")
+  CSS:       assets/product.css → "Details tabs" (classes .product-details*)
+  JS:        assets/product.js → "Tabs"
+  Text:      tab titles and texts are typed in the theme editor;
+             locales → products.product.tabs_label
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  # Side image: chosen one, else the product's last image (if it has 2+)
+  assign side_image = section.settings.image
+  if side_image == blank and section.settings.use_product_image and product.images.size > 1
+    assign side_image = product.images.last
+  endif
+-%}
+
+{%- comment -%}
+  Scrolling name band above the tabs (decoration, "Name band" setting):
+     ✦ UNISEX PUFFER VEST ✦ unisex puffer vest ✦ UNISEX PUFFER VEST ✦ …
+  Solid and outlined words alternate. It drifts on its own (CSS) and GSAP
+  (initProductMarquee) pushes it with the scroll — faster when you
+  scroll faster; leaning with the speed.
+{%- endcomment -%}
+{%- if section.settings.show_marquee -%}
+  {%- liquid
+    assign marquee_text = section.settings.marquee_text | default: product.title
+  -%}
+  <div class="product-marquee" data-scroll-fx="product-marquee" aria-hidden="true">
+    <div class="product-marquee__track" data-marquee-track>
+      {%- for i in (1..2) -%}
+        <div class="product-marquee__group">
+          {%- for j in (1..3) -%}
+            <span class="product-marquee__item">{{ marquee_text | escape }}</span>
+            <span class="product-marquee__star">✦</span>
+            <span class="product-marquee__item product-marquee__item--outline">{{ marquee_text | escape }}</span>
+            <span class="product-marquee__star">✦</span>
+          {%- endfor -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{%- if section.blocks.size > 0 -%}
+  <section class="page-width product-details{% if side_image == blank %} product-details--full{% endif %}" data-product-tabs data-scroll-fx="product-details">
+    <div class="product-details__tabs-wrap">
+      {%- comment -%} Tab buttons (hidden without JS: then all panels show) {%- endcomment -%}
+      <div class="product-details__tabs" role="tablist" aria-label="{{ 'products.product.tabs_label' | t }}">
+        {%- for block in section.blocks -%}
+          {%- comment -%} Page tab without a page chosen: skipped (nothing to show) {%- endcomment -%}
+          {%- if block.type == 'page' and block.settings.page == blank -%}{%- continue -%}{%- endif -%}
+          <button
+            type="button"
+            class="product-details__tab"
+            role="tab"
+            id="ProductTab-{{ block.id }}"
+            aria-controls="ProductPanel-{{ block.id }}"
+            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+            tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+            data-tab
+            {{ block.shopify_attributes }}
+          >
+            {{- block.settings.title | escape -}}
+          </button>
+        {%- endfor -%}
+      </div>
+
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'page' and block.settings.page == blank -%}{%- continue -%}{%- endif -%}
+        <div
+          class="product-details__panel"
+          role="tabpanel"
+          id="ProductPanel-{{ block.id }}"
+          aria-labelledby="ProductTab-{{ block.id }}"
+          data-tab-panel
+          {% unless forloop.first %}data-start-hidden{% endunless %}
+        >
+          {%- comment -%} Panel title: only seen without JS (tabs hidden) {%- endcomment -%}
+          <h2 class="product-details__panel-title">{{ block.settings.title | escape }}</h2>
+
+          {%- case block.type -%}
+            {%- when 'description' -%}
+              <div class="product-details__rte">{{ product.description }}</div>
+              {%- comment -%} Highlights: one ✓ line per line typed in the editor {%- endcomment -%}
+              {%- assign highlights = block.settings.highlights | newline_to_br | split: '<br />' -%}
+              {%- if block.settings.highlights != blank -%}
+                <ul class="product-details__list" role="list">
+                  {%- for line in highlights -%}
+                    {%- assign clean_line = line | strip -%}
+                    {%- if clean_line != blank -%}
+                      <li>
+                        <span class="product-details__check" aria-hidden="true">{% render 'global-icon', name: 'check', size: 14 %}</span>
+                        {{ clean_line | escape }}
+                      </li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            {%- when 'text' -%}
+              <div class="product-details__rte">{{ block.settings.content }}</div>
+            {%- when 'page' -%}
+              <div class="product-details__rte">{{ block.settings.page.content }}</div>
+          {%- endcase -%}
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- if side_image != blank -%}
+      <div class="product-details__media">
+        {{
+          side_image
+          | image_url: width: 1200
+          | image_tag: class: 'product-details__image', loading: 'lazy', widths: '500, 800, 1200', sizes: '(min-width: 990px) 46vw, 100vw', alt: side_image.alt
+        }}
+      </div>
+    {%- endif -%}
+  </section>
+{%- endif -%}
+
+{%- comment -%}
+  Schema (theme editor settings) — JSON cannot contain comments, so they live here.
+  - enabled_on.templates: ["product"]
+  Settings: image (side image), use_product_image (no image chosen → the
+            product's last image), show_marquee + marquee_text (name band;
+            empty text → product name)
+  Blocks:   description (title, highlights), text (title, content),
+            page (title, page) — one tab each, max 6
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "Product details",
+  "tag": "div",
+  "class": "section-product-details",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Side image",
+      "info": "Same image for every product. Leave empty to use each product's last image."
+    },
+    {
+      "type": "checkbox",
+      "id": "use_product_image",
+      "label": "Use the product's last image when no image is chosen",
+      "default": true
+    },
+    { "type": "header", "content": "Name band" },
+    { "type": "checkbox", "id": "show_marquee", "label": "Show scrolling name band", "default": true },
+    { "type": "text", "id": "marquee_text", "label": "Band text", "info": "Leave empty to use the product name." }
+  ],
+  "blocks": [
+    {
+      "type": "description",
+      "name": "Description tab",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Tab title",
+          "default": "Details"
+        },
+        {
+          "type": "textarea",
+          "id": "highlights",
+          "label": "Highlights",
+          "info": "One per line, shown with a ✓ under the product description. Same for every product."
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text tab",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Tab title",
+          "default": "Materials"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Tell shoppers what the product is made of and how to care for it.</p>"
+        }
+      ]
+    },
+    {
+      "type": "page",
+      "name": "Page tab",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Tab title",
+          "default": "Shipping & Returns"
+        },
+        {
+          "type": "page",
+          "id": "page",
+          "label": "Page",
+          "info": "Its content is shown in the tab, e.g. your shipping policy page."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product details",
+      "blocks": [
+        { "type": "description" },
+        { "type": "text" },
+        { "type": "page" }
+      ]
+    }
+  ]
+}
+{% endschema %}

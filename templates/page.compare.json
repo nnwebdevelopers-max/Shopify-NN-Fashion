@@ -1,0 +1,31 @@
+/*
+ * ============================================================================
+ * Template: Compare page (page.compare.json)
+ * ----------------------------------------------------------------------------
+ * Assign it to a page in Shopify admin: Online Store > Pages > Add page
+ * (title "Compare") > Theme template: "compare". Then pick that page in
+ * Theme editor > Header > Compare page (adds the ⇄ icon with a count).
+ *
+ * Sections:
+ *   main → sections/compare-main.liquid (side-by-side comparison table)
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "main": {
+      "type": "compare-main",
+      "settings": {
+        "show_price": true,
+        "show_availability": true,
+        "show_vendor": true,
+        "show_type": true,
+        "show_options": true,
+        "show_description": true
+      }
+    }
+  },
+  "order": ["main"]
+}

@@ -1,0 +1,173 @@
+/*
+ * ============================================================================
+ * Template: FAQ page (page.faq.json) — animated help center
+ * ----------------------------------------------------------------------------
+ * Assign it in Shopify admin: Online Store > Pages > FAQ > Theme template:
+ * "faq". (Preview without assigning: /pages/<any-page>?view=faq)
+ *
+ * Sections (top → bottom), each with a GSAP scroll effect
+ * (assets/global-scroll-animations.js, shared with About / Contact / Blog):
+ *   hero → sections/faq-hero.liquid  (title + search box)
+ *   main → sections/faq-main.liquid  (topics menu + questions)
+ *   cta  → sections/faq-cta.liquid   ("Still have questions?" card)
+ * Questions: the FAQ page's own text when it has any (Heading 2 = topic,
+ * Heading 3 = question, text = answer), otherwise the blocks below.
+ * Page logic: assets/faq.js; styles: assets/faq.css.
+ *
+ * Note: Shopify replaces this comment with its own when the template is
+ * saved from the theme editor.
+ * ============================================================================
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "faq-hero",
+      "settings": {
+        "eyebrow": "",
+        "heading": "",
+        "text": "<p>Quick answers about orders, shipping, returns and sizing. Can't find what you need? We're one message away.</p>",
+        "show_search": true,
+        "serif": true,
+        "background_color": "#F6F3EC",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "main": {
+      "type": "faq-main",
+      "blocks": {
+        "topic-orders": { "type": "topic", "settings": { "title": "Orders & shipping", "icon": "truck" } },
+        "q-ship-time": {
+          "type": "question",
+          "settings": {
+            "question": "How long does shipping take?",
+            "answer": "<p>Orders are packed within 1–2 business days. Standard delivery takes 3–7 business days; express delivery takes 1–3 business days.</p>"
+          }
+        },
+        "q-ship-intl": {
+          "type": "question",
+          "settings": {
+            "question": "Do you ship internationally?",
+            "answer": "<p>Yes, we ship to most countries. Shipping costs and delivery times are shown at checkout, and you can estimate them in your cart.</p>"
+          }
+        },
+        "q-track": {
+          "type": "question",
+          "settings": {
+            "question": "How can I track my order?",
+            "answer": "<p>As soon as your order ships we email you a tracking link. You can also follow it from your account under Orders.</p>"
+          }
+        },
+        "q-change-order": {
+          "type": "question",
+          "settings": {
+            "question": "Can I change or cancel my order?",
+            "answer": "<p>Contact us within 12 hours of placing your order and we'll do our best to update or cancel it before it ships.</p>"
+          }
+        },
+        "topic-returns": { "type": "topic", "settings": { "title": "Returns & exchanges", "icon": "return" } },
+        "q-return-policy": {
+          "type": "question",
+          "settings": {
+            "question": "What is your return policy?",
+            "answer": "<p>You can return unworn items with their tags within 30 days of delivery for a full refund.</p>"
+          }
+        },
+        "q-exchange": {
+          "type": "question",
+          "settings": {
+            "question": "Can I exchange an item for another size?",
+            "answer": "<p>Yes. Start a return and tell us the size you need — we'll send the new one as soon as the original is on its way back.</p>"
+          }
+        },
+        "q-refund-time": {
+          "type": "question",
+          "settings": {
+            "question": "When will I get my refund?",
+            "answer": "<p>Refunds go back to your original payment method within 5–10 business days after we receive your return.</p>"
+          }
+        },
+        "topic-sizing": { "type": "topic", "settings": { "title": "Sizing & fit", "icon": "ruler" } },
+        "q-size": {
+          "type": "question",
+          "settings": {
+            "question": "How do I find my size?",
+            "answer": "<p>Every product page shows a size guide. If you're between two sizes, we recommend the larger one for a relaxed fit.</p>"
+          }
+        },
+        "q-fit": {
+          "type": "question",
+          "settings": {
+            "question": "Do your clothes run true to size?",
+            "answer": "<p>Most styles fit true to size. Any exceptions are noted in the product details.</p>"
+          }
+        },
+        "topic-payments": { "type": "topic", "settings": { "title": "Payments", "icon": "lock" } },
+        "q-payment-methods": {
+          "type": "question",
+          "settings": {
+            "question": "Which payment methods do you accept?",
+            "answer": "<p>We accept major credit and debit cards, PayPal, Apple Pay, Google Pay and Shop Pay.</p>"
+          }
+        },
+        "q-secure": {
+          "type": "question",
+          "settings": {
+            "question": "Is my payment information secure?",
+            "answer": "<p>Yes. Checkout is handled by Shopify with full encryption — we never see or store your card details.</p>"
+          }
+        },
+        "q-discount": {
+          "type": "question",
+          "settings": {
+            "question": "How do I use a discount code?",
+            "answer": "<p>Enter the code in the Discount field of your cart or at checkout, then press Apply.</p>"
+          }
+        },
+        "topic-account": { "type": "topic", "settings": { "title": "Account & wishlist", "icon": "heart" } },
+        "q-account": {
+          "type": "question",
+          "settings": {
+            "question": "Do I need an account to order?",
+            "answer": "<p>No, you can check out as a guest. An account lets you track orders and save your addresses.</p>"
+          }
+        },
+        "q-wishlist": {
+          "type": "question",
+          "settings": {
+            "question": "How does the wishlist work?",
+            "answer": "<p>Tap the heart on any product to save it. Your wishlist is kept on this device — open it any time from the heart icon in the header.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "topic-orders", "q-ship-time", "q-ship-intl", "q-track", "q-change-order",
+        "topic-returns", "q-return-policy", "q-exchange", "q-refund-time",
+        "topic-sizing", "q-size", "q-fit",
+        "topic-payments", "q-payment-methods", "q-secure", "q-discount",
+        "topic-account", "q-account", "q-wishlist"
+      ],
+      "settings": {
+        "source": "auto",
+        "serif": true,
+        "background_color": "#FFFFFF",
+        "text_color": "#2F3A2F",
+        "accent_color": "#B8734F"
+      }
+    },
+    "cta": {
+      "type": "faq-cta",
+      "settings": {
+        "title": "",
+        "text": "",
+        "button_link": "",
+        "email": "",
+        "serif": true,
+        "card_color": "#2F3A2F",
+        "card_text_color": "#F6F3EC",
+        "accent_color": "#B8734F"
+      }
+    }
+  },
+  "order": ["hero", "main", "cta"]
+}

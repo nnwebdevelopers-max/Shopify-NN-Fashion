@@ -1,0 +1,177 @@
+{%- comment -%}
+  ============================================================================
+  Section: FAQ main (topics + questions, FAQ page)
+  ----------------------------------------------------------------------------
+      ┌────────────────────┐ ┌──────────────────────────────────────────┐
+      │ TOPICS             │ │ (🚚) Orders & shipping                    │
+      │ ▍Orders & shipping │ │  How long does shipping take?        (+) │
+      │  Returns           │ │  Do you ship internationally?        (−) │
+      │  Sizing & fit      │ │    Yes — we ship to …                    │
+      │  Payments          │ │ (↺) Returns & exchanges                   │
+      │  (sticky)          │ │  …                                       │
+      └────────────────────┘ └──────────────────────────────────────────┘
+  Where the questions come from ("Content" setting):
+  - Automatic (default): the FAQ page's own text (Online Store > Pages >
+    FAQ) when it has any — written as  Heading 2 = topic,  Heading 3 =
+    question,  normal text below = answer. assets/faq.js turns that text
+    into the topics and questions. Otherwise the blocks below.
+  - Blocks (theme editor): "Topic" blocks start a group (title + icon);
+    "Question" blocks after it belong to that topic.
+  The Topics menu (built by faq.js) highlights the topic in view; the
+  search box in the FAQ hero filters the questions. Each question is a
+  <details>, so it opens without JavaScript too; a link ending in the
+  question's id (#…) opens it.
+  Animated (GSAP, assets/global-scroll-animations.js → initFaqMain): topics
+  and questions slide up as they scroll in; answers open and close with a
+  smooth height animation; the menu slides in.
+
+  Snippets:  snippets/faq-item.liquid (one question), snippets/global-icon.liquid
+  Used in:   templates/page.faq.json
+  CSS:       assets/faq.css → "3. Topics + questions" (.faq-main*, .faq-group*, .faq-item*)
+  JS:        assets/faq.js (page-text → questions, topics menu, search, deep links),
+             assets/global-scroll-animations.js (motion)
+  Text:      locales → faq.topics; questions from the page or the blocks
+  ============================================================================
+{%- endcomment -%}
+
+{%- liquid
+  assign use_page = false
+  if section.settings.source == 'page' or section.settings.source == 'auto'
+    if page.content != blank
+      assign use_page = true
+    endif
+  endif
+-%}
+
+<section
+  class="faq faq-main{% if section.settings.serif %} faq--serif{% endif %}"
+  data-scroll-fx="faq-main"
+  style="--faq-bg: {{ section.settings.background_color }}; --faq-text: {{ section.settings.text_color }}; --faq-accent: {{ section.settings.accent_color }};"
+>
+  <div class="faq__inner faq-main__layout">
+    {%- comment -%} Topics menu: filled by faq.js (hidden until then) {%- endcomment -%}
+    <nav class="faq-nav" aria-label="{{ 'faq.topics' | t }}" data-faq-nav hidden>
+      <p class="faq-nav__title">{{ 'faq.topics' | t }}</p>
+      <ol class="faq-nav__list" data-faq-nav-list></ol>
+    </nav>
+
+    <div class="faq-list" id="FaqList" data-faq-list>
+      {%- if use_page -%}
+        {%- comment -%}
+          The page's own text; faq.js rebuilds it into topics + questions.
+          Without JavaScript it simply shows as written.
+        {%- endcomment -%}
+        <div class="faq-rte" data-faq-page-content>{{ page.content }}</div>
+      {%- else -%}
+        {%- comment -%}
+          Blocks: each "Topic" block makes a group holding the "Question" blocks
+          that follow it (up to the next topic). Questions placed before the
+          first topic get a group without a title.
+        {%- endcomment -%}
+        {%- if section.blocks.first.type == 'question' -%}
+          <section class="faq-group" id="faq-questions" data-faq-group>
+            <div class="faq-group__items">
+              {%- for item in section.blocks -%}
+                {%- if item.type == 'topic' -%}{%- break -%}{%- endif -%}
+                {% render 'faq-item', id: item.id, question: item.settings.question, answer: item.settings.answer, attributes: item.shopify_attributes %}
+              {%- endfor -%}
+            </div>
+          </section>
+        {%- endif -%}
+
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'topic' -%}
+            {%- assign topic_id = block.settings.title | handleize | prepend: 'faq-' -%}
+            <section class="faq-group" id="{{ topic_id }}" data-faq-group {{ block.shopify_attributes }}>
+              <h2 class="faq-group__title">
+                <span class="faq-group__icon" aria-hidden="true">{% render 'global-icon', name: block.settings.icon, size: 22 %}</span>
+                <span data-faq-group-title>{{ block.settings.title | escape }}</span>
+              </h2>
+              <div class="faq-group__items">
+                {%- for item in section.blocks offset: forloop.index -%}
+                  {%- if item.type == 'topic' -%}{%- break -%}{%- endif -%}
+                  {% render 'faq-item', id: item.id, question: item.settings.question, answer: item.settings.answer, attributes: item.shopify_attributes %}
+                {%- endfor -%}
+              </div>
+            </section>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- comment -%} Shown by faq.js when the search matches nothing {%- endcomment -%}
+      <p class="faq-empty" data-faq-empty hidden></p>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  Schema — settings: source (auto / page / blocks), serif, colors
+  blocks: topic (title, icon), question (question, answer)
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "FAQ: questions",
+  "tag": "div",
+  "class": "section-faq-main",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    {
+      "type": "select",
+      "id": "source",
+      "label": "Content",
+      "options": [
+        { "value": "auto", "label": "Automatic (page text, else blocks)" },
+        { "value": "page", "label": "The page's text" },
+        { "value": "blocks", "label": "Blocks below" }
+      ],
+      "default": "auto",
+      "info": "Page text: write it in Online Store > Pages > FAQ — Heading 2 = topic, Heading 3 = question, normal text = answer."
+    },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "serif", "label": "Serif headings", "default": true },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#FFFFFF" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#2F3A2F" },
+    { "type": "color", "id": "accent_color", "label": "Accent", "default": "#B8734F" }
+  ],
+  "blocks": [
+    {
+      "type": "topic",
+      "name": "Topic",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Orders & shipping" },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "ruler", "label": "Ruler" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "account", "label": "Account" },
+            { "value": "box", "label": "Box" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "chat", "label": "Chat" },
+            { "value": "gift", "label": "Gift" }
+          ],
+          "default": "truck"
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question", "default": "Your question" },
+        { "type": "richtext", "id": "answer", "label": "Answer", "default": "<p>Your answer.</p>" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ: questions",
+      "blocks": [{ "type": "topic" }, { "type": "question" }, { "type": "question" }]
+    }
+  ]
+}
+{% endschema %}
