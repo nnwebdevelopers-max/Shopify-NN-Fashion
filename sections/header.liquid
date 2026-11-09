@@ -143,17 +143,17 @@
           ],
           "default": "columns"
         },
-        { "type": "text", "id": "heading", "label": "Heading (tiles layout)" },
-        { "type": "text", "id": "feature_label", "label": "Featured label", "default": "Featured" },
-        { "type": "product", "id": "featured_product", "label": "Featured product (columns layout)", "info": "Leave empty to use the first product of the first collection." },
-        { "type": "header", "content": "Tiles layout extras" },
-        { "type": "text", "id": "promo_1_label", "label": "Highlight tile 1 label" },
-        { "type": "text", "id": "promo_1_text", "label": "Highlight tile 1 text" },
-        { "type": "url", "id": "promo_1_link", "label": "Highlight tile 1 link" },
-        { "type": "text", "id": "promo_2_label", "label": "Highlight tile 2 label" },
-        { "type": "text", "id": "promo_2_text", "label": "Highlight tile 2 text" },
-        { "type": "url", "id": "promo_2_link", "label": "Highlight tile 2 link" },
-        { "type": "link_list", "id": "pills_menu", "label": "Quick links menu" }
+        { "type": "text", "id": "heading", "label": "Heading", "visible_if": "{{ block.settings.layout == 'tiles' }}" },
+        { "type": "text", "id": "feature_label", "label": "Featured label", "default": "Featured", "visible_if": "{{ block.settings.layout != 'tiles' }}" },
+        { "type": "product", "id": "featured_product", "label": "Featured product", "info": "Leave empty to use the first product of the first collection.", "visible_if": "{{ block.settings.layout == 'columns' }}" },
+        { "type": "header", "content": "Tiles layout extras", "visible_if": "{{ block.settings.layout == 'tiles' }}" },
+        { "type": "text", "id": "promo_1_label", "label": "Highlight tile 1 label", "info": "The tile only shows when a label is set.", "visible_if": "{{ block.settings.layout == 'tiles' }}" },
+        { "type": "text", "id": "promo_1_text", "label": "Highlight tile 1 text", "visible_if": "{{ block.settings.layout == 'tiles' }}" },
+        { "type": "url", "id": "promo_1_link", "label": "Highlight tile 1 link", "visible_if": "{{ block.settings.layout == 'tiles' }}" },
+        { "type": "text", "id": "promo_2_label", "label": "Highlight tile 2 label", "info": "The tile only shows when a label is set.", "visible_if": "{{ block.settings.layout == 'tiles' }}" },
+        { "type": "text", "id": "promo_2_text", "label": "Highlight tile 2 text", "visible_if": "{{ block.settings.layout == 'tiles' }}" },
+        { "type": "url", "id": "promo_2_link", "label": "Highlight tile 2 link", "visible_if": "{{ block.settings.layout == 'tiles' }}" },
+        { "type": "link_list", "id": "pills_menu", "label": "Quick links menu", "visible_if": "{{ block.settings.layout == 'tiles' }}" }
       ]
     }
   ]
