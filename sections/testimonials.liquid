@@ -1,0 +1,65 @@
+{%- liquid
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+  assign tones = 'surface,t1,t3,surface,t4,t2' | split: ','
+-%}
+<div class="sec color-scheme color-{{ scheme }}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap rv">
+    <div class="head">
+      <div>
+        {%- if section.settings.eyebrow != blank %}<p class="eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif -%}
+        {%- if section.settings.heading != blank %}<h2>{{ section.settings.heading }}</h2>{% endif -%}
+      </div>
+    </div>
+  </div>
+  {%- if section.blocks.size > 0 -%}
+    <div class="tmq" aria-label="{{ section.settings.heading | strip_html | escape }}">
+      <div class="tmqtrack mqtrack" style="--speed:{{ section.settings.speed }}s">
+        {%- for pass in (1..2) -%}
+          {%- for block in section.blocks -%}
+            {%- assign ti = forloop.index0 | modulo: 6 -%}
+            {%- assign tone = tones[ti] -%}
+            <figure class="tcard" style="background:var(--{{ tone }})" {% if pass == 1 %}{{ block.shopify_attributes }}{% else %}aria-hidden="true"{% endif %}>
+              <blockquote>&ldquo;{{ block.settings.quote | escape }}&rdquo;</blockquote>
+              <p>{{ block.settings.text | escape }}</p>
+              <figcaption class="eyebrow">{{ block.settings.author | escape }}{% if block.settings.verified %} · {{ 'testimonials.verified' | t }}{% endif %}</figcaption>
+            </figure>
+          {%- endfor -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Testimonials",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Customer reviews" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Kind <em>words</em>" },
+    { "type": "range", "id": "speed", "label": "Scroll speed (seconds per loop)", "min": 20, "max": 120, "step": 5, "default": 60 },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "text", "id": "quote", "label": "Quote", "default": "Lorem ipsum dolor sit amet" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." },
+        { "type": "text", "id": "author", "label": "Author", "default": "Lorem I." },
+        { "type": "checkbox", "id": "verified", "label": "Verified buyer", "default": true }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Testimonials", "blocks": [ { "type": "review" }, { "type": "review" }, { "type": "review" }, { "type": "review" } ] }
+  ]
+}
+{% endschema %}

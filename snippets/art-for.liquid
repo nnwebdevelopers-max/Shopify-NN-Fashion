@@ -1,0 +1,71 @@
+{%- comment -%}
+  Outputs the illustration key for a product or collection.
+  Uses metafield custom.art when set, otherwise guesses from product type / title / collection handle.
+  Params: product OR collection OR text
+{%- endcomment -%}
+{%- liquid
+  if product
+    assign key = product.metafields.custom.art.value
+    assign t = product.type | append: ' ' | append: product.title | downcase
+  elsif collection
+    assign key = collection.metafields.custom.art.value
+    assign t = collection.handle | append: ' ' | append: collection.title | downcase
+  else
+    assign key = ''
+    assign t = text | downcase
+  endif
+  if key == blank
+    if t contains 'puffer'
+      assign key = 'puffer'
+    elsif t contains 'coat'
+      assign key = 'coat'
+    elsif t contains 'jacket' or t contains 'outerwear' or t contains 'workwear'
+      assign key = 'jacket'
+    elsif t contains 'hoodie'
+      assign key = 'hoodie'
+    elsif t contains 'sweater' or t contains 'knit'
+      assign key = 'sweater'
+    elsif t contains 'shirt'
+      assign key = 'shirt'
+    elsif t contains 'tank'
+      assign key = 'tank'
+    elsif t contains 'tee' or t contains 'top'
+      assign key = 'tee'
+    elsif t contains 'dress'
+      assign key = 'dress'
+    elsif t contains 'skirt'
+      assign key = 'skirt'
+    elsif t contains 'jean' or t contains 'denim'
+      assign key = 'jeans'
+    elsif t contains 'trouser' or t contains 'pant'
+      assign key = 'trousers'
+    elsif t contains 'legging' or t contains 'active'
+      assign key = 'leggings'
+    elsif t contains 'short'
+      assign key = 'shorts'
+    elsif t contains 'boot'
+      assign key = 'boot'
+    elsif t contains 'flat'
+      assign key = 'flat'
+    elsif t contains 'sneaker' or t contains 'shoe' or t contains 'footwear'
+      assign key = 'sneaker'
+    elsif t contains 'tote'
+      assign key = 'tote'
+    elsif t contains 'backpack' or t contains 'bag'
+      assign key = 'backpack'
+    elsif t contains 'cap' or t contains 'hat'
+      assign key = 'cap'
+    elsif t contains 'belt'
+      assign key = 'belt'
+    elsif t contains 'wallet'
+      assign key = 'wallet'
+    elsif t contains 'scarf'
+      assign key = 'scarf'
+    elsif t contains 'sunglass' or t contains 'eyewear'
+      assign key = 'sunglasses'
+    else
+      assign key = 'tee'
+    endif
+  endif
+  echo key
+-%}

@@ -1,0 +1,94 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "eyebrow": "Lookbook",
+        "padding_bottom": 0
+      }
+    },
+    "look": {
+      "type": "lookbook-grid",
+      "blocks": {
+        "l1": {
+          "type": "look",
+          "settings": {
+            "shape": "tall",
+            "collection": "autumn-workwear",
+            "title": "Autumn workwear"
+          }
+        },
+        "l2": {
+          "type": "look",
+          "settings": {
+            "shape": "arch",
+            "collection": "women",
+            "title": "Women"
+          }
+        },
+        "l3": {
+          "type": "look",
+          "settings": {
+            "shape": "square",
+            "collection": "men",
+            "title": "Men"
+          }
+        },
+        "l4": {
+          "type": "look",
+          "settings": {
+            "shape": "tall",
+            "collection": "footwear",
+            "title": "Footwear"
+          }
+        },
+        "l5": {
+          "type": "look",
+          "settings": {
+            "shape": "arch",
+            "collection": "bags",
+            "title": "Bags"
+          }
+        },
+        "l6": {
+          "type": "look",
+          "settings": {
+            "shape": "square",
+            "collection": "knitwear",
+            "title": "Knitwear"
+          }
+        }
+      },
+      "block_order": [
+        "l1",
+        "l2",
+        "l3",
+        "l4",
+        "l5",
+        "l6"
+      ],
+      "settings": {
+        "eyebrow": "Autumn / Winter",
+        "heading": "The <em>lookbook</em>",
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Lorem ipsum. Dolor sit amet.",
+        "text": "<p>Consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>",
+        "button": "Subscribe",
+        "tint": "t1",
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    }
+  },
+  "order": [
+    "main",
+    "look",
+    "newsletter"
+  ]
+}

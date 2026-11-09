@@ -1,0 +1,6 @@
+{%- liquid
+  assign r = rating | default: 0 | round
+  assign full_stars = '★★★★★' | slice: 0, r
+  assign rest = 5 | minus: r
+  assign rest_stars = '★★★★★' | slice: 0, rest
+-%}<b aria-hidden="true">{{ full_stars }}<span>{{ rest_stars }}</span></b><span class="visually-hidden">{{ rating }} / 5</span>

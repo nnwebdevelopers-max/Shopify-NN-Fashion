@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-collection",
+      "blocks": {
+        "promo": { "type": "promo", "settings": { "eyebrow": "Editor's pick", "heading": "Layer up for the cold", "button": "Shop the edit", "link": "shopify://collections/autumn-workwear", "tint": "3", "art": "hoodie", "after": 2 } }
+      },
+      "block_order": ["promo"],
+      "settings": { "color_scheme": "scheme-1", "show_breadcrumbs": true, "show_hero": true, "hero_scheme": "scheme-2", "show_description": true, "chips_menu": "categories", "per_page": 24, "columns": 4, "show_filters": true, "show_sort": true, "padding_bottom": 80 }
+    }
+  },
+  "order": ["main"]
+}

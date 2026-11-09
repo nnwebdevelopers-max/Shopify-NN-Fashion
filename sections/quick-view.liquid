@@ -1,0 +1,87 @@
+{%- comment -%}
+  Quick view: rendered on a product URL with ?section_id=quick-view and shown in a popup
+  by the "Choose options" button on product cards.
+{%- endcomment -%}
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  if current_variant.featured_media
+    assign featured_id = current_variant.featured_media.id
+  else
+    assign featured_id = product.featured_media.id
+  endif
+-%}
+<div class="qv" data-quick-view-content>
+  <div class="gmain qv-media" style="background:var(--t1)">
+    {%- for media in product.media -%}
+      {%- if media.media_type == 'image' -%}
+        <div class="gslide{% if media.id == featured_id %} on{% endif %}" data-slide="{{ media.id }}">
+          {{ media | image_url: width: 900 | image_tag: loading: 'eager', widths: '400,600,900', sizes: '(min-width: 750px) 380px, 90vw', alt: media.alt | default: product.title }}
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      {%- capture art_key %}{% render 'art-for', product: product %}{% endcapture -%}
+      <div class="gslide on">{% render 'art', name: art_key %}</div>
+    {%- endfor -%}
+  </div>
+
+  <div class="qv-info">
+    {%- if product.vendor != blank %}<p class="eyebrow">{{ product.vendor | escape }}</p>{% endif -%}
+    <h2 id="QuickViewTitle" class="qv-title">{{ product.title | escape }}</h2>
+    <div class="pprice" data-price data-price-save>
+      {{- current_variant.price | money -}}
+      {%- if current_variant.compare_at_price > current_variant.price -%}
+        <s>{{ current_variant.compare_at_price | money }}</s>
+        <span class="save">{{ 'products.save' | t }} {{ current_variant.compare_at_price | minus: current_variant.price | times: 100.0 | divided_by: current_variant.compare_at_price | round }}%</span>
+      {%- endif -%}
+    </div>
+
+    {%- unless product.has_only_default_variant -%}
+      <div data-variant-picker class="qv-opts">
+        {%- for option in product.options_with_values -%}
+          {%- assign oname = option.name | downcase -%}
+          {%- if oname == 'color' or oname == 'colour' -%}{%- assign is_color = true -%}{%- else -%}{%- assign is_color = false -%}{%- endif -%}
+          <fieldset class="opt">
+            <legend>{{ option.name | escape }} <span data-selected-value>{{ option.selected_value | escape }}</span></legend>
+            <div class="ob">
+              {%- for value in option.values -%}
+                <label title="{{ value | escape }}">
+                  <input type="radio" name="qv-{{ product.id }}-{{ option.position }}" value="{{ value | escape }}"{% if option.selected_value == value %} checked{% endif %}{% unless value.available %} class="na"{% endunless %}>
+                  {%- if is_color -%}
+                    <span class="cs" style="background:{% render 'swatch-color', value: value %}"><span class="visually-hidden">{{ value | escape }}</span></span>
+                  {%- else -%}
+                    <span class="pill">{{ value | escape }}</span>
+                  {%- endif -%}
+                </label>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+        {%- endfor -%}
+      </div>
+    {%- endunless -%}
+
+    {%- form 'product', product, data-product-form: '', data-cart-form: '', data-quick-form: '', novalidate: 'novalidate' -%}
+      <input type="hidden" name="id" value="{{ current_variant.id }}">
+      <div class="buy">
+        <div class="qty">
+          <button type="button" data-qty-step="-1" aria-label="{{ 'cart.decrease' | t }}">−</button>
+          <input type="number" name="quantity" value="1" min="1" max="99" data-qty-input aria-label="{{ 'cart.quantity' | t }}">
+          <button type="button" data-qty-step="1" aria-label="{{ 'cart.increase' | t }}">+</button>
+        </div>
+        <button type="submit" class="btn primary" data-add-btn {% unless current_variant.available %}disabled data-sold-out{% endunless %}>
+          <span>{%- if current_variant.available -%}{{ 'products.add_to_cart' | t }}{%- else -%}{{ 'products.sold_out' | t }}{%- endif -%}</span>
+        </button>
+      </div>
+      <p class="perr" data-form-error hidden></p>
+    {%- endform -%}
+
+    <a class="link qv-more" href="{{ product.url }}">{{ 'products.view_details' | t }} →</a>
+  </div>
+  <script type="application/json" data-product-json>{{ product | json }}</script>
+</div>
+
+{% schema %}
+{
+  "name": "Quick view",
+  "settings": []
+}
+{% endschema %}

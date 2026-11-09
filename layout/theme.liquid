@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="{{ settings.body_scheme.settings.background }}">
+    <link rel="canonical" href="{{ canonical_url }}">
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 64, height: 64 }}">
+    {%- endif -%}
+    <title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; {{ current_tags | join: ', ' }}{% endif -%}
+      {%- if current_page != 1 %} &ndash; {{ 'general.page' | t: page: current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+    {%- if page_description %}<meta name="description" content="{{ page_description | escape }}">{% endif %}
+    {% render 'meta-tags' %}
+
+    {%- if settings.font_pairing == 'soft' -%}
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap">
+    {%- endif -%}
+
+    {%- capture scheme_ids -%}{%- for s in settings.color_schemes limit: settings.palette_count -%}{{ s.id }},{%- endfor -%}{%- endcapture -%}
+    <script>
+      (function(){try{var p=localStorage.getItem('nn-palette'),ok={{ scheme_ids | json }}.split(',');if(p&&ok.indexOf(p)>-1{% unless settings.palette_switcher %}&&false{% endunless %}{% if request.design_mode %}&&false{% endif %})document.documentElement.setAttribute('data-palette',p)}catch(e){}})();
+    </script>
+    {% render 'color-schemes' %}
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'fashion.css' | asset_url | stylesheet_tag }}
+    {%- if settings.motion_gsap -%}
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer="defer"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer="defer"></script>
+    {%- endif -%}
+    <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'motion.js' | asset_url }}" defer="defer"></script>
+
+    {{ content_for_header }}
+  </head>
+
+  <body class="color-scheme color-{{ settings.body_scheme.id }} template-{{ template.name }}" data-gsap="{{ settings.motion_gsap }}" data-smooth="{{ settings.motion_smooth }}" data-magnetic="{{ settings.motion_magnetic }}" data-parallax="{{ settings.motion_parallax }}">
+    <a class="skip" href="#MainContent">{{ 'general.skip' | t }}</a>
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" role="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {% section 'cart-drawer' %}
+    {% render 'search-overlay' %}
+
+    <div class="qv-modal color-scheme color-{{ settings.body_scheme.id }}" id="QuickView" role="dialog" aria-modal="true" aria-labelledby="QuickViewTitle" hidden>
+      <div class="qv-panel">
+        <button type="button" class="icon-btn qv-close" data-close-quick-view aria-label="{{ 'products.close' | t }}">{% render 'icon', icon: 'close' %}</button>
+        <div data-quick-view-body></div>
+      </div>
+    </div>
+
+    {%- if settings.palette_switcher -%}
+      <div class="palette" role="group" aria-label="{{ settings.palette_label | escape }}">
+        {%- if settings.palette_label != blank %}<span>{{ settings.palette_label | escape }}</span>{% endif -%}
+        {%- for scheme in settings.color_schemes limit: settings.palette_count -%}
+          <button type="button" data-palette-btn="{{ scheme.id }}" aria-pressed="false" aria-label="{{ settings.palette_label | escape }} {{ forloop.index }}" title="{{ forloop.index }}" style="background:linear-gradient(135deg,{{ scheme.settings.tint_1 }} 50%,{{ scheme.settings.accent }} 50%)"></button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if settings.compare_enable -%}
+      <aside class="cmp-side color-scheme color-{{ settings.body_scheme.id }}" data-compare-bar hidden aria-label="{{ 'compare.title' | t }}">
+        <button type="button" class="cmp-tab" data-compare-toggle aria-expanded="true" aria-controls="CompareSidePanel">
+          {%- render 'icon', icon: 'compare' -%}
+          <span class="cmp-tab-l">{{ 'compare.title' | t }}</span>
+          <span class="cmp-tab-n" data-compare-n></span>
+        </button>
+        <div class="cmp-panel" id="CompareSidePanel">
+          <div class="cmp-head">
+            <strong>{{ 'compare.title' | t }} <span data-compare-count></span></strong>
+            <button type="button" class="icon-btn cmp-min" data-compare-toggle aria-label="{{ 'compare.hide' | t }}">{% render 'icon', icon: 'close' %}</button>
+          </div>
+          <ul class="cmp-items" data-compare-thumbs role="list"></ul>
+          <p class="cmp-hint" data-compare-hint hidden>{{ 'compare.need_more' | t }}</p>
+          <a class="btn primary cmp-go" href="{% render 'list-url', kind: 'compare' %}" data-compare-go>{{ 'compare.compare_now' | t }}</a>
+          <button type="button" class="cmp-clear" data-compare-clear>{{ 'compare.clear' | t }}</button>
+        </div>
+      </aside>
+    {%- endif -%}
+
+    <div class="scrim" id="Scrim"></div>
+    <div class="toast" id="Toast" role="status" aria-live="polite"></div>
+
+    <script>
+      window.theme = {
+        cartType: {{ settings.cart_type | json }},
+        designMode: {{ request.design_mode | json }},
+        compareMax: {{ settings.compare_max | default: 4 }},
+        wishlistUrl: "{% render 'list-url', kind: 'wishlist' %}",
+        compareUrl: "{% render 'list-url', kind: 'compare' %}",
+        moneyFormat: {{ shop.money_format | json }},
+        routes: {
+          root: {{ routes.root_url | json }},
+          cart_url: {{ routes.cart_url | json }},
+          cart_add_url: {{ routes.cart_add_url | json }},
+          cart_change_url: {{ routes.cart_change_url | json }},
+          search_url: {{ routes.search_url | json }},
+          predictive_search_url: {{ routes.predictive_search_url | json }}
+        },
+        strings: {
+          added: {{ 'cart.added' | t | json }},
+          error: {{ 'cart.error' | t | json }},
+          addToCart: {{ 'products.add_to_cart' | t | json }},
+          soldOut: {{ 'products.sold_out' | t | json }},
+          unavailable: {{ 'products.unavailable' | t | json }},
+          save: {{ 'products.save' | t | json }},
+          seeAll: {{ 'search.see_all' | t | json }},
+          wishAdded: {{ 'wishlist.added_toast' | t | json }},
+          wishRemoved: {{ 'wishlist.removed_toast' | t | json }},
+          compareAdded: {{ 'compare.added_toast' | t | json }},
+          compareRemoved: {{ 'compare.removed_toast' | t | json }},
+          compareRemove: {{ 'compare.remove' | t | json }},
+          compareShow: {{ 'compare.show' | t | json }},
+          compareHide: {{ 'compare.hide' | t | json }},
+          compareFull: {{ 'compare.full' | t: count: settings.compare_max | json }}
+        }
+      };
+    </script>
+  </body>
+</html>

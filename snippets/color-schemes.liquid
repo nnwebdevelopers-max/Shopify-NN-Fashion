@@ -1,0 +1,11 @@
+{%- style -%}
+  html:root{--page-width:{% if settings.layout_width == 'boxed' %}{{ settings.page_width }}px{% else %}100%{% endif %};--gutter:{{ settings.page_gutter | default: 48 }}px;--radius:{{ settings.radius }}px;{% if settings.font_pairing == 'system' %}--display:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;{% endif %}}
+  {%- for scheme in settings.color_schemes %}
+  .color-{{ scheme.id }},html[data-palette="{{ scheme.id }}"] .color-scheme{ {%- render 'scheme-vars', scheme: scheme -%} }
+  {%- endfor %}
+  {%- if settings.auto_dark and settings.dark_scheme != blank %}
+  @media (prefers-color-scheme:dark){html:not([data-palette]) .color-scheme{ {%- render 'scheme-vars', scheme: settings.dark_scheme -%} }}
+  {%- endif %}
+  {%- unless settings.reveal %}.rv.pending{opacity:1;transform:none}{% endunless %}
+  .logo img{width:{{ settings.logo_width }}px}
+{%- endstyle -%}

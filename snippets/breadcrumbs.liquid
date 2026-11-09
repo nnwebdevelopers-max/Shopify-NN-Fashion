@@ -1,0 +1,6 @@
+{%- comment -%} Params: mid_title, mid_url (optional), last {%- endcomment -%}
+<nav class="crumbs" aria-label="{{ 'general.breadcrumbs' | t }}">
+  <a href="{{ routes.root_url }}">{{ 'general.home' | t }}</a>
+  {%- if mid_title != blank -%}<i>/</i>{% if mid_url != blank %}<a href="{{ mid_url }}">{{ mid_title | escape }}</a>{% else %}<span>{{ mid_title | escape }}</span>{% endif %}{%- endif -%}
+  {%- if last != blank -%}<i>/</i><span aria-current="page">{{ last | escape }}</span>{%- endif -%}
+</nav>

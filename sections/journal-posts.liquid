@@ -1,0 +1,56 @@
+{%- liquid
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+  assign b = section.settings.blog
+  if b == blank
+    assign b = blogs.first
+  endif
+-%}
+<div class="sec color-scheme color-{{ scheme }}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap rv">
+    <div class="head">
+      <div>
+        {%- if section.settings.eyebrow != blank %}<p class="eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif -%}
+        {%- if section.settings.heading != blank %}<h2>{{ section.settings.heading }}</h2>{% endif -%}
+      </div>
+      {%- if b != blank and section.settings.link_label != blank -%}<a class="link" href="{{ b.url }}">{{ section.settings.link_label | escape }}</a>{%- endif -%}
+    </div>
+    {%- if b != blank and b.articles_count > 0 -%}
+      <div class="jbento" data-stagger>
+        {%- for article in b.articles limit: section.settings.limit -%}
+          {%- assign tn = forloop.index0 | modulo: 4 | plus: 1 -%}
+          <a class="jpost{% if forloop.first %} big{% endif %}" href="{{ article.url }}">
+            <div class="jart tint-{{ tn }}">{% render 'article-art', article: article, width: 900 %}</div>
+            <div class="jtx">
+              <span class="jmeta">{{ article.published_at | time_tag: format: 'month_day_year' }}{% if article.author != blank %} · {{ article.author | escape }}{% endif %}</span>
+              <h3>{{ article.title | escape }}</h3>
+              {%- if forloop.first -%}<p>{{ article.excerpt_or_content | strip_html | truncatewords: 24 }}</p>{%- endif -%}
+            </div>
+          </a>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <p class="rte">{{ 'blog.empty' | t }}</p>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Journal posts",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "blog", "id": "blog", "label": "Blog", "info": "Defaults to the first blog." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Explore popular articles" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "From the <em>journal</em>" },
+    { "type": "text", "id": "link_label", "label": "Link label", "default": "Read all" },
+    { "type": "range", "id": "limit", "label": "Posts", "min": 3, "max": 6, "step": 1, "default": 3 },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "presets": [ { "name": "Journal posts" } ]
+}
+{% endschema %}

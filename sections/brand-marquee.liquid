@@ -1,0 +1,56 @@
+<div class="sec color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap rv">
+    {%- if section.settings.heading != blank %}<p class="eyebrow" style="text-align:center;margin-bottom:18px">{{ section.settings.heading | escape }}</p>{% endif -%}
+    <div class="brands">
+      <div class="track" style="--speed:{{ section.settings.speed }}s">
+        {%- for i in (1..2) -%}
+          {%- for block in section.blocks -%}
+            {%- capture inner -%}{%- if block.settings.logo != blank -%}{{ block.settings.logo | image_url: height: 80 | image_tag: loading: 'lazy', alt: block.settings.name }}{%- else -%}<span>{{ block.settings.name | escape }}</span>{%- endif -%}{%- endcapture -%}
+            {%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}" {% if i == 2 %}aria-hidden="true" tabindex="-1"{% else %}{{ block.shopify_attributes }}{% endif %}>{{ inner }}</a>{%- else -%}<div {% if i == 2 %}aria-hidden="true"{% else %}{{ block.shopify_attributes }}{% endif %}>{{ inner }}</div>{%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Brand marquee",
+  "max_blocks": 16,
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Lorem ipsum. Dolor sit amet." },
+    { "type": "range", "id": "speed", "label": "Loop duration", "min": 10, "max": 80, "step": 2, "unit": "s", "default": 32 },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "brand",
+      "name": "Brand",
+      "settings": [
+        { "type": "text", "id": "name", "label": "Name", "default": "LOREM" },
+        { "type": "image_picker", "id": "logo", "label": "Logo", "info": "Shown instead of the name." },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brand marquee",
+      "blocks": [
+        { "type": "brand", "settings": { "name": "LOREM" } },
+        { "type": "brand", "settings": { "name": "IPSUM" } },
+        { "type": "brand", "settings": { "name": "DOLOR" } },
+        { "type": "brand", "settings": { "name": "SITAMET" } },
+        { "type": "brand", "settings": { "name": "CONSEC" } },
+        { "type": "brand", "settings": { "name": "VELITO" } },
+        { "type": "brand", "settings": { "name": "NULLA" } },
+        { "type": "brand", "settings": { "name": "AMETRA" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

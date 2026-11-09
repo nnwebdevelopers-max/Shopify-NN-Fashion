@@ -1,0 +1,75 @@
+{%- liquid
+  assign threshold = settings.free_shipping | times: 100
+  assign left = threshold | minus: cart.total_price
+  if threshold > 0
+    assign pct = cart.total_price | times: 100 | divided_by: threshold
+    if pct > 100
+      assign pct = 100
+    endif
+  endif
+-%}
+<aside class="drawer color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" id="CartDrawer" aria-label="{{ 'cart.title' | t }}" aria-hidden="true" style="background:var(--surface)">
+  <span hidden data-cart-count-src="{{ cart.item_count }}"></span>
+  <header>
+    <h2>{{ 'cart.title' | t }}</h2>
+    <button type="button" class="icon-btn" data-close-cart aria-label="{{ 'cart.close' | t }}">{% render 'icon', icon: 'close' %}</button>
+  </header>
+  <div class="lines">
+    {%- if cart.item_count > 0 -%}
+      {%- for item in cart.items -%}
+        <div class="line">
+          <a class="th tint-{{ forloop.index0 | modulo: 4 | plus: 1 }}" href="{{ item.url }}" tabindex="-1">
+            {%- if item.image -%}{{ item.image | image_url: width: 200 | image_tag: loading: 'lazy', alt: item.product.title }}{%- else -%}{% capture k %}{% render 'art-for', product: item.product %}{% endcapture %}{% render 'art', name: k %}{%- endif -%}
+          </a>
+          <div>
+            <h4><a href="{{ item.url }}">{{ item.product.title | escape }}</a></h4>
+            {%- unless item.product.has_only_default_variant -%}<small>{{ item.variant.title | escape }}</small>{%- endunless -%}
+            {%- for d in item.line_level_discount_allocations -%}<small>{{ d.discount_application.title | escape }} (−{{ d.amount | money }})</small>{%- endfor -%}
+            <div class="qty">
+              <button type="button" data-line="{{ forloop.index }}" data-line-qty="{{ item.quantity | minus: 1 }}" aria-label="{{ 'cart.decrease' | t }}">−</button>
+              <span>{{ item.quantity }}</span>
+              <button type="button" data-line="{{ forloop.index }}" data-line-qty="{{ item.quantity | plus: 1 }}" aria-label="{{ 'cart.increase' | t }}">+</button>
+            </div>
+          </div>
+          <strong>{{ item.final_line_price | money }}</strong>
+        </div>
+      {%- endfor -%}
+    {%- else -%}
+      <div class="empty">
+        <p>{{ section.settings.empty_text | escape }}</p>
+        <a class="btn ghost" href="{{ section.settings.empty_link | default: routes.all_products_collection_url }}">{{ 'cart.continue' | t }}</a>
+      </div>
+    {%- endif -%}
+  </div>
+  {%- if cart.item_count > 0 -%}
+    <div>
+      {%- if threshold > 0 -%}
+        <div class="free">
+          {%- assign left_money = left | money -%}
+          {%- if left > 0 -%}{{ 'cart.free_left' | t: amount: left_money }}{%- else -%}{{ 'cart.free_done' | t }}{%- endif -%}
+          <div class="meter"><i style="--w:{{ pct }}%"></i></div>
+        </div>
+      {%- endif -%}
+      {%- for d in cart.cart_level_discount_applications -%}
+        <div class="total" style="font-size:15px;padding-block:4px;color:var(--muted)"><span>{{ d.title | escape }}</span><span>−{{ d.total_allocated_amount | money }}</span></div>
+      {%- endfor -%}
+      <div class="total"><span>{{ 'cart.subtotal' | t }}</span><span>{{ cart.total_price | money }}</span></div>
+      <form action="{{ routes.cart_url }}" method="post">
+        <button type="submit" name="checkout" class="btn primary full">{{ 'cart.checkout' | t }} <span class="arr">→</span></button>
+      </form>
+      <p class="note">{{ settings.cart_note_text | escape }} <a class="link" href="{{ routes.cart_url }}">{{ 'cart.view' | t }}</a></p>
+    </div>
+  {%- endif -%}
+</aside>
+
+{% schema %}
+{
+  "name": "Cart drawer",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "text", "id": "empty_text", "label": "Empty cart text", "default": "Lorem ipsum, your cart is empty." },
+    { "type": "url", "id": "empty_link", "label": "Empty cart button link" }
+  ]
+}
+{% endschema %}

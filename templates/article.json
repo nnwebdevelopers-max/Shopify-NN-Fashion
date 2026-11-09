@@ -1,0 +1,1 @@
+{ "sections": { "main": { "type": "main-article", "settings": { "show_author": true, "show_art": true, "tint": "1", "product_label": "Lorem ipsum", "show_share": true, "show_more": true, "more_eyebrow": "Lorem ipsum", "more_heading": "Dolor sit amet." } } }, "order": ["main"] }

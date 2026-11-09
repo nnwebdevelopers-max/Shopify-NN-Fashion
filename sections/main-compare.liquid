@@ -1,0 +1,61 @@
+<div class="color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" data-list-page="compare">
+  <div class="wrap">
+    {%- if section.settings.show_breadcrumbs -%}{% render 'breadcrumbs', last: page.title %}{%- endif -%}
+    <div class="phead">
+      {%- if section.settings.eyebrow != blank %}<p class="eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif -%}
+      <h1>{{ section.settings.heading | default: page.title | escape }}</h1>
+      {%- if page.content != blank %}<div class="rte">{{ page.content }}</div>{% endif -%}
+    </div>
+
+    <div class="list-loading" data-list-loading>{{ 'general.loading' | t }}</div>
+    <div class="cmp-tools" data-compare-tools hidden>
+      <label class="cmp-diff"><input type="checkbox" data-compare-diff> {{ 'compare.only_differences' | t }}</label>
+      <button type="button" class="link" data-compare-clear>{{ 'compare.clear' | t }}</button>
+    </div>
+    <div
+      class="cmp-scroll"
+      data-compare-table
+      data-l-price="{{ 'compare.price' | t | escape }}"
+      data-l-rating="{{ 'compare.rating' | t | escape }}"
+      data-l-brand="{{ 'products.brand' | t | escape }}"
+      data-l-type="{{ 'products.type' | t | escape }}"
+      data-l-spec="{{ 'products.key_spec' | t | escape }}"
+      data-l-availability="{{ 'compare.availability' | t | escape }}"
+      data-l-in-stock="{{ 'compare.in_stock' | t | escape }}"
+      data-l-sold-out="{{ 'products.sold_out' | t | escape }}"
+      data-l-remove="{{ 'compare.remove' | t | escape }}"
+      data-l-add="{{ 'products.add_to_cart' | t | escape }}"
+      data-l-choose="{{ 'products.choose_options' | t | escape }}"
+      data-l-add-more="{{ 'compare.add_more' | t | escape }}"
+      data-browse-url="{{ section.settings.empty_link | default: routes.all_products_collection_url }}"
+      data-show-buttons="{{ settings.card_quick_add }}"
+    ></div>
+
+    <div class="list-empty" data-list-empty hidden>
+      <span class="list-empty-icon">{% render 'icon', icon: 'compare' %}</span>
+      <h2>{{ section.settings.empty_heading | escape }}</h2>
+      {%- if section.settings.empty_text != blank %}<div class="rte">{{ section.settings.empty_text }}</div>{% endif -%}
+      <a class="btn primary" href="{{ section.settings.empty_link | default: routes.all_products_collection_url }}">{{ section.settings.empty_button | escape }}</a>
+    </div>
+  </div>
+  <div style="height:{{ section.settings.padding_bottom }}px"></div>
+</div>
+
+{% schema %}
+{
+  "name": "Compare",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "checkbox", "id": "show_breadcrumbs", "label": "Show breadcrumbs", "default": true },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Side by side" },
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Leave blank to use the page title." },
+    { "type": "header", "content": "Nothing to compare" },
+    { "type": "text", "id": "empty_heading", "label": "Heading", "default": "Nothing to compare yet" },
+    { "type": "richtext", "id": "empty_text", "label": "Text", "default": "<p>Tap the compare icon on up to four products to see them side by side. Lorem ipsum dolor sit amet.</p>" },
+    { "type": "text", "id": "empty_button", "label": "Button label", "default": "Browse products" },
+    { "type": "url", "id": "empty_link", "label": "Button link" },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ]
+}
+{% endschema %}

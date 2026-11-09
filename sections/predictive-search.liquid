@@ -1,0 +1,17 @@
+{%- if predictive_search.performed -%}
+  {%- assign r = predictive_search.resources -%}
+  {%- assign total = r.products.size | plus: r.articles.size | plus: r.collections.size -%}
+  <div data-predictive-count="{{ 'search.results_count' | t: count: total }}"></div>
+  <div data-predictive-results>
+    {%- for p in r.products -%}
+      <a class="mini" href="{{ p.url }}"><div class="th tint-{{ forloop.index0 | modulo: 4 | plus: 1 }}">{% if p.featured_media %}{{ p.featured_media | image_url: width: 300 | image_tag: loading: 'lazy', alt: '' }}{% else %}{% capture k %}{% render 'art-for', product: p %}{% endcapture %}{% render 'art', name: k %}{% endif %}</div><b>{{ p.title | escape }}</b><span>{{ p.price | money }}</span></a>
+    {%- endfor -%}
+    {%- for c in r.collections -%}
+      <a class="mini" href="{{ c.url }}"><div class="th tint-3">{% render 'collection-art', collection: c, width: 300 %}</div><b>{{ c.title | escape }}</b><span>{{ 'search.collection' | t }}</span></a>
+    {%- endfor -%}
+    {%- for a in r.articles -%}
+      <a class="mini" href="{{ a.url }}"><div class="th tint-2">{% if a.image %}{{ a.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: '', style: 'width:100%;height:100%;object-fit:cover;border-radius:16px' }}{% else %}{% render 'art', name: 'laptop' %}{% endif %}</div><b>{{ a.title | escape }}</b><span>{{ 'search.article' | t }}</span></a>
+    {%- endfor -%}
+    {%- if total == 0 -%}<p class="none">{{ 'search.no_results' | t: terms: predictive_search.terms }}</p>{%- endif -%}
+  </div>
+{%- endif -%}

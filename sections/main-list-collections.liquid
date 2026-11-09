@@ -1,0 +1,31 @@
+<div class="color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}">
+  <div class="wrap">
+    {%- assign shop_label = 'collections.shop' | t -%}
+    {% render 'breadcrumbs', last: shop_label %}
+    <div class="phead"><p class="eyebrow">{{ section.settings.eyebrow | escape }}</p><h1>{{ section.settings.heading | escape }}</h1></div>
+    <div class="clist">
+      {%- for c in collections -%}
+        {%- unless c.handle == 'frontpage' or c.products_count == 0 -%}
+          <a class="cat tint-{{ forloop.index0 | modulo: 4 | plus: 1 }}" href="{{ c.url }}" style="min-height:220px">
+            <div class="tx"><h3>{{ c.title | escape }}</h3><small>{{ 'collections.product_count' | t: count: c.products_count }}</small></div>
+            <span class="go" aria-hidden="true">→</span>
+            <div class="art">{% render 'collection-art', collection: c, width: 500 %}</div>
+          </a>
+        {%- endunless -%}
+      {%- endfor -%}
+    </div>
+  </div>
+  <div style="height:100px"></div>
+</div>
+
+{% schema %}
+{
+  "name": "Collections list",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Lorem ipsum" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Dolor sit amet." }
+  ]
+}
+{% endschema %}

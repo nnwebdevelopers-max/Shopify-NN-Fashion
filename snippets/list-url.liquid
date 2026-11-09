@@ -1,0 +1,17 @@
+{%- comment -%} Outputs the URL of the wishlist or compare page. Param: kind ('wishlist' or 'compare') {%- endcomment -%}
+{%- liquid
+  if kind == 'compare'
+    assign pg = settings.compare_page
+  else
+    assign pg = settings.wishlist_page
+  endif
+  if pg != blank
+    echo pg.url
+  else
+    assign base = routes.root_url
+    if base != '/'
+      assign base = base | append: '/'
+    endif
+    echo base | append: 'pages/' | append: kind
+  endif
+-%}

@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "main": { "type": "main-page", "settings": { "eyebrow": "Lorem ipsum", "padding_bottom": 20 } },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": { "type": "question", "settings": { "question": "Lorem ipsum dolor sit amet?", "answer": "<p>Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>" } },
+        "q2": { "type": "question", "settings": { "question": "Ut enim ad minim veniam?", "answer": "<p>Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>" } },
+        "q3": { "type": "question", "settings": { "question": "Duis aute irure dolor?", "answer": "<p>In reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>" } },
+        "q4": { "type": "question", "settings": { "question": "Excepteur sint occaecat?", "answer": "<p>Cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>" } },
+        "q5": { "type": "question", "settings": { "question": "Sed ut perspiciatis unde?", "answer": "<p>Omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>" } }
+      },
+      "block_order": ["q1", "q2", "q3", "q4", "q5"],
+      "settings": { "eyebrow": "Lorem ipsum", "heading": "Dolor sit amet.", "open_first": true }
+    }
+  },
+  "order": ["main", "faq"]
+}

@@ -1,0 +1,44 @@
+<div class="sec color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap rv">
+    <div class="news" style="background:var(--{{ section.settings.tint }})">
+      <div>
+        {%- if section.settings.heading != blank %}<h2>{{ section.settings.heading | escape }}</h2>{% endif -%}
+        {%- if section.settings.text != blank %}<div class="rte">{{ section.settings.text }}</div>{% endif -%}
+      </div>
+      <div>
+        {%- assign fid = 'Newsletter-' | append: section.id -%}
+        {%- form 'customer', id: fid -%}
+          <div class="form">
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            <input type="email" name="contact[email]" required placeholder="{{ 'newsletter.email' | t }}" aria-label="{{ 'newsletter.email' | t }}" autocomplete="email">
+            <button class="btn primary" type="submit">{{ section.settings.button | escape }}</button>
+          </div>
+          <p class="ok" role="status">
+            {%- if form.posted_successfully? -%}{{ 'newsletter.success' | t }}{%- elsif form.errors -%}{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}{%- endif -%}
+          </p>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Lorem ipsum. Dolor sit amet." },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>" },
+    { "type": "text", "id": "button", "label": "Button label", "default": "Subscribe" },
+    {
+      "type": "select", "id": "tint", "label": "Panel tint",
+      "options": [ { "value": "t1", "label": "Tint 1" }, { "value": "t2", "label": "Tint 2" }, { "value": "t3", "label": "Tint 3" }, { "value": "t4", "label": "Tint 4" }, { "value": "surface", "label": "Surface" } ],
+      "default": "t1"
+    },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "presets": [ { "name": "Newsletter" } ]
+}
+{% endschema %}

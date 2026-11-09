@@ -1,0 +1,18 @@
+<div class="color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}">
+  <div class="wrap nf">
+    <h1>404</h1>
+    <p class="rte">{{ section.settings.text | escape }}</p>
+    <a class="btn primary" href="{{ routes.all_products_collection_url }}">{{ 'cart.continue' | t }} <span class="arr">→</span></a>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "404",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "text", "id": "text", "label": "Text", "default": "Lorem ipsum, this page could not be found." }
+  ]
+}
+{% endschema %}

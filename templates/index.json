@@ -1,0 +1,449 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "blocks": {
+        "t1": {
+          "type": "tile",
+          "settings": {
+            "size": "m",
+            "tone": "butter",
+            "eyebrow": "Limited time",
+            "heading": "Up to 30% off",
+            "text": "Lorem ipsum dolor sit amet consectetur.",
+            "button": "Shop the sale",
+            "link": "shopify://collections/sale",
+            "art": "sneaker"
+          }
+        },
+        "t2": {
+          "type": "tile",
+          "settings": {
+            "size": "m",
+            "tone": "lavender",
+            "heading": "Bags & backpacks",
+            "button": "Explore",
+            "link": "shopify://collections/bags",
+            "art": "backpack"
+          }
+        },
+        "t3": {
+          "type": "tile",
+          "settings": {
+            "size": "s",
+            "tone": "white",
+            "eyebrow": "Free delivery",
+            "heading": "On orders over $200",
+            "text": "Lorem ipsum dolor sit amet."
+          }
+        },
+        "t4": {
+          "type": "tile",
+          "settings": {
+            "size": "s",
+            "tone": "peach",
+            "eyebrow": "Sale on",
+            "heading": "Accessories",
+            "button": "Shop now",
+            "link": "shopify://collections/accessories",
+            "art": "cap"
+          }
+        },
+        "t5": {
+          "type": "tile",
+          "settings": {
+            "size": "s",
+            "tone": "sage",
+            "eyebrow": "Hotline",
+            "heading": "+1 (800) 2345 6789"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2",
+        "t3",
+        "t4",
+        "t5"
+      ],
+      "settings": {
+        "main_scheme": "scheme-2",
+        "eyebrow": "Timeless cuts · New arrivals",
+        "line_1": "Lorem ipsum",
+        "line_2": "dolor sit amet,",
+        "line_3": "consectetur.",
+        "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>",
+        "btn_1": "Explore collection",
+        "btn_1_link": "shopify://collections/autumn-workwear",
+        "btn_2": "Lookbook",
+        "btn_2_link": "shopify://pages/lookbook",
+        "art": "jacket",
+        "padding_top": 8,
+        "padding_bottom": 80
+      }
+    },
+    "categories": {
+      "type": "category-bento",
+      "blocks": {
+        "b1": {
+          "type": "category",
+          "settings": {
+            "collection": "jackets-coats",
+            "text": "Lorem ipsum dolor",
+            "size": "big",
+            "tint": "1",
+            "art": "collection"
+          }
+        },
+        "b2": {
+          "type": "category",
+          "settings": {
+            "collection": "women",
+            "text": "Sit amet elit",
+            "size": "wide",
+            "tint": "2",
+            "art": "collection"
+          }
+        },
+        "b3": {
+          "type": "category",
+          "settings": {
+            "collection": "footwear",
+            "text": "Sed do eiusmod",
+            "size": "",
+            "tint": "3",
+            "art": "collection"
+          }
+        },
+        "b4": {
+          "type": "category",
+          "settings": {
+            "collection": "bags",
+            "text": "Tempor incididunt",
+            "size": "",
+            "tint": "4",
+            "art": "collection"
+          }
+        },
+        "b5": {
+          "type": "category",
+          "settings": {
+            "collection": "men",
+            "text": "Ut labore et dolore",
+            "size": "wide",
+            "tint": "4",
+            "art": "collection"
+          }
+        },
+        "b6": {
+          "type": "category",
+          "settings": {
+            "collection": "accessories",
+            "text": "Magna aliqua",
+            "size": "",
+            "tint": "1",
+            "art": "collection"
+          }
+        },
+        "b7": {
+          "type": "category",
+          "settings": {
+            "collection": "activewear",
+            "text": "Ut enim ad minim",
+            "size": "",
+            "tint": "3",
+            "art": "collection"
+          }
+        }
+      },
+      "block_order": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7"
+      ],
+      "settings": {
+        "eyebrow": "Shop by edit",
+        "heading": "Lorem ipsum dolor sit.",
+        "link_label": "All collections",
+        "link": "shopify://collections",
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "picks": {
+      "type": "featured-collection",
+      "blocks": {
+        "tab1": {
+          "type": "tab",
+          "settings": {
+            "collection": "top-trending",
+            "label": "Top trending"
+          }
+        },
+        "tab2": {
+          "type": "tab",
+          "settings": {
+            "collection": "new-arrivals",
+            "label": "New arrivals"
+          }
+        },
+        "tab3": {
+          "type": "tab",
+          "settings": {
+            "collection": "sale",
+            "label": "On sale"
+          }
+        },
+        "tab4": {
+          "type": "tab",
+          "settings": {
+            "collection": "bulk-order",
+            "label": "Bulk order"
+          }
+        }
+      },
+      "block_order": [
+        "tab1",
+        "tab2",
+        "tab3",
+        "tab4"
+      ],
+      "settings": {
+        "eyebrow": "Lorem ipsum",
+        "heading": "Dolor sit amet.",
+        "limit": 8,
+        "columns": 4,
+        "show_view_all": true,
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "banner": {
+      "type": "sale-banner",
+      "blocks": {
+        "i1": {
+          "type": "item",
+          "settings": {
+            "art": "backpack"
+          }
+        },
+        "i2": {
+          "type": "item",
+          "settings": {
+            "art": "sneaker"
+          }
+        },
+        "i3": {
+          "type": "item",
+          "settings": {
+            "art": "tee"
+          }
+        }
+      },
+      "block_order": [
+        "i1",
+        "i2",
+        "i3"
+      ],
+      "settings": {
+        "panel_scheme": "scheme-2",
+        "eyebrow": "Sale on · Accessories",
+        "number": "30 – 60%",
+        "heading": "off all sale",
+        "button": "Shop the sale",
+        "link": "shopify://collections/sale",
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "trust": {
+      "type": "trust-strip",
+      "blocks": {
+        "t1": {
+          "type": "item",
+          "settings": {
+            "title": "Return & exchange",
+            "text": "Lorem ipsum dolor sit amet"
+          }
+        },
+        "t2": {
+          "type": "item",
+          "settings": {
+            "title": "Quality guarantee",
+            "text": "Consectetur adipiscing elit"
+          }
+        },
+        "t3": {
+          "type": "item",
+          "settings": {
+            "title": "Free delivery",
+            "text": "Sed do eiusmod tempor"
+          }
+        },
+        "t4": {
+          "type": "item",
+          "settings": {
+            "title": "+1 (800) 2345 6789",
+            "text": "Ut enim ad minim veniam"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2",
+        "t3",
+        "t4"
+      ],
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "brands": {
+      "type": "brand-marquee",
+      "blocks": {
+        "br1": {
+          "type": "brand",
+          "settings": {
+            "name": "HALDEN"
+          }
+        },
+        "br2": {
+          "type": "brand",
+          "settings": {
+            "name": "ORSA"
+          }
+        },
+        "br3": {
+          "type": "brand",
+          "settings": {
+            "name": "KESTREL"
+          }
+        },
+        "br4": {
+          "type": "brand",
+          "settings": {
+            "name": "NORDHAUS"
+          }
+        },
+        "br5": {
+          "type": "brand",
+          "settings": {
+            "name": "VALE ROWE"
+          }
+        },
+        "br6": {
+          "type": "brand",
+          "settings": {
+            "name": "MAREN CO"
+          }
+        }
+      },
+      "block_order": [
+        "br1",
+        "br2",
+        "br3",
+        "br4",
+        "br5",
+        "br6"
+      ],
+      "settings": {
+        "heading": "Lorem ipsum. Dolor sit amet.",
+        "speed": 32,
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "testimonials": {
+      "type": "testimonials",
+      "blocks": {
+        "r1": {
+          "type": "review",
+          "settings": {
+            "quote": "Lorem ipsum dolor sit amet",
+            "text": "Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            "author": "James K.",
+            "verified": true
+          }
+        },
+        "r2": {
+          "type": "review",
+          "settings": {
+            "quote": "Ut enim ad minim veniam",
+            "text": "Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+            "author": "Maya R.",
+            "verified": true
+          }
+        },
+        "r3": {
+          "type": "review",
+          "settings": {
+            "quote": "Duis aute irure dolor",
+            "text": "In reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+            "author": "Theo L.",
+            "verified": true
+          }
+        },
+        "r4": {
+          "type": "review",
+          "settings": {
+            "quote": "Excepteur sint occaecat",
+            "text": "Cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+            "author": "Priya S.",
+            "verified": true
+          }
+        }
+      },
+      "block_order": [
+        "r1",
+        "r2",
+        "r3",
+        "r4"
+      ],
+      "settings": {
+        "eyebrow": "Customer reviews",
+        "heading": "Kind <em>words</em>",
+        "speed": 60,
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "journal": {
+      "type": "journal-posts",
+      "settings": {
+        "eyebrow": "Explore popular articles",
+        "heading": "From the <em>journal</em>",
+        "link_label": "Read all",
+        "limit": 3,
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Lorem ipsum. Dolor sit amet.",
+        "text": "<p>Consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>",
+        "button": "Subscribe",
+        "tint": "t1",
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "categories",
+    "picks",
+    "banner",
+    "trust",
+    "brands",
+    "testimonials",
+    "journal",
+    "newsletter"
+  ]
+}

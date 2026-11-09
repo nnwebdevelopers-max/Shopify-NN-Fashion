@@ -1,0 +1,201 @@
+{%- liquid
+  assign per_page = section.settings.per_page
+  assign has_filters = false
+  if section.settings.show_filters and collection.filters.size > 0
+    assign has_filters = true
+  endif
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+  assign promo = section.blocks | where: 'type', 'promo' | first
+-%}
+<div class="color-scheme color-{{ scheme }}" data-collection-section data-section-id="{{ section.id }}">
+  <div class="wrap">
+    {%- if section.settings.show_breadcrumbs -%}{%- assign shop_label = 'collections.shop' | t -%}{% render 'breadcrumbs', mid_title: shop_label, mid_url: routes.collections_url, last: collection.title %}{%- endif -%}
+
+    {%- if section.settings.show_hero -%}
+      <section class="chero color-scheme color-{{ section.settings.hero_scheme.id }}" data-motion="chero">
+        <div class="chero-tx">
+          <p class="eyebrow">{{ 'collections.eyebrow' | t }} · {{ 'collections.product_count' | t: count: collection.products_count }}</p>
+          <h1>{{ collection.title | escape }}</h1>
+          {%- if section.settings.show_description and collection.description != blank -%}<div class="rte">{{ collection.description | strip_html | truncatewords: 34 }}</div>{%- endif -%}
+        </div>
+        <div class="chero-art" aria-hidden="true">
+          {%- if collection.image -%}
+            <div class="cf cf1">{{ collection.image | image_url: width: 600 | image_tag: loading: 'eager', alt: '' }}</div>
+          {%- else -%}
+            {%- for p in collection.products limit: 2 -%}
+              <div class="cf cf{{ forloop.index }}">
+                {%- if p.featured_media -%}{{ p.featured_media | image_url: width: 500 | image_tag: loading: 'eager', alt: '' }}{%- else -%}{% capture k %}{% render 'art-for', product: p %}{% endcapture %}{% render 'art', name: k %}{%- endif -%}
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+      </section>
+    {%- else -%}
+      <div class="phead">
+        <p class="eyebrow">{{ 'collections.eyebrow' | t }}</p>
+        <h1>{{ collection.title | escape }}</h1>
+        {%- if section.settings.show_description and collection.description != blank -%}<div class="rte">{{ collection.description }}</div>{%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.chips_menu != blank -%}
+      <div class="subchips">
+        <a href="{{ collection.url }}" aria-current="{% if collection.handle == section.settings.chips_menu.handle %}true{% else %}false{% endif %}">{{ 'collections.all' | t }}</a>
+        {%- for l in section.settings.chips_menu.links -%}
+          <a href="{{ l.url }}" aria-current="{% if l.url == collection.url or l.active %}true{% else %}false{% endif %}">{{ l.title | escape }}</a>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- paginate collection.products by per_page -%}
+      <div class="cbar">
+        {%- if has_filters -%}
+          <form class="fbar" id="Filters" data-filter-form aria-label="{{ 'collections.filters' | t }}">
+            {%- if collection.sort_by != blank -%}<input type="hidden" name="sort_by" value="{{ collection.sort_by }}">{%- endif -%}
+            {%- for f in collection.filters -%}
+              {%- assign fcount = f.active_values.size -%}
+              {%- if f.type == 'price_range' and f.min_value.value or f.type == 'price_range' and f.max_value.value -%}{%- assign fcount = 1 -%}{%- endif -%}
+              <details class="fdrop" data-f="{{ forloop.index0 }}">
+                <summary class="chip{% if fcount > 0 %} on{% endif %}">{{ f.label | escape }}{% if fcount > 0 %} · {{ fcount }}{% endif %}<svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></summary>
+                <div class="fpanel">
+                  {%- case f.type -%}
+                    {%- when 'price_range' -%}
+                      <div class="prange">
+                        <input type="number" data-price-input name="{{ f.min_value.param_name }}" placeholder="0" min="0" max="{{ f.range_max | money_without_currency | remove: ',' }}" value="{{ f.min_value.value | money_without_currency | remove: ',' }}" aria-label="{{ 'collections.from' | t }}">
+                        <span>–</span>
+                        <input type="number" data-price-input name="{{ f.max_value.param_name }}" placeholder="{{ f.range_max | money_without_currency | remove: ',' }}" min="0" max="{{ f.range_max | money_without_currency | remove: ',' }}" value="{{ f.max_value.value | money_without_currency | remove: ',' }}" aria-label="{{ 'collections.to' | t }}">
+                      </div>
+                      <button type="submit" class="btn primary" style="margin-top:12px;padding:10px 18px">{{ 'collections.apply' | t }}</button>
+                    {%- else -%}
+                      {%- for v in f.values -%}
+                        <label class="chk{% if v.count == 0 and v.active == false %} dis{% endif %}">
+                          <input type="checkbox" name="{{ v.param_name }}" value="{{ v.value }}"{% if v.active %} checked{% endif %}>
+                          {%- if v.swatch.color -%}<i class="fsw" style="background:{{ v.swatch.color }}"></i>{%- endif -%}
+                          {{ v.label | escape }}<span class="n">{{ v.count }}</span>
+                        </label>
+                      {%- endfor -%}
+                  {%- endcase -%}
+                </div>
+              </details>
+            {%- endfor -%}
+            {%- assign active_count = 0 -%}
+            {%- for f in collection.filters -%}{%- assign active_count = active_count | plus: f.active_values.size -%}{%- if f.min_value.value or f.max_value.value -%}{%- assign active_count = active_count | plus: 1 -%}{%- endif -%}{%- endfor -%}
+            {%- if active_count > 0 -%}
+              <div class="factive">
+                {%- for f in collection.filters -%}
+                  {%- for v in f.active_values -%}<a href="{{ v.url_to_remove }}" data-filter-link>{{ v.label | escape }} ✕</a>{%- endfor -%}
+                  {%- if f.type == 'price_range' -%}
+                    {%- if f.min_value.value or f.max_value.value -%}
+                      <a href="{{ f.url_to_remove }}" data-filter-link>{{ f.min_value.value | default: 0 | money }}–{{ f.max_value.value | default: f.range_max | money }} ✕</a>
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                <a class="clr" href="{{ collection.url }}?sort_by={{ sort_by }}" data-filter-link>{{ 'collections.clear' | t }}</a>
+              </div>
+            {%- endif -%}
+          </form>
+        {%- else -%}
+          <div></div>
+        {%- endif -%}
+        <div class="ctools">
+          <span class="count-l">{{ 'collections.product_count' | t: count: collection.products_count }}</span>
+          {%- if section.settings.show_sort -%}
+            <form data-sort-form>
+              <label class="chip sortchip">{{ 'collections.sort' | t }}
+                <select name="sort_by" aria-label="{{ 'collections.sort' | t }}">
+                  {%- for o in collection.sort_options -%}<option value="{{ o.value }}"{% if o.value == sort_by %} selected{% endif %}>{{ o.name | escape }}</option>{%- endfor -%}
+                </select>
+              </label>
+            </form>
+          {%- endif -%}
+          <div class="gtog" role="group" aria-label="{{ 'collections.layout' | t }}">
+            <button type="button" data-cols="3" aria-label="3" aria-pressed="false">{% render 'icon', icon: 'grid3' %}</button>
+            <button type="button" data-cols="4" aria-label="4" aria-pressed="true">{% render 'icon', icon: 'grid4' %}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cgrid" data-results data-cols-default="{{ section.settings.columns }}" style="--cols:{{ section.settings.columns }}">
+        {%- for product in collection.products -%}
+          {% render 'product-card', product: product, index: forloop.index0 %}
+          {%- if promo != blank and forloop.index == promo.settings.after -%}
+            <a class="ptile tint-{{ promo.settings.tint }}" href="{{ promo.settings.link | default: collection.url }}" {{ promo.shopify_attributes }}>
+              {%- if promo.settings.eyebrow != blank -%}<span class="eyebrow">{{ promo.settings.eyebrow | escape }}</span>{%- endif -%}
+              <h3>{{ promo.settings.heading | escape }}</h3>
+              {%- if promo.settings.button != blank -%}<span class="btn primary">{{ promo.settings.button | escape }} <span class="arr">→</span></span>{%- endif -%}
+              {%- if promo.settings.image != blank -%}<div class="pimgwrap">{{ promo.settings.image | image_url: width: 700 | image_tag: loading: 'lazy', alt: '' }}</div>{%- elsif promo.settings.art != blank -%}<div class="pimgwrap art">{% render 'art', name: promo.settings.art %}</div>{%- endif -%}
+            </a>
+          {%- endif -%}
+        {%- else -%}
+          <div class="nores">
+            <h3>{{ 'collections.empty_title' | t }}</h3>
+            <p>{{ 'collections.empty_text' | t }}</p>
+            {%- if active_count > 0 -%}<p style="margin-top:16px"><a class="link" href="{{ collection.url }}" data-filter-link>{{ 'collections.clear' | t }}</a></p>{%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- if paginate.pages > 1 -%}
+        <div class="loadmore" data-loadmore>
+          <p class="count-l">{{ 'collections.showing' | t: shown: collection.products.size, total: collection.products_count }}</p>
+          <div class="lmbar"><i style="width:{% assign pct = paginate.current_page | times: 100 | divided_by: paginate.pages %}{{ pct }}%"></i></div>
+          {%- if paginate.next -%}
+            <a class="btn primary" href="{{ paginate.next.url }}" data-load-next>{{ 'collections.load_more' | t }}</a>
+          {%- endif -%}
+        </div>
+        <nav class="pagination" aria-label="{{ 'general.pagination' | t }}">
+          {%- if paginate.previous %}<a href="{{ paginate.previous.url }}" data-filter-link aria-label="{{ 'general.previous' | t }}">←</a>{% endif -%}
+          {%- for part in paginate.parts -%}
+            {%- if part.is_link -%}<a href="{{ part.url }}" data-filter-link>{{ part.title }}</a>{%- elsif part.title == paginate.current_page -%}<span class="cur" aria-current="page">{{ part.title }}</span>{%- else -%}<span>{{ part.title }}</span>{%- endif -%}
+          {%- endfor -%}
+          {%- if paginate.next %}<a href="{{ paginate.next.url }}" data-filter-link aria-label="{{ 'general.next' | t }}">→</a>{% endif -%}
+        </nav>
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+  <div style="height:{{ section.settings.padding_bottom }}px"></div>
+</div>
+
+{% schema %}
+{
+  "name": "Collection products",
+  "max_blocks": 1,
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "checkbox", "id": "show_breadcrumbs", "label": "Show breadcrumbs", "default": true },
+    { "type": "header", "content": "Banner" },
+    { "type": "checkbox", "id": "show_hero", "label": "Show collection banner", "default": true },
+    { "type": "color_scheme", "id": "hero_scheme", "label": "Banner color scheme", "default": "scheme-2", "visible_if": "{{ section.settings.show_hero }}" },
+    { "type": "checkbox", "id": "show_description", "label": "Show collection description", "default": true },
+    { "type": "link_list", "id": "chips_menu", "label": "Category chips menu", "info": "Shows a row of quick links above the grid." },
+    { "type": "header", "content": "Product grid" },
+    { "type": "range", "id": "per_page", "label": "Products per page", "min": 8, "max": 48, "step": 4, "default": 24 },
+    { "type": "range", "id": "columns", "label": "Columns on desktop", "min": 3, "max": 5, "step": 1, "default": 4 },
+    { "type": "checkbox", "id": "show_filters", "label": "Show filters", "info": "Manage filters with the Shopify Search & Discovery app.", "default": true },
+    { "type": "checkbox", "id": "show_sort", "label": "Show sorting", "default": true },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 80 }
+  ],
+  "blocks": [
+    {
+      "type": "promo",
+      "name": "Editor's pick tile",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Editor's pick" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Layer up for the cold" },
+        { "type": "text", "id": "button", "label": "Button label", "default": "Shop the edit" },
+        { "type": "url", "id": "link", "label": "Link" },
+        { "type": "select", "id": "tint", "label": "Tile color", "options": [ { "value": "1", "label": "Tint 1" }, { "value": "2", "label": "Tint 2" }, { "value": "3", "label": "Tint 3" }, { "value": "4", "label": "Tint 4" } ], "default": "3" },
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "select", "id": "art", "label": "Illustration (when no image)", "options": [ { "value": "", "label": "None" }, { "value": "hoodie", "label": "Hoodie" }, { "value": "jacket", "label": "Jacket" }, { "value": "coat", "label": "Coat" }, { "value": "sneaker", "label": "Sneaker" }, { "value": "backpack", "label": "Backpack" } ], "default": "hoodie" },
+        { "type": "range", "id": "after", "label": "Show after product number", "min": 1, "max": 12, "step": 1, "default": 2 }
+      ]
+    }
+  ]
+}
+{% endschema %}

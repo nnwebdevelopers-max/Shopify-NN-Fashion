@@ -1,0 +1,93 @@
+{
+  "type": "header",
+  "name": "Header group",
+  "sections": {
+    "announcement": {
+      "type": "announcement-bar",
+      "blocks": {
+        "a1": {
+          "type": "announcement",
+          "settings": {
+            "text": "Lorem ipsum dolor sit amet",
+            "link": ""
+          }
+        },
+        "a2": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free delivery on orders over $200",
+            "link": ""
+          }
+        },
+        "a3": {
+          "type": "announcement",
+          "settings": {
+            "text": "Sed do eiusmod tempor",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "a1",
+        "a2",
+        "a3"
+      ],
+      "settings": {
+        "custom_scheme": true,
+        "color_scheme": "scheme-2"
+      }
+    },
+    "header": {
+      "type": "header",
+      "blocks": {
+        "mega_shop": {
+          "type": "mega",
+          "settings": {
+            "menu_item": "Shop",
+            "layout": "columns",
+            "feature_label": "Featured"
+          }
+        },
+        "mega_women": {
+          "type": "mega",
+          "settings": {
+            "menu_item": "Women",
+            "layout": "tiles",
+            "heading": "Women",
+            "feature_label": "Featured",
+            "promo_1_label": "New arrivals",
+            "promo_1_text": "Lorem ipsum dolor",
+            "promo_1_link": "shopify://collections/new-arrivals",
+            "promo_2_label": "Top trending",
+            "promo_2_text": "Sit amet elit",
+            "promo_2_link": "shopify://collections/top-trending"
+          }
+        },
+        "mega_men": {
+          "type": "mega",
+          "settings": {
+            "menu_item": "Men",
+            "layout": "tabs",
+            "feature_label": "Popular right now"
+          }
+        }
+      },
+      "block_order": [
+        "mega_shop",
+        "mega_women",
+        "mega_men"
+      ],
+      "settings": {
+        "menu": "main-menu",
+        "logo_text": "NN Fashion",
+        "sticky": true,
+        "show_wishlist": true,
+        "show_account": true
+      }
+    }
+  },
+  "order": [
+    "announcement",
+    "header"
+  ]
+}

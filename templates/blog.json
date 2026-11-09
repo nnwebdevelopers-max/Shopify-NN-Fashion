@@ -1,0 +1,1 @@
+{ "sections": { "main": { "type": "main-blog", "settings": { "eyebrow": "Lorem ipsum", "heading": "Dolor sit amet elit.", "show_tags": true, "per_page": 10 } } }, "order": ["main"] }

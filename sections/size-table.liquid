@@ -1,0 +1,53 @@
+{%- liquid
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+-%}
+<div class="sec color-scheme color-{{ scheme }}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap">
+    <div class="sizes-wrap">
+      {%- for block in section.blocks -%}
+        {%- assign rows = block.settings.rows | newline_to_br | split: '<br />' -%}
+        <div class="size-card" {{ block.shopify_attributes }}>
+          <h3>{{ block.settings.title | escape }}</h3>
+          {%- if block.settings.note != blank -%}<p class="rte">{{ block.settings.note | escape }}</p>{%- endif -%}
+          <div class="cmp-scroll">
+            <table class="size-tbl">
+              {%- for row in rows -%}
+                {%- assign cells = row | strip | split: ',' -%}
+                {%- if cells.size > 0 and row != blank -%}
+                  <tr>{%- for cell in cells -%}{%- if forloop.parent.first or forloop.first -%}<th scope="{% if forloop.parent.first %}col{% else %}row{% endif %}">{{ cell | strip | escape }}</th>{%- else -%}<td>{{ cell | strip | escape }}</td>{%- endif -%}{%- endfor -%}</tr>
+                {%- endif -%}
+              {%- endfor -%}
+            </table>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Size table",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "table",
+      "name": "Table",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Tops" },
+        { "type": "text", "id": "note", "label": "Note" },
+        { "type": "textarea", "id": "rows", "label": "Rows", "info": "One row per line, cells separated by commas. The first line is the header.", "default": "Size,Chest (cm),Waist (cm),Length (cm)\nXS,84,68,64\nS,90,74,66\nM,96,80,68\nL,102,86,70\nXL,108,92,72" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Size table", "blocks": [ { "type": "table" } ] } ]
+}
+{% endschema %}

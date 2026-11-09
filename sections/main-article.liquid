@@ -1,0 +1,93 @@
+<div class="color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}">
+  <div class="wrap">
+    {%- if section.settings.show_breadcrumbs -%}{% render 'breadcrumbs', mid_title: blog.title, mid_url: blog.url, last: article.title %}{%- endif -%}
+    <div class="art-h">
+      {%- if article.tags.size > 0 %}<span class="tag">{{ article.tags.first | escape }}</span>{% endif -%}
+      <h1>{{ article.title | escape }}</h1>
+      {%- if article.excerpt != blank %}<p style="color:var(--muted);font-size:19px">{{ article.excerpt | strip_html }}</p>{% endif -%}
+      <div class="jmeta">{% if section.settings.show_author %}{{ article.author | escape }} · {% endif %}{{ article.published_at | time_tag: format: 'month_day_year' }}</div>
+    </div>
+    {%- if article.image or section.settings.show_art -%}
+      <div class="art-hero tint-{{ section.settings.tint }}">{% render 'article-art', article: article, width: 1600 %}</div>
+    {%- endif -%}
+    <article class="prose">{{ article.content }}</article>
+
+    {%- if section.settings.product != blank -%}
+      {%- assign pr = section.settings.product -%}
+      <a class="inprod" href="{{ pr.url }}">
+        <div class="th tint-2">{% if pr.featured_media %}{{ pr.featured_media | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}{% else %}{% capture k %}{% render 'art-for', product: pr %}{% endcapture %}{% render 'art', name: k %}{% endif %}</div>
+        <div><span class="tag">{{ section.settings.product_label | escape }}</span><h4>{{ pr.title | escape }}</h4><div>{% render 'price', product: pr %}</div></div>
+      </a>
+    {%- endif -%}
+
+    {%- if section.settings.show_share -%}
+      <div class="share">
+        <a class="btn ghost" style="padding:9px 16px" target="_blank" rel="noopener" href="https://www.facebook.com/sharer.php?u={{ shop.url | append: article.url | url_encode }}">Facebook</a>
+        <a class="btn ghost" style="padding:9px 16px" target="_blank" rel="noopener" href="https://x.com/intent/post?url={{ shop.url | append: article.url | url_encode }}&text={{ article.title | url_encode }}">X</a>
+      </div>
+    {%- endif -%}
+
+    {%- if blog.comments_enabled? -%}
+      <div class="comments">
+        <h2 class="sec-t">{{ 'blog.comments' | t: count: article.comments_count }}</h2>
+        {%- for comment in article.comments -%}
+          <div class="c"><b>{{ comment.author | escape }}</b> <span class="jmeta">{{ comment.created_at | time_tag: format: 'month_day_year' }}</span><div class="rte">{{ comment.content }}</div></div>
+        {%- endfor -%}
+        {%- form 'new_comment', article, class: 'cform' -%}
+          {%- if form.posted_successfully? -%}<p class="notice">{% if blog.moderated? %}{{ 'blog.moderated' | t }}{% else %}{{ 'blog.posted' | t }}{% endif %}</p>{%- endif -%}
+          {%- if form.errors -%}<div class="notice err">{{ form.errors | default_errors }}</div>{%- endif -%}
+          <div class="two">
+            <label class="field">{{ 'contact.name' | t }}<input type="text" name="comment[author]" required value="{{ form.author }}"></label>
+            <label class="field">{{ 'contact.email' | t }}<input type="email" name="comment[email]" required value="{{ form.email }}"></label>
+          </div>
+          <label class="field">{{ 'contact.message' | t }}<textarea name="comment[body]" required>{{ form.body }}</textarea></label>
+          <div><button class="btn primary" type="submit">{{ 'blog.post_comment' | t }}</button></div>
+        {%- endform -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.show_more -%}
+      <div class="sec" style="--pt:70px;--pb:0px">
+        <div class="head"><div><p class="eyebrow">{{ section.settings.more_eyebrow | escape }}</p><h2>{{ section.settings.more_heading | escape }}</h2></div></div>
+        <div class="jgrid">
+          {%- assign shown = 0 -%}
+          {%- for a in blog.articles -%}
+            {%- if a.id != article.id and shown < 3 -%}
+              {%- assign shown = shown | plus: 1 -%}
+              <a class="post" href="{{ a.url }}">
+                <div class="jart tint-{{ shown }}">{% render 'article-art', article: a, width: 800 %}</div>
+                <div>{% if a.tags.size > 0 %}<span class="tag">{{ a.tags.first | escape }}</span>{% endif %}<h3 style="margin-top:6px">{{ a.title | escape }}</h3><div class="jmeta">{{ a.published_at | time_tag: format: 'month_day_year' }}</div></div>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+  <div style="height:{{ section.settings.padding_bottom }}px"></div>
+</div>
+
+{% schema %}
+{
+  "name": "Blog post",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "checkbox", "id": "show_breadcrumbs", "label": "Show breadcrumbs", "default": true },
+    { "type": "checkbox", "id": "show_author", "label": "Show author", "default": true },
+    { "type": "checkbox", "id": "show_art", "label": "Show illustration when there is no image", "default": true },
+    {
+      "type": "select", "id": "tint", "label": "Image tint",
+      "options": [ { "value": "1", "label": "Tint 1" }, { "value": "2", "label": "Tint 2" }, { "value": "3", "label": "Tint 3" }, { "value": "4", "label": "Tint 4" } ],
+      "default": "1"
+    },
+    { "type": "product", "id": "product", "label": "Featured product", "info": "Shown below the post." },
+    { "type": "text", "id": "product_label", "label": "Featured product label", "default": "Lorem ipsum" },
+    { "type": "checkbox", "id": "show_share", "label": "Show share buttons", "default": true },
+    { "type": "checkbox", "id": "show_more", "label": "Show more posts", "default": true },
+    { "type": "text", "id": "more_eyebrow", "label": "More posts eyebrow", "default": "Lorem ipsum" },
+    { "type": "text", "id": "more_heading", "label": "More posts heading", "default": "Dolor sit amet." },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 100 }
+  ]
+}
+{% endschema %}

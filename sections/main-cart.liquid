@@ -1,0 +1,63 @@
+<div class="color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" data-cart-page data-section-id="{{ section.id }}">
+  <div class="wrap">
+    {%- assign cart_label = 'cart.title' | t -%}
+    {% render 'breadcrumbs', last: cart_label %}
+    <div class="phead"><h1>{{ 'cart.title' | t }}</h1></div>
+    {%- if cart.item_count > 0 -%}
+      <form action="{{ routes.cart_url }}" method="post" class="cartp" id="CartForm">
+        <div>
+          {%- for item in cart.items -%}
+            <div class="line">
+              <a class="th tint-{{ forloop.index0 | modulo: 4 | plus: 1 }}" href="{{ item.url }}" tabindex="-1">
+                {%- if item.image -%}{{ item.image | image_url: width: 240 | image_tag: loading: 'lazy', alt: item.product.title }}{%- else -%}{% capture k %}{% render 'art-for', product: item.product %}{% endcapture %}{% render 'art', name: k %}{%- endif -%}
+              </a>
+              <div>
+                <h4><a href="{{ item.url }}">{{ item.product.title | escape }}</a></h4>
+                {%- unless item.product.has_only_default_variant -%}<small>{{ item.variant.title | escape }}</small>{%- endunless -%}
+                {%- for p in item.properties -%}{%- unless p.last == blank or p.first contains '_' -%}<small>{{ p.first }}: {{ p.last }}</small>{%- endunless -%}{%- endfor -%}
+                <small>{{ item.final_price | money }}</small>
+                <div class="qty">
+                  <button type="button" data-line="{{ forloop.index }}" data-line-qty="{{ item.quantity | minus: 1 }}" aria-label="{{ 'cart.decrease' | t }}">−</button>
+                  <input type="number" name="updates[]" value="{{ item.quantity }}" min="0" data-line="{{ forloop.index }}" data-line-input aria-label="{{ 'cart.quantity' | t }}">
+                  <button type="button" data-line="{{ forloop.index }}" data-line-qty="{{ item.quantity | plus: 1 }}" aria-label="{{ 'cart.increase' | t }}">+</button>
+                </div>
+                <a class="rm" href="{{ item.url_to_remove }}">{{ 'cart.remove' | t }}</a>
+              </div>
+              <strong>{{ item.final_line_price | money }}</strong>
+            </div>
+          {%- endfor -%}
+        </div>
+        <div class="sum">
+          {%- if section.settings.show_note -%}
+            <label class="field">{{ 'cart.note' | t }}<textarea name="note">{{ cart.note }}</textarea></label>
+          {%- endif -%}
+          {%- for d in cart.cart_level_discount_applications -%}
+            <div class="total" style="font-size:15px;padding-block:0;color:var(--muted)"><span>{{ d.title | escape }}</span><span>−{{ d.total_allocated_amount | money }}</span></div>
+          {%- endfor -%}
+          <div class="total"><span>{{ 'cart.subtotal' | t }}</span><span>{{ cart.total_price | money }}</span></div>
+          <p class="tax">{{ settings.cart_note_text | escape }}</p>
+          <button type="submit" name="checkout" class="btn primary full">{{ 'cart.checkout' | t }} <span class="arr">→</span></button>
+          {%- if additional_checkout_buttons and section.settings.show_dynamic -%}<div>{{ content_for_additional_checkout_buttons }}</div>{%- endif -%}
+        </div>
+      </form>
+    {%- else -%}
+      <div class="empty" style="padding-block:40px 80px">
+        <p>{{ 'cart.empty' | t }}</p>
+        <a class="btn primary" href="{{ routes.all_products_collection_url }}">{{ 'cart.continue' | t }} <span class="arr">→</span></a>
+      </div>
+    {%- endif -%}
+  </div>
+  <div style="height:60px"></div>
+</div>
+
+{% schema %}
+{
+  "name": "Cart",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "checkbox", "id": "show_note", "label": "Show order note", "default": true },
+    { "type": "checkbox", "id": "show_dynamic", "label": "Show dynamic checkout buttons", "default": true }
+  ]
+}
+{% endschema %}
