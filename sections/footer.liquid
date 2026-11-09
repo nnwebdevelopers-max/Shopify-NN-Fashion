@@ -25,7 +25,10 @@
       {%- endfor -%}
     </div>
     <div class="legal">
-      <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | link_to: routes.root_url }}{% if section.settings.legal != blank %} · {{ section.settings.legal | escape }}{% endif %}</span>
+      {%- assign this_year = 'now' | date: '%Y' -%}
+      {%- assign shop_name = shop.name | escape -%}
+      {%- assign copy_text = section.settings.copyright | default: '© {year} {shop}' | escape | replace: '{year}', this_year | replace: '{shop}', shop_name -%}
+      <span>{{ copy_text }}{% if section.settings.legal != blank %} · {{ section.settings.legal | escape }}{% endif %}</span>
       {%- if section.settings.show_policies -%}
         <span>{% for policy in shop.policies %}{% unless forloop.first %} · {% endunless %}<a href="{{ policy.url }}">{{ policy.title | escape }}</a>{% endfor %}</span>
       {%- endif -%}
@@ -45,7 +48,8 @@
     { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
     { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
     { "type": "text", "id": "text", "label": "Brand text", "default": "Lorem ipsum dolor sit amet, consectetur adipiscing elit." },
-    { "type": "text", "id": "legal", "label": "Legal line", "default": "Lorem ipsum dolor sit amet" },
+    { "type": "text", "id": "copyright", "label": "Copyright text", "info": "{year} becomes the current year and {shop} your store name, so it updates itself.", "default": "© {year} {shop}" },
+    { "type": "text", "id": "legal", "label": "Extra legal line", "info": "Optional text shown after the copyright.", "default": "Lorem ipsum dolor sit amet" },
     { "type": "checkbox", "id": "show_social", "label": "Show social icons", "info": "Links are set in Theme settings > Social media.", "default": true },
     { "type": "checkbox", "id": "show_policies", "label": "Show policy links", "default": false },
     { "type": "checkbox", "id": "show_payment", "label": "Show payment icons", "default": false }
