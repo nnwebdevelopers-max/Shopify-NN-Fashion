@@ -5,7 +5,7 @@
       {%- if article.tags.size > 0 %}<span class="tag">{{ article.tags.first | escape }}</span>{% endif -%}
       <h1>{{ article.title | escape }}</h1>
       {%- if article.excerpt != blank %}<p style="color:var(--muted);font-size:19px">{{ article.excerpt | strip_html }}</p>{% endif -%}
-      <div class="jmeta">{% if section.settings.show_author %}{{ article.author | escape }} · {% endif %}{{ article.published_at | time_tag: format: 'month_day_year' }}</div>
+      <div class="jmeta">{% if section.settings.show_author %}{{ article.author | escape }} · {% endif %}{{ article.published_at | time_tag: format: 'date' }}</div>
     </div>
     {%- if article.image or section.settings.show_art -%}
       <div class="art-hero tint-{{ section.settings.tint }}">{% render 'article-art', article: article, width: 1600 %}</div>
@@ -31,7 +31,7 @@
       <div class="comments">
         <h2 class="sec-t">{{ 'blog.comments' | t: count: article.comments_count }}</h2>
         {%- for comment in article.comments -%}
-          <div class="c"><b>{{ comment.author | escape }}</b> <span class="jmeta">{{ comment.created_at | time_tag: format: 'month_day_year' }}</span><div class="rte">{{ comment.content }}</div></div>
+          <div class="c"><b>{{ comment.author | escape }}</b> <span class="jmeta">{{ comment.created_at | time_tag: format: 'date' }}</span><div class="rte">{{ comment.content }}</div></div>
         {%- endfor -%}
         {%- form 'new_comment', article, class: 'cform' -%}
           {%- if form.posted_successfully? -%}<p class="notice">{% if blog.moderated? %}{{ 'blog.moderated' | t }}{% else %}{{ 'blog.posted' | t }}{% endif %}</p>{%- endif -%}
@@ -56,7 +56,7 @@
               {%- assign shown = shown | plus: 1 -%}
               <a class="post" href="{{ a.url }}">
                 <div class="jart tint-{{ shown }}">{% render 'article-art', article: a, width: 800 %}</div>
-                <div>{% if a.tags.size > 0 %}<span class="tag">{{ a.tags.first | escape }}</span>{% endif %}<h3 style="margin-top:6px">{{ a.title | escape }}</h3><div class="jmeta">{{ a.published_at | time_tag: format: 'month_day_year' }}</div></div>
+                <div>{% if a.tags.size > 0 %}<span class="tag">{{ a.tags.first | escape }}</span>{% endif %}<h3 style="margin-top:6px">{{ a.title | escape }}</h3><div class="jmeta">{{ a.published_at | time_tag: format: 'date' }}</div></div>
               </a>
             {%- endif -%}
           {%- endfor -%}

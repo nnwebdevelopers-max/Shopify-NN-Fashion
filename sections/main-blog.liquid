@@ -25,7 +25,7 @@
             {%- if article.tags.size > 0 %}<span class="tag">{{ article.tags.first | escape }}</span>{% endif -%}
             <h2>{{ article.title | escape }}</h2>
             <p>{{ article.excerpt_or_content | strip_html | truncatewords: 32 }}</p>
-            <div class="jmeta">{{ article.published_at | time_tag: format: 'month_day_year' }}{% if section.settings.show_author %} · {{ article.author | escape }}{% endif %}</div>
+            <div class="jmeta">{{ article.published_at | time_tag: format: 'date' }}{% if section.settings.show_author %} · {{ article.author | escape }}{% endif %}</div>
           </div>
         </a>
         <div class="jgrid">
@@ -37,7 +37,7 @@
             {%- if article.tags.size > 0 %}<span class="tag">{{ article.tags.first | escape }}</span>{% endif -%}
             <h3 style="margin-top:6px">{{ article.title | escape }}</h3>
             <p style="margin-top:8px">{{ article.excerpt_or_content | strip_html | truncatewords: 22 }}</p>
-            <div class="jmeta">{{ article.published_at | time_tag: format: 'month_day_year' }}</div>
+            <div class="jmeta">{{ article.published_at | time_tag: format: 'date' }}</div>
           </div>
         </a>
       {%- endif -%}

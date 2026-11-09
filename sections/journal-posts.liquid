@@ -5,7 +5,13 @@
   endif
   assign b = section.settings.blog
   if b == blank
-    assign b = blogs.first
+    assign b = blogs.journal
+  endif
+  if b == blank
+    for candidate in blogs
+      assign b = candidate
+      break
+    endfor
   endif
 -%}
 <div class="sec color-scheme color-{{ scheme }}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
@@ -17,14 +23,14 @@
       </div>
       {%- if b != blank and section.settings.link_label != blank -%}<a class="link" href="{{ b.url }}">{{ section.settings.link_label | escape }}</a>{%- endif -%}
     </div>
-    {%- if b != blank and b.articles_count > 0 -%}
+    {%- if b != blank and b.articles.size > 0 -%}
       <div class="jbento" data-stagger>
         {%- for article in b.articles limit: section.settings.limit -%}
           {%- assign tn = forloop.index0 | modulo: 4 | plus: 1 -%}
           <a class="jpost{% if forloop.first %} big{% endif %}" href="{{ article.url }}">
             <div class="jart tint-{{ tn }}">{% render 'article-art', article: article, width: 900 %}</div>
             <div class="jtx">
-              <span class="jmeta">{{ article.published_at | time_tag: format: 'month_day_year' }}{% if article.author != blank %} · {{ article.author | escape }}{% endif %}</span>
+              <span class="jmeta">{{ article.published_at | time_tag: format: 'date' }}{% if article.author != blank %} · {{ article.author | escape }}{% endif %}</span>
               <h3>{{ article.title | escape }}</h3>
               {%- if forloop.first -%}<p>{{ article.excerpt_or_content | strip_html | truncatewords: 24 }}</p>{%- endif -%}
             </div>

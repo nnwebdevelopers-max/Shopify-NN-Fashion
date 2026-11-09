@@ -94,7 +94,9 @@ a.htile:hover .tbtn{gap:14px}
 .news h2{font-size:clamp(40px,5vw,72px)}
 
 /* ---------- product card (collection option A) ---------- */
-.grid{gap:44px 20px}
+.grid{grid-template-columns:repeat(var(--cols,4),minmax(0,1fr));gap:44px 20px}
+.grid>*{min-width:0}
+.cinfo>div:first-child{min-width:0}
 .card{gap:16px}
 .card .ph{aspect-ratio:4/5;border-radius:28px}
 .card .ph .pimg{width:100%;height:100%;object-fit:cover}
@@ -133,7 +135,7 @@ a.htile:hover .tbtn{gap:14px}
 .subchips a:hover{transform:translateY(-2px)}
 .subchips a[aria-current="true"]{background:var(--solid);color:var(--solid-ink)}
 .cbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0 28px;border-bottom:1px solid var(--line);flex-wrap:wrap;margin-top:6px}
-.fbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.fbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex:1 1 320px;min-width:0}
 .fdrop{position:relative}
 .fdrop>summary{list-style:none;cursor:pointer}
 .fdrop>summary::-webkit-details-marker{display:none}
@@ -144,9 +146,10 @@ a.htile:hover .tbtn{gap:14px}
 .factive{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .factive a{background:var(--t3);border:0;color:var(--ink);font-weight:500}
 .factive a.clr{background:transparent;text-decoration:underline}
-.ctools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ctools{display:flex;gap:10px;align-items:center;flex-wrap:nowrap;flex:0 0 auto}
 .count-l{font-size:14px;color:var(--muted)}
-.sortchip{padding:0 14px 0 18px;gap:6px}
+.sortchip{padding:0 14px 0 18px;gap:6px;white-space:nowrap}
+.sortchip select{max-width:170px}
 .sortchip select{border:0;background:transparent;font:inherit;font-weight:500;color:var(--ink);padding:11px 0;cursor:pointer;outline-offset:4px}
 .gtog{display:flex;gap:4px;background:var(--surface);border-radius:999px;padding:4px}
 .gtog button{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;transition:background .25s,color .25s}
@@ -306,7 +309,8 @@ body[data-gsap="true"] .mqtrack{animation:none}
   .cbar{flex-direction:column;align-items:stretch}
   .fbar{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
   .fdrop{position:static}.fpanel{left:16px;right:16px;top:auto;margin-top:8px;position:fixed;bottom:16px;max-height:55vh;z-index:70}
-  .ptile{grid-column:span 2;min-height:340px}
+  .ptile{grid-column:1/-1;min-height:340px}
+  .cgrid{--cols:2}
   .gtog{display:none}
   .gstack{grid-template-columns:1fr 1fr;gap:10px}.gstack .gslide:nth-child(even){margin-top:30px}
   .pb-bento,.stats,.look,.iwt,.sbanner,.jbento{grid-template-columns:1fr}

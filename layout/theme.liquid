@@ -41,7 +41,7 @@
     {{ content_for_header }}
   </head>
 
-  <body class="color-scheme color-{{ settings.body_scheme.id }} template-{{ template.name }}" data-gsap="{{ settings.motion_gsap }}" data-smooth="{{ settings.motion_smooth }}" data-magnetic="{{ settings.motion_magnetic }}" data-parallax="{{ settings.motion_parallax }}">
+  <body class="color-scheme color-{{ settings.body_scheme.id }} template-{{ template.name }}" data-gsap="{{ settings.motion_gsap }}" data-smooth="{{ settings.motion_smooth }}" data-magnetic="{{ settings.motion_magnetic }}" data-pfx="{{ settings.motion_parallax }}">
     <a class="skip" href="#MainContent">{{ 'general.skip' | t }}</a>
 
     {% sections 'header-group' %}

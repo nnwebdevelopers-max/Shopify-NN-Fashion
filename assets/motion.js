@@ -90,7 +90,7 @@
     $$('.bento .cat', scope).forEach(function (el, i) { g.from(el, { y: 70, scale: .94, opacity: 0, duration: .9, delay: (i % 4) * .07, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 92%', once: true } }); });
 
     // parallax on elements flagged data-parallax="speed"
-    if (body.dataset.parallax === 'true') {
+    if (body.dataset.pfx === 'true') {
       $$('[data-parallax]', scope).forEach(function (el) {
         var sp = parseFloat(el.dataset.parallax) || .15;
         g.to(el, { yPercent: -sp * 100, ease: 'none', scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true } });
