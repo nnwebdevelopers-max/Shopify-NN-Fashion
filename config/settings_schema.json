@@ -139,9 +139,9 @@
   {
     "name": "Logo and favicon",
     "settings": [
-      { "type": "image_picker", "id": "logo", "label": "Logo image" },
+      { "type": "image_picker", "id": "logo", "label": "Logo image", "info": "Recommended: 520 × 160 px, transparent PNG or SVG-style flat artwork." },
       { "type": "range", "id": "logo_width", "label": "Logo width", "min": 60, "max": 260, "step": 5, "unit": "px", "default": 140 },
-      { "type": "image_picker", "id": "favicon", "label": "Favicon", "info": "32 × 32 px" }
+      { "type": "image_picker", "id": "favicon", "label": "Favicon", "info": "Recommended: 64 × 64 px, PNG." }
     ]
   },
   {

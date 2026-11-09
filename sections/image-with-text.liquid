@@ -34,7 +34,7 @@
   "settings": [
     { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "default": false },
     { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
-    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "image_picker", "id": "image", "label": "Image", "info": "Recommended: 1200 × 1500 px (4:5 portrait)." },
     { "type": "select", "id": "art", "label": "Illustration (when no image)", "default": "coat", "options": [ { "value": "coat", "label": "Coat" }, { "value": "jacket", "label": "Jacket" }, { "value": "shirt", "label": "Shirt" }, { "value": "sweater", "label": "Sweater" }, { "value": "dress", "label": "Dress" } ] },
     { "type": "select", "id": "tint", "label": "Media color", "options": [ { "value": "1", "label": "Tint 1" }, { "value": "2", "label": "Tint 2" }, { "value": "3", "label": "Tint 3" }, { "value": "4", "label": "Tint 4" } ], "default": "1" },
     { "type": "checkbox", "id": "image_right", "label": "Image on the right", "default": false },
