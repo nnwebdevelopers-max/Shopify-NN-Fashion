@@ -1,0 +1,37 @@
+{%- assign chips = settings.popular_searches | split: ',' -%}
+<div class="sov" id="SearchOverlay" hidden>
+  <div class="spanel">
+    <div class="wrap">
+      <form class="sbar" action="{{ routes.search_url }}" method="get" role="search">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" name="q" placeholder="{{ 'search.placeholder' | t }}" aria-label="{{ 'search.placeholder' | t }}" autocomplete="off">
+        <input type="hidden" name="options[prefix]" value="last">
+        <button type="button" class="icon-btn" data-close-search aria-label="{{ 'search.close' | t }}">{% render 'icon', icon: 'close' %}</button>
+      </form>
+      <div class="sgrid">
+        <div>
+          <h4>{{ 'search.popular' | t }}</h4>
+          <div class="schips">
+            {%- for c in chips -%}{%- assign cs = c | strip -%}{%- if cs != blank -%}<button type="button" data-search-chip="{{ cs | escape }}">{{ cs | escape }}</button>{%- endif -%}{%- endfor -%}
+          </div>
+        </div>
+        <div>
+          <h4 data-predictive-title>{{ 'search.trending' | t }}</h4>
+          <div class="sres" data-predictive>
+            {%- liquid
+              if settings.search_trending != blank
+                assign trend = settings.search_trending.products
+              else
+                assign trend = collections.all.products
+              endif
+            -%}
+            {%- for p in trend limit: 4 -%}
+              <a class="mini" href="{{ p.url }}"><div class="th tint-{{ forloop.index0 | modulo: 4 | plus: 1 }}">{% if p.featured_media %}{{ p.featured_media | image_url: width: 300 | image_tag: loading: 'lazy', alt: '' }}{% else %}{% capture k %}{% render 'art-for', product: p %}{% endcapture %}{% render 'art', name: k %}{% endif %}</div><b>{{ p.title | escape }}</b><span>{{ p.price | money }}</span></a>
+            {%- endfor -%}
+          </div>
+          <div class="sall" data-predictive-all></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

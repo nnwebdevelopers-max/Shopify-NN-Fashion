@@ -1,0 +1,62 @@
+{%- liquid
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+-%}
+<div class="sec color-scheme color-{{ scheme }}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap rv">
+    <div class="sbanner color-scheme color-{{ section.settings.panel_scheme.id }}">
+      <div class="sbtx">
+        {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+        <h2>
+          {%- if section.settings.number != blank -%}<span class="snum">{{ section.settings.number | escape }}</span>{%- endif -%}
+          {%- if section.settings.heading != blank -%}<i>{{ section.settings.heading | escape }}</i>{%- endif -%}
+        </h2>
+        {%- if section.settings.text != blank -%}<div class="rte">{{ section.settings.text }}</div>{%- endif -%}
+        {%- if section.settings.button != blank -%}<a class="btn primary" href="{{ section.settings.link | default: routes.collections_url }}">{{ section.settings.button | escape }} <span class="arr">→</span></a>{%- endif -%}
+      </div>
+      <div class="sbart" aria-hidden="true">
+        {%- for block in section.blocks -%}
+          <div class="sbitem drift" style="--d:{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank -%}{{ block.settings.image | image_url: width: 420 | image_tag: loading: 'lazy', alt: '' }}{%- else -%}{% render 'art', name: block.settings.art %}{%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Sale banner",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "color_scheme", "id": "panel_scheme", "label": "Banner color scheme", "default": "scheme-2" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Sale on · Men's accessories" },
+    { "type": "text", "id": "number", "label": "Big text", "default": "30 – 60%" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "off all sale" },
+    { "type": "richtext", "id": "text", "label": "Text" },
+    { "type": "text", "id": "button", "label": "Button label", "default": "Shop the sale" },
+    { "type": "url", "id": "link", "label": "Button link" },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Floating item",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        {
+          "type": "select", "id": "art", "label": "Illustration (when no image)", "default": "backpack",
+          "options": [ { "value": "backpack", "label": "Backpack" }, { "value": "sneaker", "label": "Sneaker" }, { "value": "tee", "label": "Tee" }, { "value": "cap", "label": "Cap" }, { "value": "belt", "label": "Belt" }, { "value": "wallet", "label": "Wallet" }, { "value": "jacket", "label": "Jacket" }, { "value": "scarf", "label": "Scarf" } ]
+        }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Sale banner", "blocks": [ { "type": "item", "settings": { "art": "backpack" } }, { "type": "item", "settings": { "art": "sneaker" } }, { "type": "item", "settings": { "art": "tee" } } ] } ]
+}
+{% endschema %}

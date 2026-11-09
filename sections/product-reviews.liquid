@@ -1,0 +1,71 @@
+{%- liquid
+  assign rating = product.metafields.custom.rating.value | default: section.settings.rating
+  assign count = product.metafields.custom.rating_count.value | default: section.settings.count
+-%}
+<div class="sec color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap rv">
+    {%- if section.settings.heading != blank -%}<div class="head"><div><p class="eyebrow">{{ section.settings.eyebrow | escape }}</p><h2>{{ section.settings.heading | escape }}</h2></div></div>{%- endif -%}
+    <div class="rsum">
+      <div>
+        <div class="big">{{ rating }}</div>
+        <div class="rate" style="font-size:16px">{% render 'stars', rating: rating %}</div>
+        <p class="eyebrow" style="margin-top:6px">{{ 'products.reviews_count' | t: count: count }}</p>
+        <div class="bars">
+          <div>5<i style="--w:{{ section.settings.bar_5 }}%"></i></div>
+          <div>4<i style="--w:{{ section.settings.bar_4 }}%"></i></div>
+          <div>3<i style="--w:{{ section.settings.bar_3 }}%"></i></div>
+          <div>2<i style="--w:{{ section.settings.bar_2 }}%"></i></div>
+          <div>1<i style="--w:{{ section.settings.bar_1 }}%"></i></div>
+        </div>
+      </div>
+      <div>
+        {%- for block in section.blocks -%}
+          <div class="rev" {{ block.shopify_attributes }}>
+            <div class="rate">{% render 'stars', rating: block.settings.stars %}</div>
+            <b>{{ block.settings.title | escape }}</b>
+            <p>{{ block.settings.text | escape }}</p>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Reviews summary",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Lorem ipsum" },
+    { "type": "text", "id": "heading", "label": "Heading" },
+    { "type": "paragraph", "content": "Rating and count come from product metafields custom.rating and custom.rating_count. The values below are used when those are empty. Replace the sample entries with your own reviews or a reviews app block." },
+    { "type": "text", "id": "rating", "label": "Fallback rating", "default": "4.5" },
+    { "type": "text", "id": "count", "label": "Fallback review count", "default": "0" },
+    { "type": "range", "id": "bar_5", "label": "5 star share", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 78 },
+    { "type": "range", "id": "bar_4", "label": "4 star share", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 15 },
+    { "type": "range", "id": "bar_3", "label": "3 star share", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 5 },
+    { "type": "range", "id": "bar_2", "label": "2 star share", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 1 },
+    { "type": "range", "id": "bar_1", "label": "1 star share", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 1 },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "range", "id": "stars", "label": "Stars", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "text", "id": "title", "label": "Title", "default": "Lorem ipsum dolor sit" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reviews summary",
+      "blocks": [ { "type": "review" }, { "type": "review", "settings": { "stars": 4 } }, { "type": "review" } ]
+    }
+  ]
+}
+{% endschema %}

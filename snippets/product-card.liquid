@@ -1,0 +1,92 @@
+{%- comment -%}
+  Product card (Design C, collection option A). Params: product, index (number, cycles tints), sizes (optional)
+  Hooks used by theme.js: data-wish / data-compare (list-buttons), data-quick-view, data-cart-form.
+{%- endcomment -%}
+{%- liquid
+  if settings.card_tint == 'cycle'
+    assign t = index | default: 0 | modulo: 4 | plus: 1
+    assign tint = 't' | append: t
+  elsif settings.card_tint == 'surface'
+    assign tint = 'surface'
+  else
+    assign tint = 't' | append: settings.card_tint
+  endif
+  assign hover_t = index | default: 0 | plus: 1 | modulo: 4 | plus: 1
+  assign hover_tint = 't' | append: hover_t
+  assign variant = product.selected_or_first_available_variant
+  assign new_tag = settings.new_tag | strip | downcase
+  assign hot_tag = settings.hot_tag | strip | downcase
+  assign lower_tags = product.tags | join: '|' | downcase | split: '|'
+  assign delay = index | default: 0 | times: 50
+  assign save = 0
+  if product.compare_at_price > product.price
+    assign save = product.compare_at_price | minus: product.price | times: 100.0 | divided_by: product.compare_at_price | round
+  endif
+-%}
+<article class="card{% if settings.card_color_hover %} hov{% endif %}" style="animation-delay:{{ delay }}ms;--h:var(--{{ hover_tint }})" data-card>
+  <div class="ph" style="background:var(--{{ tint }})">
+    {%- if product.available == false -%}
+      <span class="badge">{{ 'products.sold_out' | t }}</span>
+    {%- elsif save > 0 -%}
+      <span class="badge sale">&minus;{{ save }}%</span>
+    {%- elsif new_tag != blank and lower_tags contains new_tag -%}
+      <span class="badge">{{ 'products.new' | t }}</span>
+    {%- elsif hot_tag != blank and lower_tags contains hot_tag -%}
+      <span class="badge">{{ 'products.hot' | t }}</span>
+    {%- endif -%}
+    {%- render 'list-buttons', product: product, style: 'icon' -%}
+    <a href="{{ product.url }}" tabindex="-1" aria-hidden="true" class="pa">
+      {%- if product.featured_media -%}
+        {{ product.featured_media | image_url: width: 900 | image_tag: class: 'pimg', loading: 'lazy', widths: '300,450,600,900', sizes: '(min-width: 990px) 280px, 45vw', alt: product.featured_media.alt | default: product.title }}
+      {%- else -%}
+        {%- capture art_key %}{% render 'art-for', product: product %}{% endcapture -%}
+        <span class="pimg" style="display:block">{% render 'art', name: art_key %}</span>
+      {%- endif -%}
+    </a>
+    {%- if settings.card_quick_add and product.available -%}
+      {%- if product.has_only_default_variant -%}
+        <form class="quick-form" method="post" action="{{ routes.cart_add_url }}" data-cart-form>
+          <input type="hidden" name="id" value="{{ variant.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="quick">{{ 'products.add_to_cart' | t }}</button>
+        </form>
+      {%- else -%}
+        <div class="quick-form">
+          <a href="{{ product.url }}" class="quick" role="button" data-quick-view="{{ product.url }}" aria-haspopup="dialog">{{ 'products.quick_add' | t }}</a>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+  <div class="cinfo">
+    <div>
+      <h3><a href="{{ product.url }}">{{ product.title | escape }}</a></h3>
+      {%- if settings.card_swatches -%}
+        {%- for option in product.options_with_values -%}
+          {%- assign oname = option.name | downcase -%}
+          {%- if oname == 'color' or oname == 'colour' -%}
+            <div class="swatches" aria-label="{{ option.values.size }} {{ 'products.colors' | t }}">
+              {%- for value in option.values limit: 5 -%}
+                <i style="background:{% render 'swatch-color', value: value %}" title="{{ value | escape }}"></i>
+              {%- endfor -%}
+              {%- if option.values.size > 5 -%}<small>+{{ option.values.size | minus: 5 }}</small>{%- endif -%}
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- if settings.card_rating and product.metafields.custom.rating != blank -%}
+        <div class="rate">{% render 'stars', rating: product.metafields.custom.rating.value %} <small>({{ product.metafields.custom.rating_count.value | default: 0 }})</small></div>
+      {%- endif -%}
+    </div>
+    <div class="meta">{% render 'price', product: product %}</div>
+  </div>
+  {%- if settings.card_quick_add and product.available -%}
+    {%- if product.has_only_default_variant -%}
+      <form method="post" action="{{ routes.cart_add_url }}" data-cart-form>
+        <input type="hidden" name="id" value="{{ variant.id }}">
+        <button type="submit" class="mob">{{ 'products.add_to_cart' | t }}</button>
+      </form>
+    {%- else -%}
+      <a href="{{ product.url }}" class="mob" role="button" data-quick-view="{{ product.url }}" aria-haspopup="dialog">{{ 'products.choose_options' | t }}</a>
+    {%- endif -%}
+  {%- endif -%}
+</article>

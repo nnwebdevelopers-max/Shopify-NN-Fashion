@@ -1,0 +1,68 @@
+{%- comment -%} Outputs a CSS colour for a colour option value. Param: value (product option value or string) {%- endcomment -%}
+{%- liquid
+  if value.swatch.color
+    echo value.swatch.color
+  else
+    assign v = value | downcase
+    case v
+      when 'rust'
+        echo '#b0502e'
+      when 'olive'
+        echo '#7d8a5b'
+      when 'charcoal'
+        echo '#3a3f44'
+      when 'camel'
+        echo '#c49a6c'
+      when 'black'
+        echo '#1f2124'
+      when 'sage'
+        echo '#9fb39a'
+      when 'clay'
+        echo '#a8553f'
+      when 'sand'
+        echo '#dcc9a6'
+      when 'indigo'
+        echo '#34457a'
+      when 'bone'
+        echo '#ece5d6'
+      when 'peach'
+        echo '#f0b79d'
+      when 'lavender'
+        echo '#b9b0e6'
+      when 'butter'
+        echo '#f1d77a'
+      when 'cream'
+        echo '#f3ead6'
+      when 'terracotta'
+        echo '#c4623f'
+      when 'forest'
+        echo '#2f4a3a'
+      when 'white'
+        echo '#f7f5ef'
+      when 'sky'
+        echo '#a9cbe3'
+      when 'stone'
+        echo '#b9b4a6'
+      when 'navy'
+        echo '#22305a'
+      when 'tan'
+        echo '#b98253'
+      when 'blush'
+        echo '#f3c9c4'
+      when 'natural'
+        echo '#e4d5b3'
+      when 'brown'
+        echo '#6b4630'
+      when 'tortoise'
+        echo '#8a5a2b'
+      when 'clear'
+        echo '#d9e4e8'
+      when 'lime'
+        echo '#d3e06a'
+      when 'plum'
+        echo '#6a3d63'
+      else
+        echo v
+    endcase
+  endif
+-%}

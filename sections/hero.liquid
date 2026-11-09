@@ -1,0 +1,115 @@
+{%- liquid
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+-%}
+<section class="sec color-scheme color-{{ scheme }} hero-sec" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px" data-motion="hero">
+  <div class="wrap">
+    <div class="hbento">
+      <div class="bt hmain color-scheme color-{{ section.settings.main_scheme.id }}">
+        <div class="htx">
+          {%- if section.settings.eyebrow != blank -%}<p class="eyebrow hfade">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+          <h1>
+            {%- if section.settings.line_1 != blank -%}<span class="hl"><span>{{ section.settings.line_1 | escape }}</span></span>{%- endif -%}
+            {%- if section.settings.line_2 != blank -%}<span class="hl"><span><i>{{ section.settings.line_2 | escape }}</i></span></span>{%- endif -%}
+            {%- if section.settings.line_3 != blank -%}<span class="hl"><span>{{ section.settings.line_3 | escape }}</span></span>{%- endif -%}
+          </h1>
+          {%- if section.settings.text != blank -%}<div class="lede hfade">{{ section.settings.text }}</div>{%- endif -%}
+          <div class="cta hfade">
+            {%- if section.settings.btn_1 != blank -%}<a class="btn primary" href="{{ section.settings.btn_1_link | default: routes.all_products_collection_url }}">{{ section.settings.btn_1 | escape }} <span class="arr">→</span></a>{%- endif -%}
+            {%- if section.settings.btn_2 != blank -%}<a class="btn ghost" href="{{ section.settings.btn_2_link | default: routes.collections_url }}">{{ section.settings.btn_2 | escape }}</a>{%- endif -%}
+          </div>
+        </div>
+        <div class="hart drift" {% if settings.motion_parallax %}data-parallax="0.06"{% endif %} aria-hidden="true">
+          {%- if section.settings.image != blank -%}
+            {{ section.settings.image | image_url: width: 900 | image_tag: loading: 'eager', alt: '' }}
+          {%- else -%}
+            {% render 'art', name: section.settings.art %}
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign link = block.settings.link | default: routes.collections_url
+        -%}
+        <a class="bt htile {{ block.settings.size }} tile-{{ block.settings.tone }}" href="{{ link }}" {{ block.shopify_attributes }}>
+          <div class="ttx">
+            {%- if block.settings.eyebrow != blank -%}<p class="eyebrow">{{ block.settings.eyebrow | escape }}</p>{%- endif -%}
+            {%- if block.settings.heading != blank -%}<h3>{{ block.settings.heading | escape }}</h3>{%- endif -%}
+            {%- if block.settings.text != blank -%}<p class="ttext">{{ block.settings.text | escape }}</p>{%- endif -%}
+          </div>
+          {%- if block.settings.button != blank -%}<span class="tbtn">{{ block.settings.button | escape }} <span class="arr">→</span></span>{%- endif -%}
+          {%- if block.settings.image != blank or block.settings.art != blank -%}
+            <div class="tart drift" aria-hidden="true">
+              {%- if block.settings.image != blank -%}
+                {{ block.settings.image | image_url: width: 500 | image_tag: loading: 'lazy', alt: '' }}
+              {%- else -%}
+                {% render 'art', name: block.settings.art %}
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero bento",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "header", "content": "Main tile" },
+    { "type": "color_scheme", "id": "main_scheme", "label": "Main tile color scheme", "default": "scheme-2" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Timeless cuts · New arrivals" },
+    { "type": "text", "id": "line_1", "label": "Heading line 1", "default": "Lorem ipsum" },
+    { "type": "text", "id": "line_2", "label": "Heading line 2 (italic, accent)", "default": "dolor sit," },
+    { "type": "text", "id": "line_3", "label": "Heading line 3", "default": "amet elit." },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>" },
+    { "type": "text", "id": "btn_1", "label": "Button 1", "default": "Explore collection" },
+    { "type": "url", "id": "btn_1_link", "label": "Button 1 link" },
+    { "type": "text", "id": "btn_2", "label": "Button 2", "default": "Lookbook" },
+    { "type": "url", "id": "btn_2_link", "label": "Button 2 link" },
+    { "type": "image_picker", "id": "image", "label": "Image", "info": "Optional. Without an image the illustration below is used." },
+    {
+      "type": "select", "id": "art", "label": "Illustration", "default": "jacket",
+      "options": [
+        { "value": "jacket", "label": "Jacket" }, { "value": "coat", "label": "Coat" }, { "value": "hoodie", "label": "Hoodie" },
+        { "value": "sweater", "label": "Sweater" }, { "value": "dress", "label": "Dress" }, { "value": "sneaker", "label": "Sneaker" },
+        { "value": "backpack", "label": "Backpack" }, { "value": "tee", "label": "Tee" }
+      ]
+    },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 8 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 80 }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "Tile",
+      "settings": [
+        { "type": "select", "id": "size", "label": "Width", "options": [ { "value": "m", "label": "Wide (5 columns)" }, { "value": "s", "label": "Narrow (4 columns)" }, { "value": "l", "label": "Extra wide (6 columns)" } ], "default": "m" },
+        { "type": "select", "id": "tone", "label": "Color", "options": [ { "value": "butter", "label": "Butter" }, { "value": "peach", "label": "Peach" }, { "value": "lavender", "label": "Lavender" }, { "value": "sage", "label": "Sage" }, { "value": "white", "label": "White" }, { "value": "dark", "label": "Dark green" } ], "default": "butter" },
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Lorem ipsum" },
+        { "type": "text", "id": "text", "label": "Text" },
+        { "type": "text", "id": "button", "label": "Button label" },
+        { "type": "url", "id": "link", "label": "Link" },
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        {
+          "type": "select", "id": "art", "label": "Illustration (when no image)", "default": "",
+          "options": [
+            { "value": "", "label": "None" }, { "value": "jacket", "label": "Jacket" }, { "value": "coat", "label": "Coat" }, { "value": "hoodie", "label": "Hoodie" },
+            { "value": "sneaker", "label": "Sneaker" }, { "value": "backpack", "label": "Backpack" }, { "value": "cap", "label": "Cap" }, { "value": "dress", "label": "Dress" },
+            { "value": "scarf", "label": "Scarf" }, { "value": "belt", "label": "Belt" }, { "value": "wallet", "label": "Wallet" }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Hero bento" } ]
+}
+{% endschema %}

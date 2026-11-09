@@ -1,0 +1,161 @@
+{%- liquid
+  assign menu = section.settings.menu
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+-%}
+{%- style -%}
+  {%- unless section.settings.sticky -%}#shopify-section-{{ section.id }}{position:relative}{%- endunless -%}
+  body.menu-open #shopify-section-{{ section.id }}{z-index:85}
+{%- endstyle -%}
+<header class="site color-scheme color-{{ scheme }}" data-header>
+  <div class="wrap bar">
+    <button type="button" class="icon-btn burger" data-open-menu aria-label="{{ 'header.open_menu' | t }}">{% render 'icon', icon: 'menu' %}</button>
+    <a class="logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+      {%- if settings.logo != blank -%}
+        {{ settings.logo | image_url: width: 520 | image_tag: alt: shop.name, widths: '200,300,400,520', sizes: '200px', loading: 'eager' }}
+      {%- else -%}
+        <i></i>{{ section.settings.logo_text | default: shop.name | escape }}
+      {%- endif -%}
+    </a>
+
+    {%- if menu != blank -%}
+      <nav class="main" aria-label="{{ 'header.main_nav' | t }}">
+        {%- for link in menu.links -%}
+          {%- liquid
+            assign mb = false
+            assign lt = link.title | strip | downcase
+            for block in section.blocks
+              assign bt = block.settings.menu_item | strip | downcase
+              if bt == lt
+                assign mb = block
+              endif
+            endfor
+          -%}
+          {%- if link.links.size == 0 and mb == false -%}
+            <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+          {%- else -%}
+            <div class="ni">
+              <button type="button" class="navbtn" data-mi="{{ forloop.index }}" aria-expanded="false" aria-haspopup="true">{{ link.title | escape }} {% render 'icon', icon: 'caret' %}</button>
+              {%- if mb == false -%}
+                <div class="dd" role="menu">
+                  {%- for child in link.links -%}<a href="{{ child.url }}" role="menuitem">{{ child.title | escape }}</a>{%- endfor -%}
+                </div>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </nav>
+    {%- endif -%}
+
+    <div class="tools">
+      <a class="icon-btn" href="{{ routes.search_url }}" data-open-search aria-label="{{ 'header.search' | t }}">{% render 'icon', icon: 'search' %}</a>
+      {%- if settings.wishlist_enable and section.settings.show_wishlist -%}
+        <a class="icon-btn hide-sm" href="{% render 'list-url', kind: 'wishlist' %}" aria-label="{{ 'wishlist.title' | t }}">{% render 'icon', icon: 'heart' %}<span class="count" data-wish-count></span></a>
+      {%- endif -%}
+      {%- if shop.customer_accounts_enabled and section.settings.show_account -%}
+        <div class="acct">
+          <shopify-account menu="{{ section.settings.customer_account_menu | default: 'customer-account-main-menu' }}">
+            {%- unless customer -%}
+              <span slot="signed-out-avatar" class="icon-btn" aria-label="{{ 'header.account' | t }}">{% render 'icon', icon: 'account' %}</span>
+            {%- endunless -%}
+          </shopify-account>
+        </div>
+      {%- endif -%}
+      <a class="icon-btn" href="{{ routes.cart_url }}" data-open-cart aria-label="{{ 'header.cart' | t }}">{% render 'icon', icon: 'cart' %}<span class="count" data-cart-count>{% if cart.item_count > 0 %}{{ cart.item_count }}{% endif %}</span></a>
+    </div>
+  </div>
+
+  {%- if menu != blank -%}
+    {%- for link in menu.links -%}
+      {%- liquid
+        assign mb = false
+        assign lt = link.title | strip | downcase
+        for block in section.blocks
+          assign bt = block.settings.menu_item | strip | downcase
+          if bt == lt
+            assign mb = block
+          endif
+        endfor
+      -%}
+      {%- if mb != false -%}{% render 'mega-menu', link: link, block: mb, index: forloop.index %}{%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+</header>
+
+<aside class="mnav color-scheme color-{{ scheme }}" aria-label="{{ 'header.menu' | t }}">
+  <div class="mtop">
+    <a class="logo" href="{{ routes.root_url }}"><i></i>{{ section.settings.logo_text | default: shop.name | escape }}</a>
+    <button type="button" class="icon-btn" data-close-menu aria-label="{{ 'header.close_menu' | t }}">{% render 'icon', icon: 'close' %}</button>
+  </div>
+  {%- if menu != blank -%}
+    {%- for link in menu.links -%}
+      {%- if link.links.size == 0 -%}
+        <a class="row" href="{{ link.url }}">{{ link.title | escape }}</a>
+      {%- else -%}
+        <details>
+          <summary>{{ link.title | escape }}</summary>
+          <div class="sub">
+            {%- for child in link.links -%}
+              <a class="b" href="{{ child.url }}">{{ child.title | escape }}</a>
+              {%- for g in child.links limit: 4 -%}<a href="{{ g.url }}">{{ g.title | escape }}</a>{%- endfor -%}
+            {%- endfor -%}
+            <a href="{{ link.url }}">{{ 'general.view_all' | t }}</a>
+          </div>
+        </details>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+  <div class="macc">
+    {%- if settings.wishlist_enable -%}<a class="btn ghost" href="{% render 'list-url', kind: 'wishlist' %}">{{ 'wishlist.title' | t }} <span data-wish-count></span></a>{%- endif -%}
+    <a class="btn primary" href="{{ routes.cart_url }}" data-open-cart>{{ 'header.cart' | t }}</a>
+  </div>
+</aside>
+
+{% schema %}
+{
+  "name": "Header",
+  "class": "section-header",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu", "info": "Second-level items become columns, tiles or tabs. Third-level items become the links inside them." },
+    { "type": "text", "id": "logo_text", "label": "Logo text", "info": "Used when no logo image is set in Theme settings." },
+    { "type": "checkbox", "id": "sticky", "label": "Sticky header", "default": true },
+    { "type": "checkbox", "id": "show_wishlist", "label": "Show wishlist icon", "default": true },
+    { "type": "checkbox", "id": "show_account", "label": "Show account icon", "info": "Shoppers sign in or create an account in a popup, without leaving the page.", "default": true },
+    { "type": "link_list", "id": "customer_account_menu", "label": "Account popup menu", "default": "customer-account-main-menu", "visible_if": "{{ section.settings.show_account }}" }
+  ],
+  "blocks": [
+    {
+      "type": "mega",
+      "name": "Mega menu",
+      "settings": [
+        { "type": "text", "id": "menu_item", "label": "Menu item", "info": "Type the exact title of a top-level menu item, for example Shop.", "default": "Shop" },
+        {
+          "type": "select", "id": "layout", "label": "Layout",
+          "options": [
+            { "value": "columns", "label": "Columns + featured product" },
+            { "value": "tiles", "label": "Tiles" },
+            { "value": "tabs", "label": "Tabs + popular products" }
+          ],
+          "default": "columns"
+        },
+        { "type": "text", "id": "heading", "label": "Heading (tiles layout)" },
+        { "type": "text", "id": "feature_label", "label": "Featured label", "default": "Featured" },
+        { "type": "product", "id": "featured_product", "label": "Featured product (columns layout)", "info": "Leave empty to use the first product of the first collection." },
+        { "type": "header", "content": "Tiles layout extras" },
+        { "type": "text", "id": "promo_1_label", "label": "Highlight tile 1 label" },
+        { "type": "text", "id": "promo_1_text", "label": "Highlight tile 1 text" },
+        { "type": "url", "id": "promo_1_link", "label": "Highlight tile 1 link" },
+        { "type": "text", "id": "promo_2_label", "label": "Highlight tile 2 label" },
+        { "type": "text", "id": "promo_2_text", "label": "Highlight tile 2 text" },
+        { "type": "url", "id": "promo_2_link", "label": "Highlight tile 2 link" },
+        { "type": "link_list", "id": "pills_menu", "label": "Quick links menu" }
+      ]
+    }
+  ]
+}
+{% endschema %}

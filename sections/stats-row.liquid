@@ -1,0 +1,47 @@
+{%- liquid
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+  assign tones = 'butter,peach,lavender,sage' | split: ','
+-%}
+<div class="sec color-scheme color-{{ scheme }}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap rv">
+    {%- if section.settings.heading != blank -%}<div class="head"><div><h2>{{ section.settings.heading }}</h2></div></div>{%- endif -%}
+    <div class="stats" data-stagger style="--n:{{ section.blocks.size | at_least: 1 }}">
+      {%- for block in section.blocks -%}
+        {%- assign ti = forloop.index0 | modulo: 4 -%}
+        <div class="stat tile-{{ tones[ti] }}" {{ block.shopify_attributes }}>
+          <div class="snum2"><span data-count="{{ block.settings.value }}">{{ block.settings.value }}</span>{{ block.settings.suffix | escape }}</div>
+          <p>{{ block.settings.label | escape }}</p>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Stats row",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading" },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "Stat",
+      "settings": [
+        { "type": "number", "id": "value", "label": "Number", "default": 100 },
+        { "type": "text", "id": "suffix", "label": "Suffix", "default": "+" },
+        { "type": "text", "id": "label", "label": "Label", "default": "Lorem ipsum dolor" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Stats row", "blocks": [ { "type": "stat" }, { "type": "stat" }, { "type": "stat" }, { "type": "stat" } ] } ]
+}
+{% endschema %}

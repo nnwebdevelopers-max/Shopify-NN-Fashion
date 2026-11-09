@@ -1,0 +1,46 @@
+{%- comment -%}
+  Rendered on a product URL with ?section_id=product-fragment.
+  Supplies the product card and comparison data used by the wishlist page, compare page and compare bar.
+{%- endcomment -%}
+{%- liquid
+  assign v = product.selected_or_first_available_variant
+  capture stars
+    if product.metafields.custom.rating != blank
+      render 'stars', rating: product.metafields.custom.rating.value
+    endif
+  endcapture
+  capture price_html
+    render 'price', product: product
+  endcapture
+-%}
+<div data-fragment-card>{% render 'product-card', product: product, index: 0 %}</div>
+<script type="application/json" data-fragment-json>
+{
+  "handle": {{ product.handle | json }},
+  "title": {{ product.title | json }},
+  "url": {{ product.url | json }},
+  "vendor": {{ product.vendor | json }},
+  "type": {{ product.type | json }},
+  "price_html": {{ price_html | strip | json }},
+  "available": {{ product.available | json }},
+  "single": {{ product.has_only_default_variant | json }},
+  "variant_id": {{ v.id | json }},
+  "image": {% if product.featured_media %}{{ product.featured_media | image_url: width: 500 | json }}{% else %}null{% endif %},
+  "spec": {{ product.metafields.custom.spec.value | default: '' | json }},
+  "rating": {{ product.metafields.custom.rating.value | default: '' | append: '' | json }},
+  "rating_count": {{ product.metafields.custom.rating_count.value | default: 0 | json }},
+  "stars_html": {{ stars | strip | json }},
+  "options": [
+    {%- for option in product.options_with_values -%}
+      {"name": {{ option.name | json }}, "values": {{ option.values | map: 'name' | json }}}{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+}
+</script>
+
+{% schema %}
+{
+  "name": "Product fragment",
+  "settings": []
+}
+{% endschema %}

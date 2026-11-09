@@ -1,0 +1,52 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "eyebrow": "Size guide",
+        "padding_bottom": 20
+      }
+    },
+    "tables": {
+      "type": "size-table",
+      "blocks": {
+        "t1": {
+          "type": "table",
+          "settings": {
+            "title": "Tops & outerwear",
+            "note": "Lorem ipsum dolor sit amet, measurements in cm.",
+            "rows": "Size,Chest,Waist,Length\nXS,84,68,64\nS,90,74,66\nM,96,80,68\nL,102,86,70\nXL,108,92,72\nXXL,114,98,74"
+          }
+        },
+        "t2": {
+          "type": "table",
+          "settings": {
+            "title": "Bottoms",
+            "note": "Consectetur adipiscing elit.",
+            "rows": "Waist,Hip,Inseam (short),Inseam (regular),Inseam (long)\n28,92,74,79,84\n30,96,74,79,84\n32,100,74,79,84\n34,104,74,79,84\n36,108,74,79,84"
+          }
+        },
+        "t3": {
+          "type": "table",
+          "settings": {
+            "title": "Footwear (EU)",
+            "rows": "EU,UK,US,Foot length (cm)\n38,5,6,24.0\n40,6.5,7.5,25.5\n42,8,9,27.0\n44,9.5,10.5,28.5"
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2",
+        "t3"
+      ],
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    }
+  },
+  "order": [
+    "main",
+    "tables"
+  ]
+}

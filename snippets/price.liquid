@@ -1,0 +1,16 @@
+{%- comment -%} Params: product, (optional) variant {%- endcomment -%}
+{%- liquid
+  assign v = variant | default: product.selected_or_first_available_variant
+  if variant
+    assign p = v.price
+    assign cmp = v.compare_at_price
+  else
+    assign p = product.price
+    assign cmp = product.compare_at_price
+  endif
+-%}
+<span class="price">
+  {%- if variant == blank and product.price_varies %}{{ 'products.from' | t }} {% endif -%}
+  {{- p | money -}}
+  {%- if cmp > p %}<s>{{ cmp | money }}</s>{% endif -%}
+</span>

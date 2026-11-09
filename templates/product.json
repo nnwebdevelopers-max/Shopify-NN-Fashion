@@ -1,0 +1,35 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "price": { "type": "price", "settings": {} },
+        "description": { "type": "description", "settings": {} },
+        "picker": { "type": "variant_picker", "settings": {} },
+        "buy": { "type": "buy_buttons", "settings": { "dynamic_checkout": false } },
+        "perks": { "type": "perks", "settings": { "perk_1": "<b>In stock</b> · ships in 24h", "perk_2": "<b>Free returns</b> within 30 days", "perk_3": "<b>Free delivery</b> over $200" } },
+        "details": { "type": "collapsible", "settings": { "heading": "Details & fit", "source": "specs", "content": "", "open": false } },
+        "care": { "type": "collapsible", "settings": { "heading": "Material & care", "source": "care", "content": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>", "open": false } },
+        "shipping": { "type": "collapsible", "settings": { "heading": "Delivery & returns", "source": "text", "content": "<p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>", "open": false } },
+        "share": { "type": "share", "settings": {} }
+      },
+      "block_order": ["price", "description", "picker", "buy", "perks", "details", "care", "shipping", "share"],
+      "settings": { "color_scheme": "scheme-1", "buy_scheme": "scheme-3", "show_breadcrumbs": true, "show_marquee": true, "marquee_scheme": "scheme-2", "marquee_text": "Lorem ipsum | Dolor sit amet | Free returns | Made to last", "show_details": true, "sticky_atc": true }
+    },
+    "reviews": {
+      "type": "product-reviews",
+      "blocks": {
+        "r1": { "type": "review", "settings": { "stars": 5, "title": "Lorem ipsum dolor sit", "text": "Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore." } },
+        "r2": { "type": "review", "settings": { "stars": 4, "title": "Sed ut perspiciatis", "text": "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit." } },
+        "r3": { "type": "review", "settings": { "stars": 5, "title": "Duis aute irure", "text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia." } }
+      },
+      "block_order": ["r1", "r2", "r3"],
+      "settings": { "color_scheme": "scheme-1", "eyebrow": "Kind words", "heading": "", "rating": "4.6", "count": "0", "padding_top": 40, "padding_bottom": 80 }
+    },
+    "related": {
+      "type": "related-products",
+      "settings": { "color_scheme": "scheme-1", "eyebrow": "Lorem ipsum", "heading": "You may also like", "limit": 4, "padding_top": 0, "padding_bottom": 96 }
+    }
+  },
+  "order": ["main", "reviews", "related"]
+}

@@ -1,0 +1,37 @@
+{%- layout none -%}
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ 'gift_card.title' | t }} &ndash; {{ shop.name }}</title>
+    <script src="{{ 'vendor/qrcode.js' | shopify_asset_url }}" defer></script>
+    {% render 'color-schemes' %}
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ content_for_header }}
+  </head>
+  <body class="color-scheme color-{{ settings.body_scheme.id }}">
+    <main style="min-height:100vh;display:grid;place-items:center;padding:24px">
+      <div style="max-width:520px;width:100%;display:grid;gap:18px;text-align:center;justify-items:center">
+        <span class="logo"><i></i>{{ shop.name | escape }}</span>
+        <div class="news" style="grid-template-columns:1fr;width:100%;text-align:center">
+          <p class="eyebrow">{{ 'gift_card.title' | t }}</p>
+          <h1 style="font-size:56px">{{ gift_card.initial_value | money }}</h1>
+          {%- if gift_card.balance != gift_card.initial_value -%}<p class="rte">{{ 'gift_card.balance' | t }}: {{ gift_card.balance | money }}</p>{%- endif -%}
+          {%- if gift_card.expired or gift_card.enabled == false -%}<p class="perr">{{ 'gift_card.expired' | t }}</p>{%- endif -%}
+          <div class="form" style="justify-content:center"><input type="text" value="{{ gift_card.code | format_code }}" readonly aria-label="{{ 'gift_card.code' | t }}" style="text-align:center;font-family:var(--mono)"></div>
+          <div id="QrCode" data-identifier="{{ gift_card.qr_identifier }}" style="display:grid;place-items:center;margin-top:12px"></div>
+        </div>
+        {%- if gift_card.pass_url -%}<a href="{{ gift_card.pass_url }}"><img src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}" width="120" height="40" alt="Apple Wallet" loading="lazy"></a>{%- endif -%}
+        <a class="btn primary" href="{{ shop.url }}" target="_blank" rel="noopener">{{ 'gift_card.shop' | t }} <span class="arr">→</span></a>
+        <button class="btn ghost" type="button" onclick="window.print()">{{ 'gift_card.print' | t }}</button>
+      </div>
+    </main>
+    <script>
+      window.addEventListener('load', function () {
+        var el = document.getElementById('QrCode');
+        if (window.QRCode && el) new QRCode(el, { text: el.dataset.identifier, width: 120, height: 120, imageAltText: {{ 'gift_card.qr' | t | json }} });
+      });
+    </script>
+  </body>
+</html>

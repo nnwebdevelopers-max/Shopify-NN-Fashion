@@ -1,0 +1,98 @@
+{%- comment -%} Params: link (top-level menu link), block (mega menu block), index {%- endcomment -%}
+{%- assign layout = block.settings.layout -%}
+<div class="mega" data-panel="{{ index }}" aria-hidden="true" {{ block.shopify_attributes }}>
+  <div class="wrap">
+    {%- case layout -%}
+      {%- when 'tiles' -%}
+        <div class="mB">
+          <div class="mt"><h3 style="font-size:28px">{{ block.settings.heading | default: link.title | escape }}</h3><a class="link" href="{{ link.url }}">{{ 'general.view_all_products' | t }}</a></div>
+          <div class="mtiles">
+            {%- for child in link.links -%}
+              {%- assign tn = forloop.index0 | modulo: 4 | plus: 1 -%}
+              <a class="mtile stg tint-{{ tn }}" style="--i:{{ forloop.index0 }}" href="{{ child.url }}">
+                <div><b>{{ child.title | escape }}</b>{% if child.type == 'collection_link' %}<small>{{ 'collections.product_count' | t: count: child.object.products_count }}</small>{% endif %}</div>
+                <div class="tart">
+                  {%- if child.type == 'collection_link' -%}{% render 'collection-art', collection: child.object, width: 300 %}
+                  {%- elsif child.type == 'product_link' and child.object.featured_media -%}{{ child.object.featured_media | image_url: width: 300 | image_tag: loading: 'lazy', alt: '' }}
+                  {%- else -%}{%- capture k %}{% render 'art-for', text: child.title %}{% endcapture %}{% render 'art', name: k %}{%- endif -%}
+                </div>
+              </a>
+            {%- endfor -%}
+            {%- if block.settings.promo_1_label != blank -%}
+              <a class="mtile stg" style="--i:6;background:var(--solid);color:var(--solid-ink)" href="{{ block.settings.promo_1_link | default: routes.all_products_collection_url }}"><div><b>{{ block.settings.promo_1_label | escape }}</b><small style="color:inherit;opacity:.8">{{ block.settings.promo_1_text | escape }}</small></div></a>
+            {%- endif -%}
+            {%- if block.settings.promo_2_label != blank -%}
+              <a class="mtile stg" style="--i:7;background:var(--bg);border:1px solid var(--line)" href="{{ block.settings.promo_2_link | default: routes.all_products_collection_url }}"><div><b>{{ block.settings.promo_2_label | escape }}</b><small>{{ block.settings.promo_2_text | escape }}</small></div></a>
+            {%- endif -%}
+          </div>
+          {%- if block.settings.pills_menu != blank -%}
+            <div class="mpills">{% for l in block.settings.pills_menu.links %}<a href="{{ l.url }}">{{ l.title | escape }}</a>{% endfor %}</div>
+          {%- endif -%}
+        </div>
+
+      {%- when 'tabs' -%}
+        <div class="mC">
+          <div class="mside" role="tablist">
+            {%- for child in link.links -%}
+              <button type="button" role="tab" data-mc="{{ forloop.index }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ child.title | escape }}<span aria-hidden="true">→</span></button>
+            {%- endfor -%}
+          </div>
+          {%- for child in link.links -%}
+            <div data-mcp="{{ forloop.index }}" style="display:contents" {% unless forloop.first %}hidden{% endunless %}>
+              <div class="mpanel stg" style="--i:0">
+                <h4>{{ child.title | escape }}</h4>
+                {%- if child.type == 'collection_link' and child.object.description != blank -%}<p>{{ child.object.description | strip_html | truncatewords: 22 }}</p>{%- endif -%}
+                {%- if child.links.size > 0 -%}<ul>{% for g in child.links %}<li><a href="{{ g.url }}">{{ g.title | escape }}</a></li>{% endfor %}</ul>{%- endif -%}
+                <a class="link" style="display:inline-block;margin-top:16px" href="{{ child.url }}">{{ 'general.shop_all' | t: title: child.title }}</a>
+              </div>
+              <div class="stg" style="--i:1">
+                {%- if child.type == 'collection_link' and child.object.products_count > 0 -%}
+                  <p class="eyebrow" style="margin-bottom:12px">{{ block.settings.feature_label | escape }}</p>
+                  <div class="mminis">
+                    {%- for p in child.object.products limit: 2 -%}
+                      <a class="mini" href="{{ p.url }}"><div class="th tint-{{ forloop.index | plus: 1 }}">{% if p.featured_media %}{{ p.featured_media | image_url: width: 300 | image_tag: loading: 'lazy', alt: '' }}{% else %}{% capture k %}{% render 'art-for', product: p %}{% endcapture %}{% render 'art', name: k %}{% endif %}</div><b>{{ p.title | escape }}</b><span>{{ p.price | money }}</span></a>
+                    {%- endfor -%}
+                  </div>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endfor -%}
+        </div>
+
+      {%- else -%}
+        {%- liquid
+          assign cols = link.links.size
+          if cols > 3
+            assign cols = 3
+          endif
+          assign fp = block.settings.featured_product
+          if fp == blank
+            for child in link.links
+              if child.type == 'collection_link' and child.object.products_count > 0
+                assign fp = child.object.products.first
+                break
+              endif
+            endfor
+          endif
+        -%}
+        <div class="mA"{% if fp == blank %} style="grid-template-columns:1fr"{% endif %}>
+          <div class="mcols" style="--cols:{{ cols }}">
+            {%- for child in link.links -%}
+              <div class="stg" style="--i:{{ forloop.index0 }}">
+                <a class="mh" href="{{ child.url }}">{{ child.title | escape }}</a>
+                {%- if child.links.size > 0 -%}<ul>{% for g in child.links %}<li><a href="{{ g.url }}">{{ g.title | escape }}</a></li>{% endfor %}</ul>{%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+          {%- if fp != blank -%}
+            <a class="mfeat stg tint-1" style="--i:6" href="{{ fp.url }}">
+              <span class="eyebrow">{{ block.settings.feature_label | escape }}</span>
+              <h3>{{ fp.title | escape }}</h3>
+              {% render 'price', product: fp %}
+              <div class="fart">{% if fp.featured_media %}{{ fp.featured_media | image_url: width: 500 | image_tag: loading: 'lazy', alt: '' }}{% else %}{% capture k %}{% render 'art-for', product: fp %}{% endcapture %}{% render 'art', name: k %}{% endif %}</div>
+            </a>
+          {%- endif -%}
+        </div>
+    {%- endcase -%}
+  </div>
+</div>

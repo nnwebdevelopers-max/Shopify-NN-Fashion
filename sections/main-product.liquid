@@ -1,0 +1,276 @@
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign first_col = product.collections.first
+  assign media_count = product.media.size
+  assign tints = 't1,t2,t3,t4' | split: ','
+  if current_variant.featured_media
+    assign featured_id = current_variant.featured_media.id
+  else
+    assign featured_id = product.featured_media.id
+  endif
+  assign scheme = settings.body_scheme.id
+  if section.settings.custom_scheme
+    assign scheme = section.settings.color_scheme.id
+  endif
+  assign words = product.title | split: ' '
+  assign n = words.size
+  assign line1 = ''
+  assign line2 = ''
+  assign last_word = ''
+  if n == 1
+    assign line1 = product.title
+  elsif n == 2
+    assign line1 = words[0]
+    assign last_word = words[1]
+  else
+    assign last_word = words | last
+    assign line1 = words[0]
+    assign mid = product.title | remove_first: line1 | remove_last: last_word | strip
+    assign line2 = mid
+  endif
+  assign rating = product.metafields.custom.rating.value
+-%}
+<div class="color-scheme color-{{ scheme }} pb" data-product-section>
+  <div class="wrap">
+    {%- if section.settings.show_breadcrumbs -%}
+      {%- if first_col -%}
+        {% render 'breadcrumbs', mid_title: first_col.title, mid_url: first_col.url, last: product.title %}
+      {%- else -%}
+        {% render 'breadcrumbs', last: product.title %}
+      {%- endif -%}
+    {%- endif -%}
+
+    <header class="pb-head">
+      <h1 class="pb-title" aria-label="{{ product.title | escape }}">
+        <span class="mask"><span>{{ line1 | escape }}</span></span>
+        {%- if line2 != blank or last_word != blank -%}
+          <span class="mask"><span>{% if line2 != blank %}{{ line2 | escape }} {% endif %}{% if last_word != blank %}<i>{{ last_word | escape }}</i>{% endif %}</span></span>
+        {%- endif -%}
+      </h1>
+      <div class="pb-meta">
+        {%- if product.vendor != blank -%}<p class="eyebrow">{{ product.vendor | escape }}{% if product.type != blank %} · {{ product.type | escape }}{% endif %}</p>{%- endif -%}
+        {%- if rating != blank -%}
+          <div class="rate">{% render 'stars', rating: rating %} <span>{{ rating }} · {{ 'products.reviews_count' | t: count: product.metafields.custom.rating_count.value }}</span></div>
+        {%- endif -%}
+      </div>
+    </header>
+
+    <div class="pb-grid">
+      <div class="gstack{% if media_count < 2 %} single{% endif %}">
+        {%- if media_count == 0 -%}
+          <div class="gslide on" style="background:var(--t1)">{% capture k %}{% render 'art-for', product: product %}{% endcapture %}{% render 'art', name: k %}</div>
+        {%- endif -%}
+        {%- for media in product.media -%}
+          {%- assign ti = forloop.index0 | modulo: 4 -%}
+          <div class="gslide{% if media.id == featured_id %} on{% endif %}" data-slide="{{ media.id }}" id="slide-{{ media.id }}" style="background:var(--{{ tints[ti] }})">
+            {%- case media.media_type -%}
+              {%- when 'image' -%}
+                {%- if forloop.index < 3 -%}{%- assign load = 'eager' -%}{%- else -%}{%- assign load = 'lazy' -%}{%- endif -%}
+                {{ media | image_url: width: 1200 | image_tag: loading: load, widths: '500,700,900,1200', sizes: '(min-width: 990px) 34vw, 90vw', alt: media.alt | default: product.title }}
+              {%- when 'external_video' -%}
+                {{ media | external_video_tag }}
+              {%- when 'video' -%}
+                {{ media | video_tag: controls: true }}
+              {%- when 'model' -%}
+                {{ media | model_viewer_tag }}
+            {%- endcase -%}
+            {%- if forloop.first and product.compare_at_price > product.price -%}<span class="badge sale">{{ 'products.sale' | t }}</span>{%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <aside class="pinfo pb-buy color-scheme color-{{ section.settings.buy_scheme.id }}" data-motion="buy">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'price' -%}
+              <div {{ block.shopify_attributes }}>
+                <div class="pprice" data-price data-price-save>
+                  {{- current_variant.price | money -}}
+                  {%- if current_variant.compare_at_price > current_variant.price -%}
+                    <s>{{ current_variant.compare_at_price | money }}</s>
+                    {%- assign save = current_variant.price | times: 100.0 | divided_by: current_variant.compare_at_price | minus: 100 | times: -1 | round -%}
+                    <span class="save">{{ 'products.save' | t }} {{ save }}%</span>
+                  {%- endif -%}
+                </div>
+                {%- if cart.taxes_included -%}<p class="tax">{{ 'products.tax_included' | t }}</p>{%- endif -%}
+              </div>
+            {%- when 'description' -%}
+              {%- if product.description != blank -%}<div class="pdesc rte" {{ block.shopify_attributes }}>{{ product.description }}</div>{%- endif -%}
+            {%- when 'text' -%}
+              <div class="rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+            {%- when 'variant_picker' -%}
+              {%- unless product.has_only_default_variant -%}
+                <div data-variant-picker data-update-url style="display:grid;gap:20px" {{ block.shopify_attributes }}>
+                  {%- for option in product.options_with_values -%}
+                    {%- assign oname = option.name | downcase -%}
+                    {%- if oname == 'color' or oname == 'colour' -%}{%- assign is_color = true -%}{%- else -%}{%- assign is_color = false -%}{%- endif -%}
+                    <fieldset class="opt">
+                      <legend>{{ option.name | escape }} <span data-selected-value>{{ option.selected_value | escape }}</span></legend>
+                      <div class="ob">
+                        {%- for value in option.values -%}
+                          <label title="{{ value | escape }}">
+                            <input type="radio" name="{{ section.id }}-{{ option.position }}" value="{{ value | escape }}"{% if option.selected_value == value %} checked{% endif %}{% unless value.available %} class="na"{% endunless %}>
+                            {%- if is_color -%}
+                              <span class="cs" style="background:{% render 'swatch-color', value: value %}"><span class="visually-hidden">{{ value | escape }}</span></span>
+                            {%- else -%}
+                              <span class="pill">{{ value | escape }}</span>
+                            {%- endif -%}
+                          </label>
+                        {%- endfor -%}
+                      </div>
+                    </fieldset>
+                  {%- endfor -%}
+                </div>
+              {%- endunless -%}
+            {%- when 'buy_buttons' -%}
+              <div {{ block.shopify_attributes }}>
+                {%- form 'product', product, data-product-form: '', data-cart-form: '', novalidate: 'novalidate' -%}
+                  <input type="hidden" name="id" value="{{ current_variant.id }}">
+                  <div class="buy">
+                    <div class="qty">
+                      <button type="button" data-qty-step="-1" aria-label="{{ 'cart.decrease' | t }}">−</button>
+                      <input type="number" name="quantity" value="1" min="1" max="99" data-qty-input aria-label="{{ 'cart.quantity' | t }}">
+                      <button type="button" data-qty-step="1" aria-label="{{ 'cart.increase' | t }}">+</button>
+                    </div>
+                    <button type="submit" class="btn primary" data-add-btn {% unless current_variant.available %}disabled data-sold-out{% endunless %}>
+                      <span>{%- if current_variant.available -%}{{ 'products.add_to_cart' | t }}{%- else -%}{{ 'products.sold_out' | t }}{%- endif -%}</span><i class="arr" aria-hidden="true">→</i>
+                    </button>
+                  </div>
+                  {%- if block.settings.dynamic_checkout -%}{{ form | payment_button }}{%- endif -%}
+                  <p class="perr" data-form-error hidden></p>
+                {%- endform -%}
+                {%- render 'list-buttons', product: product, style: 'text' -%}
+              </div>
+            {%- when 'perks' -%}
+              <div class="perks" {{ block.shopify_attributes }}>
+                {%- if block.settings.perk_1 != blank %}<div>{{ block.settings.perk_1 }}</div>{% endif -%}
+                {%- if block.settings.perk_2 != blank %}<div>{{ block.settings.perk_2 }}</div>{% endif -%}
+                {%- if block.settings.perk_3 != blank %}<div>{{ block.settings.perk_3 }}</div>{% endif -%}
+              </div>
+            {%- when 'collapsible' -%}
+              <div class="acc" {{ block.shopify_attributes }}>
+                <details{% if block.settings.open %} open{% endif %}>
+                  <summary>{{ block.settings.heading | escape }}</summary>
+                  <div class="ab">
+                    {%- case block.settings.source -%}
+                      {%- when 'specs' -%}
+                        <table class="specs">
+                          {%- if product.vendor != blank %}<tr><td>{{ 'products.brand' | t }}</td><td>{{ product.vendor | escape }}</td></tr>{% endif -%}
+                          {%- if product.type != blank %}<tr><td>{{ 'products.type' | t }}</td><td>{{ product.type | escape }}</td></tr>{% endif -%}
+                          {%- if product.metafields.custom.material != blank %}<tr><td>{{ 'products.material' | t }}</td><td>{{ product.metafields.custom.material.value | escape }}</td></tr>{% endif -%}
+                          {%- for option in product.options_with_values -%}{%- unless option.name == 'Title' -%}<tr><td>{{ option.name | escape }}</td><td>{{ option.values | join: ', ' | escape }}</td></tr>{%- endunless -%}{%- endfor -%}
+                          {%- if current_variant.sku != blank %}<tr><td>SKU</td><td>{{ current_variant.sku | escape }}</td></tr>{% endif -%}
+                        </table>
+                        {%- if block.settings.content != blank -%}<div style="margin-top:12px">{{ block.settings.content }}</div>{%- endif -%}
+                      {%- when 'care' -%}
+                        {%- if product.metafields.custom.care != blank -%}<div class="care">{{ product.metafields.custom.care.value | newline_to_br }}</div>{%- else -%}{{ block.settings.content }}{%- endif -%}
+                      {%- when 'page' -%}
+                        {{ block.settings.page.content }}
+                      {%- else -%}
+                        {{ block.settings.content }}
+                    {%- endcase -%}
+                  </div>
+                </details>
+              </div>
+            {%- when 'share' -%}
+              <div class="share" style="margin:0" {{ block.shopify_attributes }}>
+                <a class="btn ghost" style="padding:9px 16px" target="_blank" rel="noopener" href="https://www.facebook.com/sharer.php?u={{ shop.url | append: product.url | url_encode }}">Facebook</a>
+                <a class="btn ghost" style="padding:9px 16px" target="_blank" rel="noopener" href="https://x.com/intent/post?url={{ shop.url | append: product.url | url_encode }}&text={{ product.title | url_encode }}">X</a>
+                <a class="btn ghost" style="padding:9px 16px" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/button/?url={{ shop.url | append: product.url | url_encode }}">Pinterest</a>
+              </div>
+            {%- when '@app' -%}
+              {% render block %}
+          {%- endcase -%}
+        {%- endfor -%}
+      </aside>
+    </div>
+  </div>
+
+  {%- if section.settings.show_marquee -%}
+    {%- assign mq_items = section.settings.marquee_text | split: '|' -%}
+    {%- if mq_items.size > 0 -%}
+      <div class="pb-marquee color-scheme color-{{ section.settings.marquee_scheme.id }}" aria-hidden="true">
+        <div class="mqtrack">
+          {%- for rep in (1..4) -%}{%- for item in mq_items -%}<span>{{ item | strip | escape }}</span><b>✶</b>{%- endfor -%}{%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if section.settings.show_details -%}
+    <div class="wrap">
+      <div class="pb-bento">
+        {%- if product.metafields.custom.material != blank -%}
+          <div class="bx tint-1" data-motion="bx"><p class="eyebrow">{{ 'products.material' | t }}</p><h3>{{ product.metafields.custom.material.value | escape }}</h3></div>
+        {%- endif -%}
+        {%- if product.metafields.custom.fit_note != blank -%}
+          <div class="bx tint-4" data-motion="bx"><p class="eyebrow">{{ 'products.fit_note' | t }}</p><h3>{{ product.metafields.custom.fit_note.value | strip_html | truncatewords: 12 }}</h3></div>
+        {%- endif -%}
+        {%- if product.metafields.custom.care != blank -%}
+          <div class="bx tint-2" data-motion="bx"><p class="eyebrow">{{ 'products.care' | t }}</p><div class="care">{{ product.metafields.custom.care.value | newline_to_br }}</div></div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- if section.settings.sticky_atc -%}
+    <div class="satc color-scheme color-{{ scheme }}" data-sticky-atc>
+      <div class="satc-th">{%- if product.featured_media -%}{{ product.featured_media | image_url: width: 120 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</div>
+      <div class="satc-tx"><strong>{{ product.title | escape }}</strong><div class="price" data-price>{{ current_variant.price | money }}{% if current_variant.compare_at_price > current_variant.price %}<s>{{ current_variant.compare_at_price | money }}</s>{% endif %}</div></div>
+      <button type="button" class="btn primary" data-add-btn {% unless current_variant.available %}disabled{% endunless %}><span>{%- if current_variant.available -%}{{ 'products.add_to_cart' | t }}{%- else -%}{{ 'products.sold_out' | t }}{%- endif -%}</span></button>
+    </div>
+  {%- endif -%}
+
+  <script type="application/json" data-product-json>{{ product | json }}</script>
+  <script type="application/ld+json">
+    {{ product | structured_data }}
+  </script>
+</div>
+
+{% schema %}
+{
+  "name": "Product information",
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "color_scheme", "id": "buy_scheme", "label": "Buy card color scheme", "default": "scheme-3" },
+    { "type": "checkbox", "id": "show_breadcrumbs", "label": "Show breadcrumbs", "default": true },
+    { "type": "header", "content": "Marquee strip" },
+    { "type": "checkbox", "id": "show_marquee", "label": "Show marquee strip", "default": true },
+    { "type": "color_scheme", "id": "marquee_scheme", "label": "Marquee color scheme", "default": "scheme-2", "visible_if": "{{ section.settings.show_marquee }}" },
+    { "type": "text", "id": "marquee_text", "label": "Marquee text", "info": "Separate phrases with |", "default": "Lorem ipsum | Dolor sit amet | Free returns | Made to last" },
+    { "type": "header", "content": "Details" },
+    { "type": "checkbox", "id": "show_details", "label": "Show material, fit and care cards", "info": "Reads product metafields custom.material, custom.fit_note and custom.care.", "default": true },
+    { "type": "checkbox", "id": "sticky_atc", "label": "Sticky add to cart bar", "default": true }
+  ],
+  "blocks": [
+    { "type": "@app" },
+    { "type": "price", "name": "Price", "limit": 1, "settings": [] },
+    { "type": "description", "name": "Description", "limit": 1, "settings": [] },
+    { "type": "text", "name": "Text", "settings": [ { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Lorem ipsum dolor sit amet.</p>" } ] },
+    { "type": "variant_picker", "name": "Variant picker", "limit": 1, "settings": [] },
+    { "type": "buy_buttons", "name": "Buy buttons", "limit": 1, "settings": [ { "type": "checkbox", "id": "dynamic_checkout", "label": "Show dynamic checkout buttons", "default": false } ] },
+    {
+      "type": "perks", "name": "Perks", "settings": [
+        { "type": "inline_richtext", "id": "perk_1", "label": "Perk 1", "default": "<b>Lorem ipsum</b> dolor sit amet" },
+        { "type": "inline_richtext", "id": "perk_2", "label": "Perk 2", "default": "<b>Consectetur</b> adipiscing elit" },
+        { "type": "inline_richtext", "id": "perk_3", "label": "Perk 3", "default": "<b>Sed do</b> eiusmod tempor" }
+      ]
+    },
+    {
+      "type": "collapsible", "name": "Collapsible tab", "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Lorem ipsum" },
+        {
+          "type": "select", "id": "source", "label": "Content",
+          "options": [ { "value": "text", "label": "Text below" }, { "value": "specs", "label": "Specifications table" }, { "value": "care", "label": "Care (custom.care metafield)" }, { "value": "page", "label": "Page" } ],
+          "default": "text"
+        },
+        { "type": "richtext", "id": "content", "label": "Text", "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>" },
+        { "type": "page", "id": "page", "label": "Page" },
+        { "type": "checkbox", "id": "open", "label": "Open by default", "default": false }
+      ]
+    },
+    { "type": "share", "name": "Share", "limit": 1, "settings": [] }
+  ]
+}
+{% endschema %}

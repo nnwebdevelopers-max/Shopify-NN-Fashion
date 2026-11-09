@@ -1,0 +1,216 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "NN Fashion",
+    "theme_version": "1.0.0",
+    "theme_author": "NN Developers",
+    "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
+    "theme_support_url": "https://help.shopify.com"
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "color_scheme_group",
+        "id": "color_schemes",
+        "definition": [
+          { "type": "header", "content": "Base" },
+          { "type": "color", "id": "background", "label": "Background", "default": "#f3f8ff" },
+          { "type": "color", "id": "surface", "label": "Surface (cards, header, drawer)", "default": "#ffffff" },
+          { "type": "color", "id": "text", "label": "Text", "default": "#0f2238" },
+          { "type": "color", "id": "muted", "label": "Muted text", "default": "#5a6b80" },
+          { "type": "color", "id": "line", "label": "Borders", "default": "#dde7f3" },
+          { "type": "header", "content": "Accent" },
+          { "type": "color", "id": "accent", "label": "Accent", "default": "#0a7cff" },
+          { "type": "color", "id": "accent_ink", "label": "Text on accent", "default": "#ffffff" },
+          { "type": "header", "content": "Buttons" },
+          { "type": "color", "id": "solid", "label": "Primary button", "default": "#0a7cff" },
+          { "type": "color", "id": "solid_ink", "label": "Primary button text", "default": "#ffffff" },
+          { "type": "header", "content": "Illustrations and tiles" },
+          { "type": "color", "id": "art", "label": "Illustration body", "default": "#17324f" },
+          { "type": "color", "id": "tint_1", "label": "Tile tint 1", "default": "#dcebff" },
+          { "type": "color", "id": "tint_2", "label": "Tile tint 2", "default": "#e9f1fb" },
+          { "type": "color", "id": "tint_3", "label": "Tile tint 3", "default": "#d9f1ee" },
+          { "type": "color", "id": "tint_4", "label": "Tile tint 4", "default": "#fdeedd" }
+        ],
+        "role": {
+          "text": "text",
+          "background": { "solid": "background" },
+          "links": "accent",
+          "icons": "text",
+          "primary_button": "solid",
+          "on_primary_button": "solid_ink",
+          "primary_button_border": "solid",
+          "secondary_button": "surface",
+          "on_secondary_button": "text",
+          "secondary_button_border": "line"
+        }
+      },
+      {
+        "type": "color_scheme",
+        "id": "body_scheme",
+        "label": "Default color scheme",
+        "info": "Used for the page background and any section left on its default.",
+        "default": "scheme-1"
+      },
+      { "type": "header", "content": "Shopper color switcher" },
+      {
+        "type": "checkbox",
+        "id": "palette_switcher",
+        "label": "Show color switcher",
+        "info": "A floating control that lets shoppers recolor the whole store with one of your schemes. Their choice is remembered.",
+        "default": false
+      },
+      { "type": "text", "id": "palette_label", "label": "Switcher label", "default": "Color scheme" },
+      {
+        "type": "range",
+        "id": "palette_count",
+        "label": "Schemes offered",
+        "info": "Shows the first schemes in your list, in order.",
+        "min": 2, "max": 10, "step": 1, "default": 6
+      },
+      { "type": "header", "content": "Dark mode" },
+      {
+        "type": "checkbox",
+        "id": "auto_dark",
+        "label": "Follow the shopper's device dark mode",
+        "info": "When the device is in dark mode and the shopper has not picked a scheme, the dark scheme below is used.",
+        "default": false
+      },
+      { "type": "color_scheme", "id": "dark_scheme", "label": "Dark scheme", "default": "scheme-7" }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "select",
+        "id": "font_pairing",
+        "label": "Font pairing",
+        "options": [
+          { "value": "soft", "label": "Instrument Serif + DM Sans" },
+          { "value": "system", "label": "System fonts (fastest)" }
+        ],
+        "default": "soft"
+      }
+    ]
+  },
+  {
+    "name": "Layout",
+    "settings": [
+      {
+        "type": "select",
+        "id": "layout_width",
+        "label": "Page layout",
+        "options": [
+          { "value": "full", "label": "Full width" },
+          { "value": "boxed", "label": "Fixed width" }
+        ],
+        "default": "full"
+      },
+      {
+        "type": "range",
+        "id": "page_gutter",
+        "label": "Side spacing",
+        "info": "Space between the content and the edge of the screen on desktop.",
+        "min": 16, "max": 96, "step": 4, "unit": "px", "default": 48
+      },
+      {
+        "type": "range",
+        "id": "page_width",
+        "label": "Fixed page width",
+        "visible_if": "{{ settings.layout_width == 'boxed' }}",
+        "min": 1000, "max": 1600, "step": 20, "unit": "px", "default": 1240
+      },
+      { "type": "range", "id": "radius", "label": "Tile corner radius", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 28 },
+      { "type": "checkbox", "id": "reveal", "label": "Reveal sections on scroll", "default": true }
+    ]
+  },
+  {
+    "name": "Motion",
+    "settings": [
+      { "type": "paragraph", "content": "Animations use GSAP and respect the shopper reduced-motion setting." },
+      { "type": "checkbox", "id": "motion_gsap", "label": "Enable GSAP animations", "info": "Scroll reveals, staggered entrances and animated counters.", "default": true },
+      { "type": "checkbox", "id": "motion_smooth", "label": "Smooth scrolling", "default": true },
+      { "type": "checkbox", "id": "motion_magnetic", "label": "Magnetic buttons", "default": true },
+      { "type": "checkbox", "id": "motion_parallax", "label": "Parallax on hero art", "default": true }
+    ]
+  },
+  {
+    "name": "Logo and favicon",
+    "settings": [
+      { "type": "image_picker", "id": "logo", "label": "Logo image" },
+      { "type": "range", "id": "logo_width", "label": "Logo width", "min": 60, "max": 260, "step": 5, "unit": "px", "default": 140 },
+      { "type": "image_picker", "id": "favicon", "label": "Favicon", "info": "32 × 32 px" }
+    ]
+  },
+  {
+    "name": "Products",
+    "settings": [
+      {
+        "type": "select",
+        "id": "card_tint",
+        "label": "Product card background",
+        "options": [
+          { "value": "cycle", "label": "Cycle through tile tints" },
+          { "value": "1", "label": "Tint 1" },
+          { "value": "2", "label": "Tint 2" },
+          { "value": "surface", "label": "Surface" }
+        ],
+        "default": "cycle"
+      },
+      { "type": "checkbox", "id": "card_swatches", "label": "Show color swatches", "default": true },
+      { "type": "checkbox", "id": "card_rating", "label": "Show rating", "info": "Uses product metafields custom.rating and custom.rating_count.", "default": false },
+      { "type": "checkbox", "id": "card_color_hover", "label": "Change card background on hover", "default": true },
+      { "type": "checkbox", "id": "card_quick_add", "label": "Show quick add", "default": true },
+      { "type": "text", "id": "new_tag", "label": "Tag that shows a “New” badge", "default": "new" },
+      { "type": "text", "id": "hot_tag", "label": "Tag that shows a “Hot” badge", "default": "trending" }
+    ]
+  },
+  {
+    "name": "Wishlist and compare",
+    "settings": [
+      { "type": "paragraph", "content": "Shoppers' wishlist and compare lists are saved in their browser, so they work without an app or an account." },
+      { "type": "checkbox", "id": "wishlist_enable", "label": "Enable wishlist", "default": true },
+      { "type": "page", "id": "wishlist_page", "label": "Wishlist page", "info": "A page using the \"page.wishlist\" template. Defaults to /pages/wishlist." },
+      { "type": "checkbox", "id": "compare_enable", "label": "Enable compare", "default": true },
+      { "type": "page", "id": "compare_page", "label": "Compare page", "info": "A page using the \"page.compare\" template. Defaults to /pages/compare." },
+      { "type": "range", "id": "compare_max", "label": "Products that can be compared", "min": 2, "max": 4, "step": 1, "default": 4 }
+    ]
+  },
+  {
+    "name": "Cart",
+    "settings": [
+      {
+        "type": "select",
+        "id": "cart_type",
+        "label": "After adding to cart",
+        "options": [
+          { "value": "drawer", "label": "Open cart drawer" },
+          { "value": "toast", "label": "Show a message only" },
+          { "value": "page", "label": "Go to cart page" }
+        ],
+        "default": "drawer"
+      },
+      { "type": "range", "id": "free_shipping", "label": "Free shipping threshold", "info": "Set to 0 to hide the progress bar.", "min": 0, "max": 500, "step": 5, "unit": "$", "default": 50 },
+      { "type": "text", "id": "cart_note_text", "label": "Drawer note", "default": "Taxes and shipping calculated at checkout." }
+    ]
+  },
+  {
+    "name": "Search",
+    "settings": [
+      { "type": "text", "id": "popular_searches", "label": "Popular searches", "info": "Comma separated.", "default": "Jacket, Hoodie, Sneaker, Backpack, Dress" },
+      { "type": "collection", "id": "search_trending", "label": "Trending products collection" }
+    ]
+  },
+  {
+    "name": "Social media",
+    "settings": [
+      { "type": "text", "id": "social_instagram", "label": "Instagram", "placeholder": "https://instagram.com/" },
+      { "type": "text", "id": "social_facebook", "label": "Facebook", "placeholder": "https://facebook.com/" },
+      { "type": "text", "id": "social_x", "label": "X (Twitter)", "placeholder": "https://x.com/" },
+      { "type": "text", "id": "social_youtube", "label": "YouTube", "placeholder": "https://youtube.com/" },
+      { "type": "text", "id": "social_tiktok", "label": "TikTok", "placeholder": "https://tiktok.com/" }
+    ]
+  }
+]

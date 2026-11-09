@@ -1,0 +1,11 @@
+{%- comment -%}
+  Illustration for a collection: art metafield (recolors with palette) > collection image > guessed art.
+  Params: collection, width (optional)
+{%- endcomment -%}
+{%- assign w = width | default: 400 -%}
+{%- if collection.metafields.custom.art == blank and collection.image -%}
+  {{ collection.image | image_url: width: w | image_tag: loading: 'lazy', alt: '' }}
+{%- else -%}
+  {%- capture k %}{% render 'art-for', collection: collection %}{% endcapture -%}
+  {%- render 'art', name: k -%}
+{%- endif -%}

@@ -1,0 +1,20 @@
+{%- comment -%}
+  Wishlist + compare toggle buttons. Params: product, style ('icon' for cards, 'text' for product page)
+  State is applied by theme.js from the shopper's saved lists.
+{%- endcomment -%}
+{%- if settings.wishlist_enable or settings.compare_enable -%}
+  <div class="{% if style == 'text' %}pacts{% else %}card-acts{% endif %}">
+    {%- if settings.wishlist_enable -%}
+      <button type="button" class="ca" data-wish="{{ product.handle }}" aria-pressed="false" title="{{ 'wishlist.add' | t }}"{% unless style == 'text' %} aria-label="{{ 'wishlist.add' | t }}: {{ product.title | escape }}"{% endunless %}>
+        {%- render 'icon', icon: 'heart' -%}
+        {%- if style == 'text' %}<span data-on="{{ 'wishlist.saved' | t }}" data-off="{{ 'wishlist.add' | t }}">{{ 'wishlist.add' | t }}</span>{% endif -%}
+      </button>
+    {%- endif -%}
+    {%- if settings.compare_enable -%}
+      <button type="button" class="ca" data-compare="{{ product.handle }}" aria-pressed="false" title="{{ 'compare.add' | t }}"{% unless style == 'text' %} aria-label="{{ 'compare.add' | t }}: {{ product.title | escape }}"{% endunless %}>
+        {%- render 'icon', icon: 'compare' -%}
+        {%- if style == 'text' %}<span data-on="{{ 'compare.added' | t }}" data-off="{{ 'compare.add' | t }}">{{ 'compare.add' | t }}</span>{% endif -%}
+      </button>
+    {%- endif -%}
+  </div>
+{%- endif -%}

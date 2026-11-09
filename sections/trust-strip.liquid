@@ -1,0 +1,43 @@
+<div class="sec color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" style="--pt:{{ section.settings.padding_top }}px;--pb:{{ section.settings.padding_bottom }}px">
+  <div class="wrap">
+    <div class="trust rv" style="--n:{{ section.blocks.size | at_least: 1 }}">
+      {%- for block in section.blocks -%}
+        <div {{ block.shopify_attributes }}><strong>{{ block.settings.title | escape }}</strong><span>{{ block.settings.text | escape }}</span></div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Trust strip",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 96 }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Lorem ipsum" },
+        { "type": "text", "id": "text", "label": "Text", "default": "Dolor sit amet" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust strip",
+      "blocks": [
+        { "type": "item", "settings": { "title": "Lorem ipsum", "text": "Dolor sit amet elit" } },
+        { "type": "item", "settings": { "title": "Consectetur", "text": "Sed do eiusmod" } },
+        { "type": "item", "settings": { "title": "Adipiscing", "text": "Tempor incididunt" } },
+        { "type": "item", "settings": { "title": "Magna aliqua", "text": "Ut enim ad minim" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

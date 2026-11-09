@@ -1,0 +1,15 @@
+{%- comment -%} Outputs the CSS custom properties for one color scheme. Param: scheme {%- endcomment -%}
+{%- liquid
+  assign s = scheme.settings
+  assign brightness = s.background | color_brightness
+  if brightness < 110
+    assign mode = 'dark'
+    assign sh1 = 0.3
+    assign sh2 = 0.6
+  else
+    assign mode = 'light'
+    assign sh1 = 0.05
+    assign sh2 = 0.18
+  endif
+-%}
+--bg:{{ s.background }};--surface:{{ s.surface }};--ink:{{ s.text }};--muted:{{ s.muted }};--line:{{ s.line }};--accent:{{ s.accent }};--accent-ink:{{ s.accent_ink }};--solid:{{ s.solid }};--solid-ink:{{ s.solid_ink }};--art:{{ s.art }};--t1:{{ s.tint_1 }};--t2:{{ s.tint_2 }};--t3:{{ s.tint_3 }};--t4:{{ s.tint_4 }};--shadow:0 1px 2px {{ s.text | color_modify: 'alpha', sh1 }},0 12px 32px -12px {{ s.text | color_modify: 'alpha', sh2 }};color-scheme:{{ mode }};

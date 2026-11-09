@@ -1,0 +1,181 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "eyebrow": "About us",
+        "padding_bottom": 20
+      }
+    },
+    "story": {
+      "type": "image-with-text",
+      "blocks": {
+        "p1": {
+          "type": "point",
+          "settings": {
+            "title": "Lorem ipsum",
+            "text": "Dolor sit amet consectetur"
+          }
+        },
+        "p2": {
+          "type": "point",
+          "settings": {
+            "title": "Sed do eiusmod",
+            "text": "Tempor incididunt ut labore"
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2"
+      ],
+      "settings": {
+        "art": "coat",
+        "tint": "1",
+        "image_right": false,
+        "eyebrow": "Our story",
+        "heading": "Lorem ipsum <em>dolor sit</em>",
+        "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.</p>",
+        "button": "Shop the collection",
+        "link": "shopify://collections",
+        "padding_top": 40,
+        "padding_bottom": 96
+      }
+    },
+    "stats": {
+      "type": "stats-row",
+      "blocks": {
+        "s1": {
+          "type": "stat",
+          "settings": {
+            "value": 12,
+            "suffix": "+",
+            "label": "Lorem ipsum years"
+          }
+        },
+        "s2": {
+          "type": "stat",
+          "settings": {
+            "value": 28,
+            "suffix": "",
+            "label": "Dolor sit products"
+          }
+        },
+        "s3": {
+          "type": "stat",
+          "settings": {
+            "value": 98,
+            "suffix": "%",
+            "label": "Amet consectetur"
+          }
+        },
+        "s4": {
+          "type": "stat",
+          "settings": {
+            "value": 4.8,
+            "suffix": "",
+            "label": "Adipiscing elit"
+          }
+        }
+      },
+      "block_order": [
+        "s1",
+        "s2",
+        "s3",
+        "s4"
+      ],
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "craft": {
+      "type": "image-with-text",
+      "blocks": {
+        "p1": {
+          "type": "point",
+          "settings": {
+            "title": "Ut enim ad minim",
+            "text": "Quis nostrud exercitation"
+          }
+        }
+      },
+      "block_order": [
+        "p1"
+      ],
+      "settings": {
+        "art": "shirt",
+        "tint": "3",
+        "image_right": true,
+        "eyebrow": "Our craft",
+        "heading": "Consectetur <em>adipiscing</em>",
+        "text": "<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>",
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "team": {
+      "type": "testimonials",
+      "blocks": {
+        "r1": {
+          "type": "review",
+          "settings": {
+            "quote": "Lorem ipsum dolor",
+            "text": "Consectetur adipiscing elit sed do eiusmod tempor.",
+            "author": "Lorem I.",
+            "verified": false
+          }
+        },
+        "r2": {
+          "type": "review",
+          "settings": {
+            "quote": "Sit amet consectetur",
+            "text": "Ut enim ad minim veniam quis nostrud.",
+            "author": "Dolor S.",
+            "verified": false
+          }
+        },
+        "r3": {
+          "type": "review",
+          "settings": {
+            "quote": "Adipiscing elit sed",
+            "text": "Duis aute irure dolor in reprehenderit.",
+            "author": "Amet C.",
+            "verified": false
+          }
+        }
+      },
+      "block_order": [
+        "r1",
+        "r2",
+        "r3"
+      ],
+      "settings": {
+        "eyebrow": "The team",
+        "heading": "Lorem <em>ipsum</em>",
+        "speed": 50,
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Lorem ipsum. Dolor sit amet.",
+        "text": "<p>Consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>",
+        "button": "Subscribe",
+        "tint": "t1",
+        "padding_top": 0,
+        "padding_bottom": 96
+      }
+    }
+  },
+  "order": [
+    "main",
+    "story",
+    "stats",
+    "craft",
+    "team",
+    "newsletter"
+  ]
+}

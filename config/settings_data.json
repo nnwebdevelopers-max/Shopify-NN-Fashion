@@ -1,0 +1,89 @@
+{
+  "current": "Default",
+  "presets": {
+    "Default": {
+      "body_scheme": "scheme-1",
+      "palette_switcher": false,
+      "palette_label": "Color scheme",
+      "palette_count": 6,
+      "auto_dark": false,
+      "dark_scheme": "scheme-7",
+      "font_pairing": "soft",
+      "layout_width": "full",
+      "page_gutter": 40,
+      "page_width": 1320,
+      "radius": 28,
+      "reveal": true,
+      "motion_gsap": true,
+      "motion_smooth": true,
+      "motion_magnetic": true,
+      "motion_parallax": true,
+      "logo_width": 140,
+      "card_tint": "cycle",
+      "card_swatches": true,
+      "card_rating": false,
+      "card_quick_add": true,
+      "card_color_hover": true,
+      "new_tag": "new",
+      "hot_tag": "trending",
+      "wishlist_enable": true,
+      "compare_enable": true,
+      "compare_max": 4,
+      "cart_type": "drawer",
+      "free_shipping": 200,
+      "cart_note_text": "Taxes and shipping calculated at checkout.",
+      "popular_searches": "Jacket, Hoodie, Sneaker, Backpack, Dress",
+      "color_schemes": {
+        "scheme-1": {
+          "settings": {
+            "background": "#f3f1ec", "surface": "#ffffff", "text": "#1f2a24", "muted": "#566159", "line": "#e0ddd2",
+            "accent": "#b0502e", "accent_ink": "#ffffff", "solid": "#25392d", "solid_ink": "#f3f1ec", "art": "#25392d",
+            "tint_1": "#cfd8c3", "tint_2": "#f4c7b0", "tint_3": "#f1dd9a", "tint_4": "#d9d4f0"
+          }
+        },
+        "scheme-2": {
+          "settings": {
+            "background": "#25392d", "surface": "#2f4a3a", "text": "#f3f1ec", "muted": "#c4cfc2", "line": "#3d5848",
+            "accent": "#f1dd9a", "accent_ink": "#1f2a24", "solid": "#f1dd9a", "solid_ink": "#1f2a24", "art": "#f1dd9a",
+            "tint_1": "#2f4a3a", "tint_2": "#34523f", "tint_3": "#3a5a46", "tint_4": "#2b4033"
+          }
+        },
+        "scheme-3": {
+          "settings": {
+            "background": "#f1dd9a", "surface": "#f7ebbf", "text": "#1f2a24", "muted": "#4a4528", "line": "#dcc97f",
+            "accent": "#25392d", "accent_ink": "#f1dd9a", "solid": "#1f2a24", "solid_ink": "#f3f1ec", "art": "#25392d",
+            "tint_1": "#f7ebbf", "tint_2": "#f4c7b0", "tint_3": "#cfd8c3", "tint_4": "#d9d4f0"
+          }
+        },
+        "scheme-4": {
+          "settings": {
+            "background": "#f4c7b0", "surface": "#f9dfd0", "text": "#2a1a14", "muted": "#6a4638", "line": "#e8b095",
+            "accent": "#8a3a1c", "accent_ink": "#ffffff", "solid": "#25392d", "solid_ink": "#f3f1ec", "art": "#8a3a1c",
+            "tint_1": "#f9dfd0", "tint_2": "#f1dd9a", "tint_3": "#cfd8c3", "tint_4": "#d9d4f0"
+          }
+        },
+        "scheme-5": {
+          "settings": {
+            "background": "#d9d4f0", "surface": "#e9e5f8", "text": "#221a3d", "muted": "#51487a", "line": "#c4bde6",
+            "accent": "#4a3f8a", "accent_ink": "#ffffff", "solid": "#25392d", "solid_ink": "#f3f1ec", "art": "#4a3f8a",
+            "tint_1": "#e9e5f8", "tint_2": "#f4c7b0", "tint_3": "#f1dd9a", "tint_4": "#cfd8c3"
+          }
+        },
+        "scheme-6": {
+          "settings": {
+            "background": "#cfd8c3", "surface": "#e3ead9", "text": "#1b2a20", "muted": "#455248", "line": "#b9c6ab",
+            "accent": "#25392d", "accent_ink": "#f3f1ec", "solid": "#25392d", "solid_ink": "#f3f1ec", "art": "#25392d",
+            "tint_1": "#e3ead9", "tint_2": "#f4c7b0", "tint_3": "#f1dd9a", "tint_4": "#d9d4f0"
+          }
+        },
+        "scheme-7": {
+          "settings": {
+            "background": "#141a16", "surface": "#1d2620", "text": "#f3f1ec", "muted": "#a9b4a9", "line": "#2c3a31",
+            "accent": "#f1dd9a", "accent_ink": "#141a16", "solid": "#f1dd9a", "solid_ink": "#141a16", "art": "#f1dd9a",
+            "tint_1": "#1d2620", "tint_2": "#233028", "tint_3": "#2a392f", "tint_4": "#1a221d"
+          }
+        }
+      }
+    }
+  }
+}
