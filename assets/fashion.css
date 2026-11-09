@@ -310,7 +310,7 @@ body[data-gsap="true"] .mqtrack{animation:none}
   .fbar{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
   .fdrop{position:static}.fpanel{left:16px;right:16px;top:auto;margin-top:8px;position:fixed;bottom:16px;max-height:55vh;z-index:70}
   .ptile{grid-column:1/-1;min-height:340px}
-  .cgrid{--cols:2}
+  .cgrid{--cols:2 !important}
   .gtog{display:none}
   .gstack{grid-template-columns:1fr 1fr;gap:10px}.gstack .gslide:nth-child(even){margin-top:30px}
   .pb-bento,.stats,.look,.iwt,.sbanner,.jbento{grid-template-columns:1fr}
@@ -325,3 +325,75 @@ body[data-gsap="true"] .mqtrack{animation:none}
 @media (prefers-reduced-motion:reduce){
   .drift,.mqtrack,.tmqtrack{animation:none}
 }
+
+/* ===== iOS / Safari + touch hardening ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
+@supports (overflow:clip){html,body{overflow-x:clip}}
+body{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+a,button,summary,label,select,[role="button"]{touch-action:manipulation}
+img,svg,video{max-width:100%}
+button{-webkit-appearance:none;appearance:none;font-family:inherit}
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]),textarea{-webkit-appearance:none;appearance:none;border-radius:var(--field-r,14px)}
+input[type="search"]::-webkit-search-decoration,input[type="search"]::-webkit-search-cancel-button{-webkit-appearance:none}
+@supports not (background:color-mix(in srgb,red,blue)){header.site{background:var(--bg)}}
+/* iOS zooms into any field under 16px: keep fields at 16px on touch screens */
+@media (hover:none) and (pointer:coarse){
+  input,select,textarea{font-size:16px !important}
+  .chip:hover,.btn:hover,.ptile:hover,.subchips a:hover,.card:hover{transform:none}
+}
+/* dynamic viewport units so Safari's collapsing toolbar never hides content */
+.fpanel{max-height:55vh;max-height:55dvh}
+.mnav,.drawer,.spanel,.fpanel,.qv-panel{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.mnav,.drawer{height:100vh;height:100dvh}
+/* iOS ignores overflow:hidden on body: motion.js pins the page while a drawer is open */
+body.is-locked{position:fixed;left:0;right:0;width:100%}
+
+/* ===== Responsive ===== */
+@media (max-width:1199px){
+  .cbar{gap:12px}
+}
+@media (max-width:989px){
+  .cbar{flex-direction:column;align-items:stretch}
+  .ctools{justify-content:space-between;width:100%}
+  .gtog{display:none}
+  .fpanel{bottom:max(16px,env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:749px){
+  .ctools{gap:8px}
+  .count-l{font-size:13px}
+  .sortchip select{max-width:140px}
+  .toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
+}
+
+/* ===== Overflow guards ===== */
+.sizes-wrap{grid-template-columns:minmax(0,1fr)}
+.size-card{min-width:0}
+.card .meta{flex-wrap:wrap;gap:2px 10px;min-width:0}
+.card .meta>*{min-width:0}
+.card h3,.card h4{overflow-wrap:break-word}
+h1,h2,h3,.rte{overflow-wrap:break-word}
+@media (max-width:749px){
+  .cinfo{flex-direction:column;gap:4px;padding:0 4px}
+  .cinfo .meta{flex:0 1 auto}
+  .cinfo h3{font-size:15px}
+  .cinfo .price{font-size:15px;white-space:normal}
+}
+/* inline --cols from the section must not win on small screens */
+@media (min-width:750px) and (max-width:989px){.cgrid{--cols:3 !important}}
+@media (min-width:990px) and (max-width:1199px){.cgrid{--cols:3}}
+
+/* hero: keep copy and illustration from overlapping */
+.hmain .lede{max-width:min(44ch,100%)}
+@media (max-width:1100px){
+  .hmain .htx{max-width:56%}
+  .hmain h1{font-size:clamp(44px,8vw,84px)}
+}
+@media (max-width:749px){
+  .hmain{flex-direction:column;min-height:0;padding:26px 24px 0;overflow:hidden}
+  .hmain .htx{max-width:100%}
+  .hmain .cta{padding-top:24px}
+  .hart{position:relative;right:auto;bottom:auto;width:min(66%,300px);margin:28px auto -6px;aspect-ratio:5/6}
+  .ttx{max-width:62%}
+}
+/* the drawers live inside the (backdrop-filtered) header, so keep it in the viewport while the page is pinned */
+body.is-locked .section-header{position:fixed;top:0;left:0;right:0;transform:none}

@@ -39,13 +39,29 @@
     if (useGsap()) { window.gsap.fromTo(cards.slice(-12), { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: .7, stagger: .05, ease: 'power3.out', clearProps: 'all' }); }
   }
 
-  /* ---- smooth anchors / header hide on scroll ---- */
+  /* ---- iOS-safe scroll lock: overflow:hidden on body is ignored by Safari, so pin the page ---- */
+  var lockY = 0, locked = false;
+  function syncLock() {
+    var want = body.classList.contains('menu-open') || body.classList.contains('cart-open');
+    if (want && !locked) {
+      lockY = window.pageYOffset || 0; locked = true;
+      body.style.top = -lockY + 'px'; body.classList.add('is-locked');
+    } else if (!want && locked) {
+      locked = false; body.classList.remove('is-locked'); body.style.top = '';
+      window.scrollTo({ top: lockY, left: 0, behavior: 'instant' });
+    }
+  }
+  if (window.MutationObserver) new MutationObserver(syncLock).observe(body, { attributes: true, attributeFilter: ['class'] });
+
+  /* ---- header hide on scroll (ignores iOS rubber-band overscroll) ---- */
   var lastY = 0;
   if (body.dataset.smooth === 'true' && !reduce) {
     var hdr = $('.section-header');
     window.addEventListener('scroll', function () {
-      var y = window.scrollY;
-      if (hdr) hdr.classList.toggle('hide-up', y > lastY && y > 400 && !body.classList.contains('menu-open'));
+      if (locked) return;
+      var y = window.pageYOffset || 0, max = Math.max(0, d.documentElement.scrollHeight - window.innerHeight);
+      if (y < 0 || y > max) return;
+      if (hdr && Math.abs(y - lastY) > 6) hdr.classList.toggle('hide-up', y > lastY && y > 400);
       lastY = y;
     }, { passive: true });
   }
@@ -55,7 +71,7 @@
   function initGsap(scope) {
     if (!useGsap() || designMode && inited && !scope) return;
     var g = window.gsap, ST = window.ScrollTrigger;
-    if (ST) g.registerPlugin(ST);
+    if (ST) { g.registerPlugin(ST); ST.config({ ignoreMobileResize: true }); }
     inited = true;
     scope = scope || d;
 
@@ -130,7 +146,17 @@
     var p = $('[data-mcp="' + t.dataset.mc + '"]'); if (p) window.gsap.from(p.children, { y: 16, opacity: 0, duration: .45, stagger: .06, ease: 'power2.out' });
   });
 
+  /* failsafe: if animation frames never run (background tab, power saver), never leave content hidden */
+  function failsafe() {
+    setTimeout(function () {
+      if (!window.gsap || window.gsap.ticker.frame > 2) return;
+      window.gsap.globalTimeline.clear();
+      $$('.bt, .hl > span, .hfade, .rv, [data-stagger] > *, .bx, .cat, .cf, .gslide, [data-motion="buy"]').forEach(function (el) { window.gsap.set(el, { clearProps: 'all' }); });
+    }, 4000);
+  }
+
   function start() {
+    failsafe();
     // if GSAP is blocked/slow, make sure revealed content is visible
     var tries = 0;
     (function wait() {
