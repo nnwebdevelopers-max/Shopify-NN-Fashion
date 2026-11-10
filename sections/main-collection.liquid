@@ -73,7 +73,7 @@
                     {%- else -%}
                       {%- for v in f.values -%}
                         <label class="chk{% if v.count == 0 and v.active == false %} dis{% endif %}">
-                          <input type="checkbox" name="{{ v.param_name }}" value="{{ v.value }}"{% if v.active %} checked{% endif %}>
+                          <input type="checkbox" name="{{ v.param_name }}" value="{{ v.value }}"{% if v.active %} checked{% endif %}><span class="cbx"></span>
                           {%- if v.swatch.color -%}<i class="fsw" style="background:{{ v.swatch.color }}"></i>{%- endif -%}
                           {{ v.label | escape }}<span class="n">{{ v.count }}</span>
                         </label>

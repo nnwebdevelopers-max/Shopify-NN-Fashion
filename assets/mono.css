@@ -230,7 +230,7 @@ button.is-adding::after{content:"";position:absolute;left:0;bottom:0;height:2px;
 .dbulk-rm svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
 .chk{display:inline-flex;align-items:center;gap:10px;cursor:pointer;position:relative}
 .chk input{position:absolute;opacity:0;width:18px;height:18px;margin:0;cursor:pointer}
-.chk span{width:18px;height:18px;border:1px solid var(--ink);display:inline-block;position:relative;flex:none;transition:background .2s}
+.chk>span:not(.n){width:18px;height:18px;border:1px solid var(--ink);display:inline-block;position:relative;flex:none;transition:background .2s}
 .chk input:checked+span{background:var(--ink)}
 .chk input:checked+span::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg)}
 .chk input:indeterminate+span{background:var(--ink)}
@@ -415,3 +415,23 @@ body.cart-open .drel-side{transform:none;transition-delay:.55s}
 @media(max-width:900px){.drel-wrap{display:none}.drel-inline{display:block}}
 .drel-inline[hidden]{display:none!important}
 .drel-wrap:has(.drel[hidden]),.drel-wrap:has(.drel:empty){visibility:hidden!important}
+
+/* ====== collection filters ====== */
+.fpanel{min-width:240px;max-width:min(320px,calc(100vw - 32px));padding:14px 18px;border:1px solid var(--line)}
+.fpanel .chk{display:flex;width:100%;padding:7px 0;color:var(--ink);font-size:14px}
+.fpanel .chk .n{margin-left:auto;color:var(--muted);font-size:12px;min-width:auto;width:auto;height:auto;border:0;background:none}
+.fpanel .chk:hover{color:var(--accent)}
+.fpanel .fsw{flex:none}
+.fpanel .prange input{border-radius:0;min-width:0}
+.fpanel .btn{width:100%;justify-content:center}
+.fdrop[open]>summary{background:var(--ink);color:var(--bg)}
+.fdrop>summary{user-select:none}
+@media(max-width:860px){.fpanel{max-width:none}}
+
+/* ====== cart: close button for the You-may-like panel ====== */
+.drel-x{position:absolute;top:12px;right:12px;width:34px;height:34px;z-index:2}
+.drel-side .drel h3{padding-right:40px}
+body.rel-closed .drel-side{transform:translateX(100%);transition-delay:0s}
+.fpanel{display:block}
+.fpanel .chk .cbx{width:18px;height:18px;flex:none}
+.fpanel .chk{align-items:center;min-height:0}
