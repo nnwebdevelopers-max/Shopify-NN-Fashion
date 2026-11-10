@@ -1,177 +1,115 @@
 {
   "sections": {
     "hero": {
-      "type": "hero",
+      "type": "mono-hero",
       "blocks": {
-        "t1": {
-          "type": "tile",
+        "s1": {
+          "type": "slide",
           "settings": {
-            "size": "m",
-            "tone": "butter",
-            "eyebrow": "Limited time",
-            "heading": "Up to 30% off",
-            "text": "Lorem ipsum dolor sit amet consectetur.",
-            "button": "Shop the sale",
-            "link": "shopify://collections/sale",
-            "art": "sneaker"
-          }
-        },
-        "t2": {
-          "type": "tile",
-          "settings": {
-            "size": "m",
-            "tone": "lavender",
-            "heading": "Bags & backpacks",
-            "button": "Explore",
-            "link": "shopify://collections/bags",
-            "art": "backpack"
-          }
-        },
-        "t3": {
-          "type": "tile",
-          "settings": {
-            "size": "s",
-            "tone": "white",
-            "eyebrow": "Free delivery",
-            "heading": "On orders over $200",
-            "text": "Lorem ipsum dolor sit amet."
-          }
-        },
-        "t4": {
-          "type": "tile",
-          "settings": {
-            "size": "s",
-            "tone": "peach",
-            "eyebrow": "Sale on",
-            "heading": "Accessories",
+            "tab_label": "Knits & shirts",
+            "kicker": "Lorem ipsum | Dolor sit",
+            "heading": "Lorem ipsum dolor",
+            "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.",
             "button": "Shop now",
-            "link": "shopify://collections/accessories",
-            "art": "cap"
+            "link": "shopify://collections/women",
+            "image": "shopify://shop_images/nn-mono-banner-pair.jpg",
+            "product_1": "shopify://products/ribbed-knit-sweater",
+            "product_2": "shopify://products/oxford-poplin-shirt",
+            "product_3": "shopify://products/pleated-midi-skirt"
           }
         },
-        "t5": {
-          "type": "tile",
+        "s2": {
+          "type": "slide",
           "settings": {
-            "size": "s",
-            "tone": "sage",
-            "eyebrow": "Hotline",
-            "heading": "+1 (800) 2345 6789"
+            "tab_label": "Outerwear",
+            "kicker": "Sit amet | Consectetur",
+            "heading": "Sed do eiusmod",
+            "text": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+            "button": "Shop outerwear",
+            "link": "shopify://collections/outerwear",
+            "image": "shopify://shop_images/nn-mono-banner-duo.jpg",
+            "product_1": "shopify://products/quilted-puffer-jacket",
+            "product_2": "shopify://products/pullover-hoodie"
+          }
+        },
+        "s3": {
+          "type": "slide",
+          "settings": {
+            "tab_label": "Everyday icons",
+            "kicker": "Adipiscing | Elit",
+            "heading": "Tempor incididunt",
+            "text": "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
+            "button": "Shop the trio",
+            "link": "shopify://collections/new-arrivals",
+            "image": "shopify://shop_images/nn-mono-banner-trio.jpg",
+            "product_1": "shopify://products/everyday-cotton-tee",
+            "product_2": "shopify://products/wrap-camel-coat",
+            "product_3": "shopify://products/midi-wrap-dress"
           }
         }
       },
       "block_order": [
-        "t1",
-        "t2",
-        "t3",
-        "t4",
-        "t5"
+        "s1",
+        "s2",
+        "s3"
       ],
       "settings": {
-        "main_scheme": "scheme-2",
-        "eyebrow": "Timeless cuts · New arrivals",
-        "line_1": "Lorem ipsum",
-        "line_2": "dolor sit amet,",
-        "line_3": "consectetur.",
-        "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>",
-        "btn_1": "Explore collection",
-        "btn_1_link": "shopify://collections/autumn-workwear",
-        "btn_2": "Lookbook",
-        "btn_2_link": "shopify://pages/lookbook",
-        "art": "jacket",
-        "padding_top": 8,
-        "padding_bottom": 80
+        "height": 80,
+        "autoplay": true,
+        "duration": 7,
+        "show_looks": true,
+        "looks_label": "Shop this look"
+      }
+    },
+    "sale": {
+      "type": "countdown-strip",
+      "settings": {
+        "title": "Lorem ipsum sale",
+        "label": "Offer ends in",
+        "end_date": "",
+        "fallback_hours": 48,
+        "button": "Shop now",
+        "link": "shopify://collections/sale"
       }
     },
     "categories": {
-      "type": "category-bento",
+      "type": "zigzag-categories",
       "blocks": {
-        "b1": {
+        "c1": {
           "type": "category",
           "settings": {
-            "collection": "jackets-coats",
-            "text": "Lorem ipsum dolor",
-            "size": "big",
-            "tint": "1",
-            "art": "collection"
+            "collection": "knitwear",
+            "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.",
+            "button": "Shop now"
           }
         },
-        "b2": {
+        "c2": {
           "type": "category",
           "settings": {
-            "collection": "women",
-            "text": "Sit amet elit",
-            "size": "wide",
-            "tint": "2",
-            "art": "collection"
+            "collection": "outerwear",
+            "text": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+            "button": "Shop now"
           }
         },
-        "b3": {
+        "c3": {
           "type": "category",
           "settings": {
-            "collection": "footwear",
-            "text": "Sed do eiusmod",
-            "size": "",
-            "tint": "3",
-            "art": "collection"
-          }
-        },
-        "b4": {
-          "type": "category",
-          "settings": {
-            "collection": "bags",
-            "text": "Tempor incididunt",
-            "size": "",
-            "tint": "4",
-            "art": "collection"
-          }
-        },
-        "b5": {
-          "type": "category",
-          "settings": {
-            "collection": "men",
-            "text": "Ut labore et dolore",
-            "size": "wide",
-            "tint": "4",
-            "art": "collection"
-          }
-        },
-        "b6": {
-          "type": "category",
-          "settings": {
-            "collection": "accessories",
-            "text": "Magna aliqua",
-            "size": "",
-            "tint": "1",
-            "art": "collection"
-          }
-        },
-        "b7": {
-          "type": "category",
-          "settings": {
-            "collection": "activewear",
-            "text": "Ut enim ad minim",
-            "size": "",
-            "tint": "3",
-            "art": "collection"
+            "collection": "dresses",
+            "text": "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
+            "button": "Shop now"
           }
         }
       },
       "block_order": [
-        "b1",
-        "b2",
-        "b3",
-        "b4",
-        "b5",
-        "b6",
-        "b7"
+        "c1",
+        "c2",
+        "c3"
       ],
       "settings": {
-        "eyebrow": "Shop by edit",
-        "heading": "Lorem ipsum dolor sit.",
-        "link_label": "All collections",
-        "link": "shopify://collections",
-        "padding_top": 0,
-        "padding_bottom": 96
+        "eyebrow": "Lorem ipsum",
+        "heading": "Shop by category",
+        "padding_top": 80,
+        "padding_bottom": 40
       }
     },
     "picks": {
@@ -180,8 +118,8 @@
         "tab1": {
           "type": "tab",
           "settings": {
-            "collection": "top-trending",
-            "label": "Top trending"
+            "collection": "best-sellers",
+            "label": "Best sellers"
           }
         },
         "tab2": {
@@ -197,67 +135,56 @@
             "collection": "sale",
             "label": "On sale"
           }
-        },
-        "tab4": {
-          "type": "tab",
-          "settings": {
-            "collection": "bulk-order",
-            "label": "Bulk order"
-          }
         }
       },
       "block_order": [
         "tab1",
         "tab2",
-        "tab3",
-        "tab4"
+        "tab3"
       ],
       "settings": {
         "eyebrow": "Lorem ipsum",
-        "heading": "Dolor sit amet.",
+        "heading": "People pick",
         "limit": 8,
         "columns": 4,
         "show_view_all": true,
-        "padding_top": 0,
-        "padding_bottom": 96
+        "padding_top": 60,
+        "padding_bottom": 60
       }
     },
-    "banner": {
-      "type": "sale-banner",
+    "band": {
+      "type": "big-text-band",
       "blocks": {
-        "i1": {
-          "type": "item",
+        "r1": {
+          "type": "row",
           "settings": {
-            "art": "backpack"
+            "text": "Lorem ipsum dolor"
           }
         },
-        "i2": {
-          "type": "item",
+        "r2": {
+          "type": "row",
           "settings": {
-            "art": "sneaker"
-          }
-        },
-        "i3": {
-          "type": "item",
-          "settings": {
-            "art": "tee"
+            "text": "Sit amet consectetur"
           }
         }
       },
       "block_order": [
-        "i1",
-        "i2",
-        "i3"
+        "r1",
+        "r2"
       ],
       "settings": {
-        "panel_scheme": "scheme-2",
-        "eyebrow": "Sale on · Accessories",
-        "number": "30 – 60%",
-        "heading": "off all sale",
-        "button": "Shop the sale",
-        "link": "shopify://collections/sale",
-        "padding_top": 0,
-        "padding_bottom": 96
+        "speed": 45
+      }
+    },
+    "bestpick": {
+      "type": "best-pick",
+      "settings": {
+        "eyebrow": "Lorem ipsum",
+        "heading": "Our best pick",
+        "view_label": "View full details",
+        "padding_top": 80,
+        "padding_bottom": 40,
+        "product": "shopify://products/wrap-camel-coat"
       }
     },
     "trust": {
@@ -299,61 +226,6 @@
         "t4"
       ],
       "settings": {
-        "padding_top": 0,
-        "padding_bottom": 96
-      }
-    },
-    "brands": {
-      "type": "brand-marquee",
-      "blocks": {
-        "br1": {
-          "type": "brand",
-          "settings": {
-            "name": "HALDEN"
-          }
-        },
-        "br2": {
-          "type": "brand",
-          "settings": {
-            "name": "ORSA"
-          }
-        },
-        "br3": {
-          "type": "brand",
-          "settings": {
-            "name": "KESTREL"
-          }
-        },
-        "br4": {
-          "type": "brand",
-          "settings": {
-            "name": "NORDHAUS"
-          }
-        },
-        "br5": {
-          "type": "brand",
-          "settings": {
-            "name": "VALE ROWE"
-          }
-        },
-        "br6": {
-          "type": "brand",
-          "settings": {
-            "name": "MAREN CO"
-          }
-        }
-      },
-      "block_order": [
-        "br1",
-        "br2",
-        "br3",
-        "br4",
-        "br5",
-        "br6"
-      ],
-      "settings": {
-        "heading": "Lorem ipsum. Dolor sit amet.",
-        "speed": 32,
         "padding_top": 0,
         "padding_bottom": 96
       }
@@ -437,11 +309,12 @@
   },
   "order": [
     "hero",
+    "sale",
     "categories",
     "picks",
-    "banner",
+    "band",
+    "bestpick",
     "trust",
-    "brands",
     "testimonials",
     "journal",
     "newsletter"

@@ -18,10 +18,16 @@
     {%- if page_description %}<meta name="description" content="{{ page_description | escape }}">{% endif %}
     {% render 'meta-tags' %}
 
-    {%- if settings.font_pairing == 'soft' -%}
+    {%- if settings.font_pairing != 'system' -%}
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap">
+      {%- if settings.font_pairing == 'jost' -%}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500;600&display=swap">
+      {%- elsif settings.font_pairing == 'serif' -%}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Montserrat:wght@200;300;400;500;600&display=swap">
+      {%- else -%}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600&display=swap">
+      {%- endif -%}
     {%- endif -%}
 
     {%- capture scheme_ids -%}{%- for s in settings.color_schemes limit: settings.palette_count -%}{{ s.id }},{%- endfor -%}{%- endcapture -%}
@@ -31,12 +37,15 @@
     {% render 'color-schemes' %}
     {{ 'base.css' | asset_url | stylesheet_tag }}
     {{ 'fashion.css' | asset_url | stylesheet_tag }}
+    {{ 'mono.css' | asset_url | stylesheet_tag }}
     {%- if settings.motion_gsap -%}
       <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer="defer"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer="defer"></script>
     {%- endif -%}
     <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'motion.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'mono.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'mono-hero.js' | asset_url }}" defer="defer"></script>
 
     {{ content_for_header }}
   </head>

@@ -87,7 +87,21 @@
     "remove": "Remove",
     "subtotal": "Subtotal",
     "title": "Your cart",
-    "view": "View cart"
+    "view": "View cart",
+    "select_all": "Select all",
+    "select": "Select",
+    "remove_selected": "Remove selected",
+    "add_note": "Add an order note",
+    "note_placeholder": "Special instructions, gift message, delivery notes…",
+    "discount": "Discount code",
+    "discount_placeholder": "Enter code",
+    "discount_hint": "Applied at checkout.",
+    "related": "You may also like",
+    "clear": "Clear cart",
+    "cleared": "Cart cleared",
+    "removed": "Removed from cart",
+    "adding": "Adding",
+    "added_btn": "Added"
   },
   "search": {
     "article": "Article",

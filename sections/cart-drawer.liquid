@@ -1,6 +1,7 @@
 {%- liquid
   assign threshold = settings.free_shipping | times: 100
   assign left = threshold | minus: cart.total_price
+  assign pct = 0
   if threshold > 0
     assign pct = cart.total_price | times: 100 | divided_by: threshold
     if pct > 100
@@ -8,32 +9,57 @@
     endif
   endif
 -%}
-<aside class="drawer color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" id="CartDrawer" aria-label="{{ 'cart.title' | t }}" aria-hidden="true" style="background:var(--surface)">
+<aside class="drawer color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" id="CartDrawer" aria-label="{{ 'cart.title' | t }}" aria-hidden="true">
   <span hidden data-cart-count-src="{{ cart.item_count }}"></span>
   <header>
-    <h2>{{ 'cart.title' | t }}</h2>
+    <h2>{{ 'cart.title' | t }} {%- if cart.item_count > 0 %} <span class="dcount">({{ cart.item_count }})</span>{% endif -%}</h2>
     <button type="button" class="icon-btn" data-close-cart aria-label="{{ 'cart.close' | t }}">{% render 'icon', icon: 'close' %}</button>
   </header>
+
+  {%- if cart.item_count > 0 -%}
+    {%- if threshold > 0 -%}
+      <div class="free">
+        {%- assign left_money = left | money -%}
+        <span>{%- if left > 0 -%}{{ 'cart.free_left' | t: amount: left_money }}{%- else -%}{{ 'cart.free_done' | t }}{%- endif -%}</span>
+        <div class="meter"><i style="--w:{{ pct }}%"></i></div>
+      </div>
+    {%- endif -%}
+    <div class="dbulk">
+      <label class="chk"><input type="checkbox" data-select-all><span></span>{{ 'cart.select_all' | t }}</label>
+      <button type="button" class="dbulk-rm" data-remove-selected hidden>{% render 'icon', icon: 'close' %} {{ 'cart.remove_selected' | t }} (<b data-sel-n>0</b>)</button>
+    </div>
+  {%- endif -%}
+
   <div class="lines">
     {%- if cart.item_count > 0 -%}
       {%- for item in cart.items -%}
         <div class="line">
+          <label class="chk sel"><input type="checkbox" data-line-select value="{{ forloop.index }}" aria-label="{{ 'cart.select' | t }}: {{ item.product.title | escape }}"><span></span></label>
           <a class="th tint-{{ forloop.index0 | modulo: 4 | plus: 1 }}" href="{{ item.url }}" tabindex="-1">
-            {%- if item.image -%}{{ item.image | image_url: width: 200 | image_tag: loading: 'lazy', alt: item.product.title }}{%- else -%}{% capture k %}{% render 'art-for', product: item.product %}{% endcapture %}{% render 'art', name: k %}{%- endif -%}
+            {%- if item.image -%}{{ item.image | image_url: width: 220 | image_tag: loading: 'lazy', alt: item.product.title }}{%- endif -%}
           </a>
-          <div>
+          <div class="lbody">
             <h4><a href="{{ item.url }}">{{ item.product.title | escape }}</a></h4>
             {%- unless item.product.has_only_default_variant -%}<small>{{ item.variant.title | escape }}</small>{%- endunless -%}
-            {%- for d in item.line_level_discount_allocations -%}<small>{{ d.discount_application.title | escape }} (−{{ d.amount | money }})</small>{%- endfor -%}
-            <div class="qty">
-              <button type="button" data-line="{{ forloop.index }}" data-line-qty="{{ item.quantity | minus: 1 }}" aria-label="{{ 'cart.decrease' | t }}">−</button>
-              <span>{{ item.quantity }}</span>
-              <button type="button" data-line="{{ forloop.index }}" data-line-qty="{{ item.quantity | plus: 1 }}" aria-label="{{ 'cart.increase' | t }}">+</button>
+            {%- for p in item.properties -%}{%- unless p.last == blank or p.first contains '_' -%}<small>{{ p.first | escape }}: {{ p.last | escape }}</small>{%- endunless -%}{%- endfor -%}
+            {%- for d in item.line_level_discount_allocations -%}<small class="disc">{{ d.discount_application.title | escape }} (−{{ d.amount | money }})</small>{%- endfor -%}
+            <div class="lrow">
+              <div class="qty">
+                <button type="button" data-line="{{ forloop.index }}" data-line-qty="{{ item.quantity | minus: 1 }}" aria-label="{{ 'cart.decrease' | t }}">−</button>
+                <span>{{ item.quantity }}</span>
+                <button type="button" data-line="{{ forloop.index }}" data-line-qty="{{ item.quantity | plus: 1 }}" aria-label="{{ 'cart.increase' | t }}">+</button>
+              </div>
+              <button type="button" class="lrm" data-line="{{ forloop.index }}" data-line-qty="0">{{ 'cart.remove' | t }}</button>
             </div>
           </div>
-          <strong>{{ item.final_line_price | money }}</strong>
+          <div class="lprice">
+            {%- if item.original_line_price > item.final_line_price -%}<s>{{ item.original_line_price | money }}</s>{%- endif -%}
+            <strong>{{ item.final_line_price | money }}</strong>
+          </div>
         </div>
       {%- endfor -%}
+
+      <div class="drel" data-cart-related data-product-id="{{ cart.items.first.product_id }}" data-limit="{{ section.settings.related_count }}" {% unless section.settings.show_related %}hidden{% endunless %}></div>
     {%- else -%}
       <div class="empty">
         <p>{{ section.settings.empty_text | escape }}</p>
@@ -41,23 +67,29 @@
       </div>
     {%- endif -%}
   </div>
+
   {%- if cart.item_count > 0 -%}
-    <div>
-      {%- if threshold > 0 -%}
-        <div class="free">
-          {%- assign left_money = left | money -%}
-          {%- if left > 0 -%}{{ 'cart.free_left' | t: amount: left_money }}{%- else -%}{{ 'cart.free_done' | t }}{%- endif -%}
-          <div class="meter"><i style="--w:{{ pct }}%"></i></div>
-        </div>
+    <div class="dfoot">
+      <details class="dtool"{% if cart.note != blank %} open{% endif %}>
+        <summary>{% render 'icon', icon: 'edit' %} {{ 'cart.add_note' | t }}</summary>
+        <textarea data-cart-note rows="3" placeholder="{{ 'cart.note_placeholder' | t }}">{{ cart.note }}</textarea>
+      </details>
+      {%- if section.settings.show_discount -%}
+        <details class="dtool">
+          <summary>{% render 'icon', icon: 'tag' %} {{ 'cart.discount' | t }}</summary>
+          <div class="dcode"><input type="text" data-discount-input placeholder="{{ 'cart.discount_placeholder' | t }}" autocomplete="off"><span class="dhint">{{ 'cart.discount_hint' | t }}</span></div>
+        </details>
       {%- endif -%}
       {%- for d in cart.cart_level_discount_applications -%}
-        <div class="total" style="font-size:15px;padding-block:4px;color:var(--muted)"><span>{{ d.title | escape }}</span><span>−{{ d.total_allocated_amount | money }}</span></div>
+        <div class="total sm"><span>{{ d.title | escape }}</span><span>−{{ d.total_allocated_amount | money }}</span></div>
       {%- endfor -%}
       <div class="total"><span>{{ 'cart.subtotal' | t }}</span><span>{{ cart.total_price | money }}</span></div>
-      <form action="{{ routes.cart_url }}" method="post">
+      <form action="{{ routes.cart_url }}" method="post" data-checkout-form>
+        <input type="hidden" name="discount" value="" data-discount-hidden>
         <button type="submit" name="checkout" class="btn primary full">{{ 'cart.checkout' | t }} <span class="arr">→</span></button>
       </form>
       <p class="note">{{ settings.cart_note_text | escape }} <a class="link" href="{{ routes.cart_url }}">{{ 'cart.view' | t }}</a></p>
+      <button type="button" class="dclear" data-clear-cart>{{ 'cart.clear' | t }}</button>
     </div>
   {%- endif -%}
 </aside>
@@ -66,8 +98,11 @@
 {
   "name": "Cart drawer",
   "settings": [
-    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "default": false },
     { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "checkbox", "id": "show_related", "label": "Show related products", "default": true },
+    { "type": "range", "id": "related_count", "label": "Related products", "min": 2, "max": 6, "step": 1, "default": 4, "visible_if": "{{ section.settings.show_related }}" },
+    { "type": "checkbox", "id": "show_discount", "label": "Show discount code field", "default": true },
     { "type": "text", "id": "empty_text", "label": "Empty cart text", "default": "Lorem ipsum, your cart is empty." },
     { "type": "url", "id": "empty_link", "label": "Empty cart button link" }
   ]

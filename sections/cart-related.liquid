@@ -1,0 +1,25 @@
+{%- comment -%} Loaded by theme.js through /recommendations/products?section_id=cart-related {%- endcomment -%}
+{%- if recommendations.performed and recommendations.products_count > 0 -%}
+  <div class="drel-in" data-cart-related-content>
+    <h3>{{ 'cart.related' | t }}</h3>
+    <div class="drel-list">
+      {%- for product in recommendations.products limit: 6 -%}
+        {%- assign variant = product.selected_or_first_available_variant -%}
+        <div class="rcard">
+          <a class="rth" href="{{ product.url }}">{%- if product.featured_media -%}{{ product.featured_media | image_url: width: 240 | image_tag: loading: 'lazy', alt: product.title }}{%- endif -%}</a>
+          <a class="rt" href="{{ product.url }}"><b>{{ product.title | escape }}</b><span>{{ product.price | money }}</span></a>
+          {%- if product.available -%}
+            {%- if product.has_only_default_variant -%}
+              <form method="post" action="{{ routes.cart_add_url }}" data-cart-form>
+                <input type="hidden" name="id" value="{{ variant.id }}"><input type="hidden" name="quantity" value="1">
+                <button type="submit" class="radd" aria-label="{{ 'products.add_to_cart' | t }}: {{ product.title | escape }}"><span class="atc-label">+</span></button>
+              </form>
+            {%- else -%}
+              <a class="radd" href="{{ product.url }}" data-quick-view="{{ product.url }}" aria-haspopup="dialog" aria-label="{{ 'products.quick_add' | t }}">+</a>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}

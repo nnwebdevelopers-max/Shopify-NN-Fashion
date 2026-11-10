@@ -18,7 +18,7 @@
           "type": "menu",
           "settings": {
             "heading": "Shop",
-            "menu": "footer"
+            "menu": "footer-shop"
           }
         },
         "m2": {
@@ -42,14 +42,13 @@
         "m3"
       ],
       "settings": {
-        "custom_scheme": true,
-        "color_scheme": "scheme-2",
+        "custom_scheme": false,
         "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor.",
         "copyright": "© {year} NN Developers",
         "legal": "Lorem ipsum dolor sit amet",
         "show_social": true,
-        "show_policies": false,
-        "show_payment": false
+        "show_policies": true,
+        "show_payment": true
       }
     }
   },

@@ -1,0 +1,46 @@
+{%- comment -%}
+  One product option as a fieldset. Style is picked from the option itself:
+  - Color / Colour → round swatches
+  - two values where the name suggests an add-on (gift wrap, engraving, add…) → checkbox
+  - six or more values, or Length / Material → dropdown
+  - everything else → size-style buttons
+  Hidden radios always carry the real value, so variant lookup in theme.js keeps working.
+  Params: option, prefix
+{%- endcomment -%}
+{%- liquid
+  assign oname = option.name | downcase
+  assign style = 'pill'
+  assign addon = false
+  if oname contains 'gift' or oname contains 'wrap' or oname contains 'engrav'
+    assign addon = true
+  endif
+  if oname == 'color' or oname == 'colour'
+    assign style = 'swatch'
+  elsif addon and option.values.size == 2
+    assign style = 'check'
+  elsif option.values.size > 5 or oname == 'length' or oname == 'material'
+    assign style = 'select'
+  endif
+-%}
+<fieldset class="opt opt-{{ style }}">
+  <legend>{{ option.name | escape }} <span data-selected-value>{{ option.selected_value | escape }}</span></legend>
+  <div class="ob{% if style == 'select' or style == 'check' %} ob-hidden{% endif %}">
+    {%- for value in option.values -%}
+      <label title="{{ value | escape }}">
+        <input type="radio" name="{{ prefix }}-{{ option.position }}" value="{{ value | escape }}"{% if option.selected_value == value %} checked{% endif %}{% unless value.available %} class="na"{% endunless %}>
+        {%- if style == 'swatch' -%}
+          <span class="cs" style="background:{% render 'swatch-color', value: value %}"><span class="visually-hidden">{{ value | escape }}</span></span>
+        {%- else -%}
+          <span class="pill">{{ value | escape }}</span>
+        {%- endif -%}
+      </label>
+    {%- endfor -%}
+  </div>
+  {%- if style == 'select' -%}
+    <div class="osel"><select data-opt-select aria-label="{{ option.name | escape }}">
+      {%- for value in option.values -%}<option value="{{ value | escape }}"{% if option.selected_value == value %} selected{% endif %}>{{ value | escape }}</option>{%- endfor -%}
+    </select></div>
+  {%- elsif style == 'check' -%}
+    <label class="ocheck chk"><input type="checkbox" data-opt-check data-on="{{ option.values[1] | escape }}" data-off="{{ option.values[0] | escape }}"{% if option.selected_value == option.values[1] %} checked{% endif %}><span></span>{{ option.values[1] | escape }}</label>
+  {%- endif -%}
+</fieldset>
