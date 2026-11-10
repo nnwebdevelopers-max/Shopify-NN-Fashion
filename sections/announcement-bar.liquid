@@ -1,21 +1,25 @@
 {%- if section.blocks.size > 0 -%}
-<div class="announce color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" style="background:var(--solid);color:var(--solid-ink)" role="region" aria-label="{{ 'general.announcement' | t }}">
-  {%- for block in section.blocks -%}
-    {%- unless forloop.first %} &nbsp;·&nbsp; {% endunless -%}
-    <span {{ block.shopify_attributes }}>
-      {%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{{ block.settings.text | escape }}</a>{%- else -%}{{ block.settings.text | escape }}{%- endif -%}
-    </span>
-  {%- endfor -%}
+<div class="announce top color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" role="region" aria-label="{{ 'general.announcement' | t }}">
+  <div class="trk" style="--dur:{{ section.settings.speed }}s">
+    {%- for i in (1..4) -%}
+      {%- for block in section.blocks -%}
+        <span class="ai" {% if i == 1 %}{{ block.shopify_attributes }}{% else %}aria-hidden="true"{% endif %}>
+          {%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{{ block.settings.text | escape }}</a>{%- else -%}{{ block.settings.text | escape }}{%- endif -%}
+        </span><span class="sep" aria-hidden="true">&#10022;</span>
+      {%- endfor -%}
+    {%- endfor -%}
+  </div>
 </div>
 {%- endif -%}
 
 {% schema %}
 {
   "name": "Announcement bar",
-  "max_blocks": 4,
+  "max_blocks": 6,
   "settings": [
-    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "info": "Off: this section follows the default color scheme in Theme settings > Colors.", "default": false },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" }
+    { "type": "checkbox", "id": "custom_scheme", "label": "Use a different color scheme", "default": false },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1", "visible_if": "{{ section.settings.custom_scheme }}" },
+    { "type": "range", "id": "speed", "label": "Scroll duration", "min": 10, "max": 90, "step": 5, "unit": "s", "default": 40 }
   ],
   "blocks": [
     {
@@ -27,8 +31,6 @@
       ]
     }
   ],
-  "presets": [
-    { "name": "Announcement bar", "blocks": [ { "type": "announcement" } ] }
-  ]
+  "presets": [ { "name": "Announcement bar", "blocks": [ { "type": "announcement" } ] } ]
 }
 {% endschema %}

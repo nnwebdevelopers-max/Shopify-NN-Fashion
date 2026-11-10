@@ -15,14 +15,21 @@
         "a2": {
           "type": "announcement",
           "settings": {
-            "text": "Free delivery on orders over $200",
+            "text": "Free delivery on orders over $150",
             "link": ""
           }
         },
         "a3": {
           "type": "announcement",
           "settings": {
-            "text": "Sed do eiusmod tempor",
+            "text": "Sed do eiusmod tempor incididunt",
+            "link": ""
+          }
+        },
+        "a4": {
+          "type": "announcement",
+          "settings": {
+            "text": "New arrivals every week",
             "link": ""
           }
         }
@@ -30,11 +37,12 @@
       "block_order": [
         "a1",
         "a2",
-        "a3"
+        "a3",
+        "a4"
       ],
       "settings": {
-        "custom_scheme": true,
-        "color_scheme": "scheme-2"
+        "custom_scheme": false,
+        "speed": 40
       }
     },
     "header": {
@@ -79,7 +87,7 @@
       ],
       "settings": {
         "menu": "main-menu",
-        "logo_text": "NN Fashion",
+        "logo_text": "NN Mono",
         "sticky": true,
         "show_wishlist": true,
         "show_account": true

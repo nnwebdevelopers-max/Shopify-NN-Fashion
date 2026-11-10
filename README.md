@@ -1,39 +1,21 @@
-# NN Fashion
+# NN Mono
 
-A custom Shopify Online Store 2.0 theme (design "Soft Studio") for a fashion store, built by NN Developers.
+A light, airy Shopify Online Store 2.0 theme for fashion stores, built by NN Developers. Fully editable from the theme editor.
 
-## Features
+## What is inside
 
-- Bento hero, shop-by-edit tiles, tabbed product rail, sale banner, brand marquee, testimonials, journal posts (all editable sections)
-- Multiple menu styles driven by the main menu: columns, tiles, tabs and simple dropdown (matched by menu item title)
-- Wishlist and compare (saved in the shopper's browser) with a compare sidebar, wishlist page and compare page
-- Collection page: banner, category chips, popover filters, sort, grid density, editor's-pick tile, load more
-- Product page: editorial stack with sticky buy card, variant-aware gallery, marquee, material / fit / care cards, docked add-to-cart bar
-- Quick view, cart drawer, predictive search, blog, article, about, lookbook, size guide, FAQ and contact pages
-- GSAP animations (scroll reveals, hero entrance, counters, marquee) with a theme setting to turn them off
-- Seven colour schemes, dark scheme and optional shopper colour switcher
+- Announcement marquee, hero slider (tabs with progress, wipe transition, "Shop this look" quick add), countdown strip, zig-zag categories, product tabs, big text band, best pick, reviews, journal, newsletter
+- 10 colour schemes (Linen, Sage, Blush, Sky, Butter, Mono, Night, Lavender, Coral, Ocean) editable in Theme settings > Colors, plus an optional shopper colour switcher
+- Mega menus (columns, tiles, tabs) and dropdowns, picked by the menu item title in the header settings
+- Wishlist and compare (compare icon docks on the right edge, opens a panel with a clear button and a link to the compare page)
+- Cart drawer: free-shipping meter, select and bulk remove, order note, discount code, related products, clear cart
+- Waving-dots animation on every add to cart button
+- Product options render as swatches, buttons, dropdowns or checkboxes depending on the option
+- Collection page with filters, sorting, grid density and load more; product page with gallery, accordion tabs and sticky add to cart bar
+- Pages: About, Contact, FAQ, Lookbook, Size guide, Wishlist, Compare, policies
 
-## Structure
+## Push
 
-| Folder | Contents |
-| --- | --- |
-| `assets/` | `base.css`, `fashion.css`, `theme.js`, `motion.js` |
-| `config/` | Theme settings schema and data |
-| `layout/` | `theme.liquid`, `password.liquid` |
-| `locales/` | Translations |
-| `sections/` | Page sections and section groups (header, footer) |
-| `snippets/` | Product card, art, icons, mega menu, price, etc. |
-| `templates/` | JSON templates incl. page.about, page.lookbook, page.size-guide, page.wishlist, page.compare |
-
-## Content conventions
-
-- Product metafields: `custom.material`, `custom.care`, `custom.fit_note`, `custom.rating`, `custom.rating_count`, `custom.art`, `custom.badge`
-- Menus: `main-menu` (Shop = columns, Women = tiles, Men = tabs), `footer`, `footer-help`, `footer-company`, `categories`
-- Wishlist and compare pages use the `page.wishlist` and `page.compare` templates
-
-## Development
-
-```bash
-shopify theme dev --store <your-store>.myshopify.com
-shopify theme push
+```
+shopify theme push --unpublished --theme "NN Mono" --store <store>.myshopify.com
 ```

@@ -102,23 +102,7 @@
               {%- unless product.has_only_default_variant -%}
                 <div data-variant-picker data-update-url style="display:grid;gap:20px" {{ block.shopify_attributes }}>
                   {%- for option in product.options_with_values -%}
-                    {%- assign oname = option.name | downcase -%}
-                    {%- if oname == 'color' or oname == 'colour' -%}{%- assign is_color = true -%}{%- else -%}{%- assign is_color = false -%}{%- endif -%}
-                    <fieldset class="opt">
-                      <legend>{{ option.name | escape }} <span data-selected-value>{{ option.selected_value | escape }}</span></legend>
-                      <div class="ob">
-                        {%- for value in option.values -%}
-                          <label title="{{ value | escape }}">
-                            <input type="radio" name="{{ section.id }}-{{ option.position }}" value="{{ value | escape }}"{% if option.selected_value == value %} checked{% endif %}{% unless value.available %} class="na"{% endunless %}>
-                            {%- if is_color -%}
-                              <span class="cs" style="background:{% render 'swatch-color', value: value %}"><span class="visually-hidden">{{ value | escape }}</span></span>
-                            {%- else -%}
-                              <span class="pill">{{ value | escape }}</span>
-                            {%- endif -%}
-                          </label>
-                        {%- endfor -%}
-                      </div>
-                    </fieldset>
+                    {% render 'option-picker', option: option, prefix: section.id %}
                   {%- endfor -%}
                 </div>
               {%- endunless -%}

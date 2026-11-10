@@ -1,7 +1,7 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "NN Fashion",
+    "theme_name": "NN Mono",
     "theme_version": "1.0.0",
     "theme_author": "NN Developers",
     "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
@@ -88,10 +88,12 @@
         "id": "font_pairing",
         "label": "Font pairing",
         "options": [
-          { "value": "soft", "label": "Instrument Serif + DM Sans" },
+          { "value": "montserrat", "label": "Montserrat (light, airy)" },
+          { "value": "jost", "label": "Jost (geometric)" },
+          { "value": "serif", "label": "Cormorant + Montserrat (editorial)" },
           { "value": "system", "label": "System fonts (fastest)" }
         ],
-        "default": "soft"
+        "default": "montserrat"
       }
     ]
   },
@@ -122,7 +124,7 @@
         "visible_if": "{{ settings.layout_width == 'boxed' }}",
         "min": 1000, "max": 1600, "step": 20, "unit": "px", "default": 1240
       },
-      { "type": "range", "id": "radius", "label": "Tile corner radius", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 28 },
+      { "type": "range", "id": "radius", "label": "Tile corner radius", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 0 },
       { "type": "checkbox", "id": "reveal", "label": "Reveal sections on scroll", "default": true }
     ]
   },
