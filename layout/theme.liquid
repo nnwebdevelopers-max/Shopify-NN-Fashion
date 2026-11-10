@@ -73,10 +73,17 @@
 
     {%- if settings.palette_switcher -%}
       <div class="palette" role="group" aria-label="{{ settings.palette_label | escape }}">
-        {%- if settings.palette_label != blank %}<span>{{ settings.palette_label | escape }}</span>{% endif -%}
-        {%- for scheme in settings.color_schemes limit: settings.palette_count -%}
-          <button type="button" data-palette-btn="{{ scheme.id }}" aria-pressed="false" aria-label="{{ settings.palette_label | escape }} {{ forloop.index }}" title="{{ forloop.index }}" style="background:linear-gradient(135deg,{{ scheme.settings.tint_1 }} 50%,{{ scheme.settings.accent }} 50%)"></button>
-        {%- endfor -%}
+        <button type="button" class="pal-toggle" data-palette-toggle aria-expanded="false" aria-label="{{ settings.palette_label | escape }}" title="{{ settings.palette_label | escape }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.8 2-1.8 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4-4-7.8-9-7.8z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></svg>
+        </button>
+        <div class="pal-panel">
+          {%- if settings.palette_label != blank %}<span class="pal-label">{{ settings.palette_label | escape }}</span>{% endif -%}
+          <div class="pal-grid">
+          {%- for scheme in settings.color_schemes limit: settings.palette_count -%}
+            <button type="button" class="pal-dot" data-palette-btn="{{ scheme.id }}" aria-pressed="false" aria-label="{{ settings.palette_label | escape }} {{ forloop.index }}" title="{{ forloop.index }}" style="--p-bg:{{ scheme.settings.background }};--p-ac:{{ scheme.settings.accent }};--p-ink:{{ scheme.settings.text }}"><i></i></button>
+          {%- endfor -%}
+          </div>
+        </div>
       </div>
     {%- endif -%}
 

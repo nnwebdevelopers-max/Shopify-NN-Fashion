@@ -1,1 +1,26 @@
-{ "sections": { "main": { "type": "main-page", "settings": { "eyebrow": "Lorem ipsum", "padding_bottom": 20 } }, "form": { "type": "contact-form", "settings": { "heading": "Lorem ipsum dolor", "padding_bottom": 96 } } }, "order": ["main", "form"] }
+{
+  "sections": {
+    "main": { "type": "main-page", "settings": { "eyebrow": "Lorem ipsum", "padding_bottom": 20 } },
+    "form": {
+      "type": "contact-form",
+      "blocks": {
+        "a": { "type": "info", "settings": { "icon": "pin", "title": "Visit our shop", "text": "350 Fifth Avenue\nNew York, NY 10118" } },
+        "b": { "type": "info", "settings": { "icon": "phone", "title": "Call us", "text": "+1 (212) 555-0142\nMon - Fri, 9:00 - 18:00", "link_label": "Call now", "link": "tel:+12125550142" } },
+        "c": { "type": "info", "settings": { "icon": "mail", "title": "Email us", "text": "hello@lorem-studio.com\nWe reply within 24 hours", "link_label": "Write an email", "link": "mailto:hello@lorem-studio.com" } },
+        "d": { "type": "info", "settings": { "icon": "chat", "title": "Customer care", "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit." , "link_label": "Read the FAQ", "link": "/pages/faq" } }
+      },
+      "block_order": ["a", "b", "c", "d"],
+      "settings": {
+        "eyebrow": "Get in touch",
+        "heading": "Send us a message",
+        "show_map": true,
+        "map_address": "350 Fifth Avenue, New York, NY 10118",
+        "link_1": "/pages/shipping-returns",
+        "link_2": "/pages/faq",
+        "link_3": "/pages/size-guide",
+        "padding_bottom": 96
+      }
+    }
+  },
+  "order": ["main", "form"]
+}

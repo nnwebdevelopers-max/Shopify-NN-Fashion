@@ -5,7 +5,7 @@
   - six or more values, or Length / Material → dropdown
   - everything else → size-style buttons
   Hidden radios always carry the real value, so variant lookup in theme.js keeps working.
-  Params: option, prefix
+  Params: option, prefix, product
 {%- endcomment -%}
 {%- liquid
   assign oname = option.name | downcase
@@ -26,8 +26,13 @@
   <legend>{{ option.name | escape }} <span data-selected-value>{{ option.selected_value | escape }}</span></legend>
   <div class="ob{% if style == 'select' or style == 'check' %} ob-hidden{% endif %}">
     {%- for value in option.values -%}
+      {%- assign opt_idx = option.position | minus: 1 -%}
+      {%- assign val_ok = false -%}
+      {%- for v in product.variants -%}
+        {%- if v.available and v.options[opt_idx] == value -%}{%- assign val_ok = true -%}{%- break -%}{%- endif -%}
+      {%- endfor -%}
       <label title="{{ value | escape }}">
-        <input type="radio" name="{{ prefix }}-{{ option.position }}" value="{{ value | escape }}"{% if option.selected_value == value %} checked{% endif %}{% unless value.available %} class="na"{% endunless %}>
+        <input type="radio" name="{{ prefix }}-{{ option.position }}" value="{{ value | escape }}"{% if option.selected_value == value %} checked{% endif %}{% unless val_ok %} class="na"{% endunless %}>
         {%- if style == 'swatch' -%}
           <span class="cs" style="background:{% render 'swatch-color', value: value %}"><span class="visually-hidden">{{ value | escape }}</span></span>
         {%- else -%}
