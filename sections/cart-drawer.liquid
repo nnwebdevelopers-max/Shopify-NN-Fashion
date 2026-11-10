@@ -11,6 +11,13 @@
 -%}
 <aside class="drawer color-scheme color-{% if section.settings.custom_scheme %}{{ section.settings.color_scheme.id }}{% else %}{{ settings.body_scheme.id }}{% endif %}" id="CartDrawer" aria-label="{{ 'cart.title' | t }}" aria-hidden="true">
   <span hidden data-cart-count-src="{{ cart.item_count }}"></span>
+  {%- if cart.item_count > 0 and section.settings.show_related -%}
+    <div class="drel-wrap" aria-label="{{ 'cart.related' | t }}">
+      <div class="drel-side">
+        <div class="drel" data-cart-related data-product-id="{{ cart.items.first.product_id }}" data-limit="{{ section.settings.related_count }}"></div>
+      </div>
+    </div>
+  {%- endif -%}
   <header>
     <h2>{{ 'cart.title' | t }} {%- if cart.item_count > 0 %} <span class="dcount">({{ cart.item_count }})</span>{% endif -%}</h2>
     <button type="button" class="icon-btn" data-close-cart aria-label="{{ 'cart.close' | t }}">{% render 'icon', icon: 'close' %}</button>
@@ -59,7 +66,7 @@
         </div>
       {%- endfor -%}
 
-      <div class="drel" data-cart-related data-product-id="{{ cart.items.first.product_id }}" data-limit="{{ section.settings.related_count }}" {% unless section.settings.show_related %}hidden{% endunless %}></div>
+      <div class="drel drel-inline" data-cart-related data-product-id="{{ cart.items.first.product_id }}" data-limit="{{ section.settings.related_count }}" {% unless section.settings.show_related %}hidden{% endunless %}></div>
     {%- else -%}
       <div class="empty">
         <p>{{ section.settings.empty_text | escape }}</p>
