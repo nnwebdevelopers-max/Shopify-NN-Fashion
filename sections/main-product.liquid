@@ -102,7 +102,7 @@
               {%- unless product.has_only_default_variant -%}
                 <div data-variant-picker data-update-url style="display:grid;gap:20px" {{ block.shopify_attributes }}>
                   {%- for option in product.options_with_values -%}
-                    {% render 'option-picker', option: option, prefix: section.id %}
+                    {% render 'option-picker', option: option, prefix: section.id, product: product %}
                   {%- endfor -%}
                 </div>
               {%- endunless -%}

@@ -39,7 +39,7 @@
       <div data-variant-picker class="qv-opts">
         {%- assign qv_prefix = 'qv' | append: product.id -%}
         {%- for option in product.options_with_values -%}
-          {% render 'option-picker', option: option, prefix: qv_prefix %}
+          {% render 'option-picker', option: option, prefix: qv_prefix, product: product %}
         {%- endfor -%}
       </div>
     {%- endunless -%}

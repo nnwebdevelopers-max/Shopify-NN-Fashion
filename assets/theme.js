@@ -21,8 +21,13 @@
     try { if (id) localStorage.setItem('nn-palette', id); else localStorage.removeItem('nn-palette'); } catch (e) {}
   }
   document.addEventListener('click', function (e) {
+    var tg = e.target.closest('[data-palette-toggle]'), box = $('.palette');
+    if (tg && box) { var o = !box.classList.contains('open'); box.classList.toggle('open', o); tg.setAttribute('aria-expanded', o); return; }
     var b = e.target.closest('[data-palette-btn]');
-    if (!b) return;
+    if (!b) {
+      if (box && box.classList.contains('open') && !e.target.closest('.palette')) { box.classList.remove('open'); var t2 = $('[data-palette-toggle]'); if (t2) t2.setAttribute('aria-expanded', 'false'); }
+      return;
+    }
     setPal(b.getAttribute('aria-pressed') === 'true' ? null : b.dataset.paletteBtn);
   });
   (function () { var cur = root.getAttribute('data-palette'); if (cur) setPal(cur); })();
@@ -365,11 +370,10 @@
       '<button type="button" class="cmp-item-x" data-compare-remove="' + esc(h) + '" aria-label="' + esc(T.strings.compareRemove) + ': ' + esc(d.title) + '" title="' + esc(T.strings.compareRemove) + '">' + TRASH_SVG + '</button>';
   }
   var TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+  var cmpMin = true; /* always starts closed on every page load */
   function sideMin(v) {
-    try {
-      if (v === undefined) { var s = sessionStorage.getItem('nn-cmp-min'); return s === null ? true : s === '1'; }
-      sessionStorage.setItem('nn-cmp-min', v ? '1' : '0');
-    } catch (e) { return false; }
+    if (v === undefined) return cmpMin;
+    cmpMin = !!v;
   }
   function applySide(bar, min) {
     bar.classList.toggle('is-min', min);
