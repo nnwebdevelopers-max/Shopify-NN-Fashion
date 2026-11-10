@@ -154,3 +154,18 @@
     var ck = fs.querySelector('[data-opt-check]'); if (ck) ck.checked = (t.value === ck.getAttribute('data-on'));
   });
 })();
+
+/* ---------- filters: one dropdown open at a time, close on outside click / Esc ---------- */
+(function () {
+  function closeAll(except) { [].slice.call(document.querySelectorAll('.fdrop[open]')).forEach(function (d) { if (d !== except) d.removeAttribute('open'); }); }
+  document.addEventListener('toggle', function (e) { var d = e.target; if (d && d.classList && d.classList.contains('fdrop') && d.open) closeAll(d); }, true);
+  document.addEventListener('click', function (e) { if (!e.target.closest('.fdrop')) closeAll(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+})();
+
+/* ---------- cart: close the You-may-like panel (comes back next time the cart opens) ---------- */
+(function () {
+  var b = document.body;
+  document.addEventListener('click', function (e) { if (e.target.closest('[data-close-related]')) { e.preventDefault(); b.classList.add('rel-closed'); } });
+  new MutationObserver(function () { if (!b.classList.contains('cart-open')) b.classList.remove('rel-closed'); }).observe(b, { attributes: true, attributeFilter: ['class'] });
+})();

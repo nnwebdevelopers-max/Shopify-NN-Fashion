@@ -14,6 +14,7 @@
   {%- if cart.item_count > 0 and section.settings.show_related -%}
     <div class="drel-wrap" aria-label="{{ 'cart.related' | t }}">
       <div class="drel-side">
+        <button type="button" class="drel-x icon-btn" data-close-related aria-label="Close">{% render 'icon', icon: 'close' %}</button>
         <div class="drel" data-cart-related data-product-id="{{ cart.items.first.product_id }}" data-limit="{{ section.settings.related_count }}"></div>
       </div>
     </div>
