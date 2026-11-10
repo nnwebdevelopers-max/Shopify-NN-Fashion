@@ -167,5 +167,5 @@
 (function () {
   var b = document.body;
   document.addEventListener('click', function (e) { if (e.target.closest('[data-close-related]')) { e.preventDefault(); b.classList.add('rel-closed'); } });
-  new MutationObserver(function () { if (!b.classList.contains('cart-open')) b.classList.remove('rel-closed'); }).observe(b, { attributes: true, attributeFilter: ['class'] });
+  new MutationObserver(function () { if (!b.classList.contains('cart-open') && b.classList.contains('rel-closed')) b.classList.remove('rel-closed'); }).observe(b, { attributes: true, attributeFilter: ['class'] });
 })();
