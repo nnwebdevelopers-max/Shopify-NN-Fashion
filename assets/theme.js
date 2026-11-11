@@ -636,7 +636,7 @@
         var lbl = $('[data-selected-value]', fs); if (lbl) lbl.textContent = opts[i] || '';
       });
     }
-    function update() {
+    function update(e) {
       var opts = selected(), v = find(opts);
       markAvailability(opts);
       var btns = $$('[data-add-btn]', scope), priceEls = $$('[data-price]', scope);
@@ -658,7 +658,7 @@
         }
         p.innerHTML = html;
       });
-      if (v.featured_media) showMedia(scope, v.featured_media.id);
+      if (v.featured_media) { var ch = e && e.target && e.target.closest ? e.target.closest('fieldset') : null, lg = ch && ch.querySelector('legend'); showMedia(scope, v.featured_media.id, !!(lg && /colou?r/i.test(lg.textContent))); }
       if (window.history.replaceState && $('[data-update-url]', scope)) {
         var url = new URL(window.location.href); url.searchParams.set('variant', v.id);
         window.history.replaceState({}, '', url.toString());
@@ -688,14 +688,17 @@
       });
     }
   }
-  function showMedia(scope, id) {
+  function showMedia(scope, id, doScroll) {
     var found = false;
     $$('[data-slide]', scope).forEach(function (s) { var on = s.dataset.slide == id; s.classList.toggle('on', on); if (on) found = true; });
     if (!found) return;
     $$('[data-thumb]', scope).forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.thumb == id); });
     var tint = $('[data-slide="' + id + '"]', scope); var g = $('.gmain', scope);
     var stack = $('.gstack', scope);
-    if (stack && tint) { var r = tint.getBoundingClientRect(); if (r.top < 0 || r.bottom > window.innerHeight) tint.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    if (stack && tint && doScroll) {
+      if (window.matchMedia('(max-width:989px)').matches) stack.scrollTo({ left: tint.offsetLeft - stack.offsetLeft - (parseFloat(getComputedStyle(stack).paddingLeft) || 0), behavior: 'smooth' });
+      else { var r = tint.getBoundingClientRect(); if (r.top < 0 || r.bottom > window.innerHeight) tint.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }
     if (tint && g && tint.dataset.tint) g.style.background = 'var(--' + tint.dataset.tint + ')';
   }
 

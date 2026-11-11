@@ -435,3 +435,69 @@ body.rel-closed .drel-side{transform:translateX(100%);transition-delay:0s}
 .fpanel{display:block}
 .fpanel .chk .cbx{width:18px;height:18px;flex:none}
 .fpanel .chk{align-items:center;min-height:0}
+
+/* ====== round 3 fixes ====== */
+/* page headers: centre the intro text instead of hugging the left */
+.phead{justify-items:center}
+.phead .rte{margin-inline:auto;max-width:68ch;text-align:center}
+.phead h1{font-size:clamp(30px,5vw,60px)}
+.cmp-tools{max-width:100%}
+
+/* quantity: hide the native spinner so the number is visible */
+.qty input,.qty input[type="number"]{-moz-appearance:textfield;appearance:textfield;width:44px;min-width:44px;padding:0;margin:0;text-align:center;font:inherit;font-weight:600;color:var(--ink);background:transparent;border:0;box-shadow:none}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;appearance:none;margin:0;display:none}
+.buy .qty{gap:2px}
+
+/* white-on-light text: active compare / wishlist buttons on the product page */
+.pb-buy .pacts .ca[data-compare][aria-pressed="true"],.pacts .ca[data-compare][aria-pressed="true"]{background:var(--solid);color:var(--solid-ink);border-color:var(--solid)}
+.pb-buy .pacts .ca[data-wish][aria-pressed="true"]{color:#e0245e}
+
+/* header buttons must never be squeezed into a pill */
+.icon-btn{flex:none;min-width:42px}
+.burger{flex:none}
+@media(max-width:989px){
+  .logo{letter-spacing:.22em;font-size:17px;white-space:nowrap}
+  .bar{gap:8px}
+  .tools{gap:2px}
+}
+@media(max-width:400px){.logo{letter-spacing:.14em;font-size:15px}.icon-btn{width:38px;height:38px;min-width:38px}}
+
+/* mobile menu drawer */
+.mnav{background:var(--bg);width:min(380px,92vw);box-shadow:20px 0 50px -30px var(--ink)}
+.mnav .mtop{padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.mnav .logo{font-size:17px}
+.mnav summary,.mnav .row{font-size:14px;font-weight:400;letter-spacing:.16em;text-transform:uppercase;padding:18px 2px}
+.mnav summary::after{font-size:20px}
+.mnav .sub a{font-size:15px;padding:9px 0}
+.mnav .sub a.b{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:8px}
+.mnav .macc{flex-wrap:wrap}.mnav .macc .btn{flex:1;justify-content:center}
+
+/* compare page on phones: compact, swipeable columns */
+@media(max-width:700px){
+  .cmp-scroll{scroll-snap-type:x proximity;border-left:0;border-right:0;margin-inline:calc(var(--g,16px) * -1);border-radius:0}
+  .cmp{min-width:calc(92px + var(--n,2) * 158px)}
+  .cmp col:first-child,.cmp tr>:first-child{width:92px}
+  .cmp th,.cmp td{padding:10px 10px;font-size:13px}
+  .cmp tbody th{font-size:10px;letter-spacing:.08em;line-height:1.3;word-break:break-word;box-shadow:6px 0 10px -8px var(--ink)}
+  .cmp thead th,.cmp td.cmp-more{scroll-snap-align:start}
+  .cmp-prod{gap:8px}
+  .cmp-img{aspect-ratio:4/5}.cmp-img img{width:100%;height:100%;object-fit:cover}
+  .cmp-title{font-size:13px;font-weight:500;letter-spacing:.02em;text-transform:none}
+  .cmp-btn{padding:10px 8px;font-size:10px;letter-spacing:.1em;white-space:normal}
+  .cmp-x{width:28px;height:28px;top:4px;right:4px}
+  .cmp .price{font-size:14px}
+  .cmp-more a{aspect-ratio:4/5;font-size:12px}
+  .cmp-tools{flex-direction:column;align-items:flex-start;gap:10px}
+}
+
+/* product gallery: swipeable slider on phones and tablets */
+.gdots{display:none}
+@media(max-width:989px){
+  .gstack{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-inline:calc(var(--g,16px) * -1);padding-inline:var(--g,16px);scroll-padding-inline:var(--g,16px);overscroll-behavior-x:contain}
+  .gstack::-webkit-scrollbar{display:none}
+  .gstack .gslide,.gstack .gslide:nth-child(even){flex:0 0 86%;margin-top:0;scroll-snap-align:start;aspect-ratio:4/5}
+  .gstack.single .gslide{flex-basis:100%}
+  .gdots{display:flex;justify-content:center;gap:8px;padding:12px 0 4px}
+  .gdots button{width:8px;height:8px;border-radius:50%;border:0;padding:0;background:var(--line);transition:width .25s,background .25s}
+  .gdots button[aria-current="true"]{width:22px;border-radius:6px;background:var(--ink)}
+}
