@@ -92,7 +92,7 @@
   function addToCompare(lines, root) {
     var hs = handlesOf(lines, root), c = readList('nn-compare'), max = T.compareMax || 4, added = 0;
     hs.forEach(function (h) { if (c.indexOf(h) < 0 && c.length < max) { c.push(h); added++; } });
-    writeList('nn-compare', c);
+    writeList('nn-compare', c); window.dispatchEvent(new Event('nn:lists'));
     toast(added ? added + ' ' + ((T.strings || {}).comparedAdd || 'added to compare') : ((T.strings || {}).compareFull || 'Compare list is full'));
   }
   function bulkQty(lines, delta) {

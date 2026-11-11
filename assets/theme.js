@@ -348,6 +348,7 @@
     if (!e.target.matches('[data-compare-diff]')) return;
     var box = $('[data-compare-table]'); if (box) box.classList.toggle('only-diff', e.target.checked);
   });
+  window.addEventListener('nn:lists', function () { sideMin(false); syncLists(); });
   window.addEventListener('storage', function (e) {
     if (e.key !== LIST_KEYS.wish && e.key !== LIST_KEYS.compare) return;
     syncLists();

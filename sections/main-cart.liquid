@@ -38,11 +38,6 @@
             <label class="chk"><input type="checkbox" data-select-all><span></span><b>{{ 'cart.select_all' | t }}</b></label>
             <span class="cp-selinfo" data-sel-info hidden><b data-sel-n>0</b> {{ 'cart.selected' | t }}</span>
             <div class="cp-acts" data-sel-actions hidden>
-              <span class="cp-step" role="group" aria-label="{{ 'cart.quantity' | t }}">
-                <button type="button" data-bulk-qty="-1" aria-label="{{ 'cart.decrease' | t }}">−</button>
-                <i>{{ 'cart.quantity' | t }}</i>
-                <button type="button" data-bulk-qty="1" aria-label="{{ 'cart.increase' | t }}">+</button>
-              </span>
               <button type="button" class="cp-act" data-bulk-wish>{% render 'icon', icon: 'heart' %} {{ 'cart.move_wishlist' | t }}</button>
               {%- if settings.compare_enable -%}<button type="button" class="cp-act" data-bulk-compare>{% render 'icon', icon: 'compare' %} {{ 'cart.add_compare' | t }}</button>{%- endif -%}
               <button type="button" class="cp-act danger" data-remove-selected>{% render 'icon', icon: 'close' %} {{ 'cart.remove_selected' | t }}</button>
