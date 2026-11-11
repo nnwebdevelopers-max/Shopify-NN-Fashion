@@ -169,3 +169,30 @@
   document.addEventListener('click', function (e) { if (e.target.closest('[data-close-related]')) { e.preventDefault(); b.classList.add('rel-closed'); } });
   new MutationObserver(function () { if (!b.classList.contains('cart-open') && b.classList.contains('rel-closed')) b.classList.remove('rel-closed'); }).observe(b, { attributes: true, attributeFilter: ['class'] });
 })();
+
+/* ---------- product gallery dots (phones / tablets) ---------- */
+(function () {
+  function build(stack) {
+    if (stack.__dots) return;
+    var slides = [].slice.call(stack.querySelectorAll('.gslide'));
+    if (slides.length < 2) return;
+    stack.__dots = 1;
+    var box = document.createElement('div'); box.className = 'gdots'; box.setAttribute('role', 'tablist');
+    slides.forEach(function (s, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Image ' + (i + 1));
+      b.addEventListener('click', function () { stack.scrollTo({ left: s.offsetLeft - stack.offsetLeft - (parseFloat(getComputedStyle(stack).paddingLeft) || 0), behavior: 'smooth' }); });
+      box.appendChild(b);
+    });
+    stack.insertAdjacentElement('afterend', box);
+    function sync() {
+      var x = stack.scrollLeft + stack.clientWidth / 3, idx = 0;
+      slides.forEach(function (s, i) { if (s.offsetLeft - stack.offsetLeft <= x) idx = i; });
+      [].forEach.call(box.children, function (b, i) { b.setAttribute('aria-current', i === idx ? 'true' : 'false'); });
+    }
+    var t; stack.addEventListener('scroll', function () { clearTimeout(t); t = setTimeout(sync, 40); }, { passive: true });
+    sync();
+  }
+  function init() { [].forEach.call(document.querySelectorAll('.gstack'), build); }
+  if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('shopify:section:load', init);
+})();
