@@ -168,8 +168,8 @@
   function hydrate() {
     syncSelection(); loadRelated();
     var v = ''; try { v = sessionStorage.getItem('nn-discount') || ''; } catch (x) {}
-    $('[data-discount-input]').forEach(function (i) { if (v) { i.value = v; var det = i.closest('details'); if (det) det.open = true; } });
-    $('[data-discount-hidden]').forEach(function (h) { h.value = v; });
+    $$('[data-discount-input]').forEach(function (i) { if (v) { i.value = v; var det = i.closest('details'); if (det) det.open = true; } });
+    $$('[data-discount-hidden]').forEach(function (h) { h.value = v; });
   }
   var mo = new MutationObserver(function (list) {
     for (var k = 0; k < list.length; k++) {
@@ -263,4 +263,38 @@
   function init() { [].forEach.call(document.querySelectorAll('.gstack'), build); }
   if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
   document.addEventListener('shopify:section:load', init);
+})();
+
+/* ---------- contact form: friendly inline validation ---------- */
+(function () {
+  var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  function msg(f) {
+    var v = f.value.trim(), n = f.getAttribute('data-label') || 'This field';
+    if (f.required && !v) return n + ' is required.';
+    if (!v) return '';
+    if (f.type === 'email' && !EMAIL.test(v)) return 'Enter a valid email address, like name@example.com.';
+    if (f.type === 'tel' && !/^[0-9+()\-\s.]{7,24}$/.test(v)) return 'Enter a valid phone number (digits, +, spaces, dashes).';
+    var min = +f.getAttribute('minlength') || 0;
+    if (min && v.length < min) return n + ' must be at least ' + min + ' characters.';
+    return '';
+  }
+  function show(f) {
+    var m = msg(f), box = f.parentNode.querySelector('[data-err]');
+    f.setAttribute('aria-invalid', m ? 'true' : 'false');
+    f.classList.toggle('bad', !!m);
+    if (box) { box.textContent = m; box.hidden = !m; if (!box.id) box.id = 'e' + Math.random().toString(36).slice(2, 8); f.setAttribute('aria-describedby', box.id); }
+    return !m;
+  }
+  function fields(form) { return [].slice.call(form.querySelectorAll('input[name^="contact"],textarea[name^="contact"]')); }
+  document.addEventListener('submit', function (e) {
+    var form = e.target.closest && e.target.closest('form[data-validate]'); if (!form) return;
+    var bad = fields(form).filter(function (f) { return !show(f); });
+    if (bad.length) { e.preventDefault(); bad[0].focus(); }
+  });
+  document.addEventListener('focusout', function (e) {
+    var f = e.target; if (f.form && f.form.hasAttribute && f.form.hasAttribute('data-validate') && f.name && f.name.indexOf('contact') === 0 && f.value !== '') show(f);
+  });
+  document.addEventListener('input', function (e) {
+    var f = e.target; if (f.classList && f.classList.contains('bad')) show(f);
+  });
 })();

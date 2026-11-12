@@ -35,18 +35,18 @@
         {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
         {%- if section.settings.heading != blank -%}<h2>{{ section.settings.heading | escape }}</h2>{%- endif -%}
         {%- if section.settings.intro != blank -%}<p class="ct-intro">{{ section.settings.intro | escape }}</p>{%- endif -%}
-        {%- form 'contact', class: 'cform' -%}
+        {%- form 'contact', class: 'cform', novalidate: 'novalidate', 'data-validate': 'true' -%}
           {%- if form.posted_successfully? -%}
             <p class="notice" role="status">{{ 'contact.success' | t }}</p>
           {%- elsif form.errors -%}
             <div class="notice err" role="alert">{{ form.errors | default_errors }}</div>
           {%- endif -%}
           <div class="two">
-            <label class="field">{{ 'contact.name' | t }}<input type="text" name="contact[name]" autocomplete="name" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"></label>
-            <label class="field">{{ 'contact.email' | t }} *<input type="email" name="contact[email]" required autocomplete="email" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"></label>
+            <label class="field">{{ 'contact.name' | t }} *<input type="text" name="contact[name]" autocomplete="name" required minlength="2" maxlength="80" data-label="{{ 'contact.name' | t | escape }}" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"><span class="ferr" data-err></span></label>
+            <label class="field">{{ 'contact.email' | t }} *<input type="email" name="contact[email]" required autocomplete="email" inputmode="email" maxlength="120" data-label="{{ 'contact.email' | t | escape }}" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"><span class="ferr" data-err></span></label>
           </div>
-          <label class="field">{{ 'contact.phone' | t }}<input type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}"></label>
-          <label class="field">{{ 'contact.message' | t }}<textarea name="contact[body]">{{ form.body }}</textarea></label>
+          <label class="field">{{ 'contact.phone' | t }}<input type="tel" name="contact[phone]" autocomplete="tel" inputmode="tel" maxlength="24" pattern="[0-9+()\-\s.]{7,24}" data-label="{{ 'contact.phone' | t | escape }}" value="{{ form.phone }}"><span class="ferr" data-err></span></label>
+          <label class="field">{{ 'contact.message' | t }} *<textarea name="contact[body]" required minlength="10" maxlength="2000" data-label="{{ 'contact.message' | t | escape }}">{{ form.body }}</textarea><span class="ferr" data-err></span></label>
           <div><button type="submit" class="btn primary">{{ 'contact.send' | t }} <span class="arr">&rarr;</span></button></div>
         {%- endform -%}
       </div>

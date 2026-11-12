@@ -405,7 +405,7 @@ img,video,svg,iframe{max-width:100%}
 @media(hover:none){.ct-card:hover{transform:none;box-shadow:none}}
 
 /* ====== cart: "you may like" slides out as its own panel on the left of the cart ====== */
-.drel-wrap{position:absolute;top:0;bottom:0;right:100%;width:min(320px,calc(100vw - 440px));overflow:hidden;pointer-events:none;z-index:-1}
+.drel-wrap{position:absolute;top:0;bottom:0;right:100%;width:min(320px,calc(100vw - 440px));overflow:hidden;pointer-events:none;z-index:0}
 .drel-side{position:absolute;inset:0;background:var(--bg);border-right:1px solid var(--line);box-shadow:-18px 0 40px -28px var(--ink) inset;padding:max(24px,env(safe-area-inset-top,0px)) 20px 24px;overflow-y:auto;overscroll-behavior:contain;transform:translateX(100%);transition:transform .45s var(--ease)}
 .drel-side .drel{padding:0}
 .drel-side .drel:empty{display:none}
@@ -594,3 +594,19 @@ body.rel-closed .drel-side{transform:translateX(100%);transition-delay:0s}
 .cmp tbody th{z-index:3}
 .cmp-scroll{scroll-padding-left:92px}
 @media(min-width:721px){.cmp-scroll{scroll-padding-left:0}}
+
+/* every page heading block is centred (search, blog, article, page, 404, results) */
+.sphead,.jhead,.art-h{text-align:center;display:grid;justify-items:center;gap:10px}
+.sphead .sform{margin-inline:auto;width:100%}
+.sec-t{text-align:center}
+.subchips{justify-content:center}
+.nf{text-align:center;display:grid;justify-items:center;gap:14px}
+.art-h p,.jhead p{margin-inline:auto;max-width:62ch}
+.alist{max-width:760px;margin-inline:auto}
+.empty{text-align:center}
+
+/* form validation messages */
+.ferr{display:block;color:#b3261e;font-size:12px;font-weight:400;letter-spacing:.02em;min-height:0}
+.ferr:empty,.ferr[hidden]{display:none}
+.field input.bad,.field textarea.bad{border-color:#b3261e;background:color-mix(in srgb,#b3261e 5%,var(--bg))}
+.field input.bad:focus,.field textarea.bad:focus{outline:2px solid color-mix(in srgb,#b3261e 50%,transparent)}
