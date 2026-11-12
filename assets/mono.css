@@ -588,3 +588,9 @@ body.rel-closed .drel-side{transform:translateX(100%);transition-delay:0s}
   .cp-sum.sum{padding:20px}
   .cp-act{flex:1 1 auto;justify-content:center}
 }
+
+/* compare: keep the corner cell opaque so product 1 (and its remove button) never shows through the pinned label column */
+.cmp thead>tr>:first-child{position:sticky;left:0;z-index:4;background:var(--surface)}
+.cmp tbody th{z-index:3}
+.cmp-scroll{scroll-padding-left:92px}
+@media(min-width:721px){.cmp-scroll{scroll-padding-left:0}}
