@@ -612,4 +612,4 @@ body.rel-closed .drel-side{transform:translateX(100%);transition-delay:0s}
 .field input.bad,.field textarea.bad{border-color:#b3261e;background:color-mix(in srgb,#b3261e 5%,var(--bg))}
 .field input.bad:focus,.field textarea.bad:focus{outline:2px solid color-mix(in srgb,#b3261e 50%,transparent)}
 
-.cmp-x{min-width:34px;flex:none}
+.cmp-x{flex:none}
